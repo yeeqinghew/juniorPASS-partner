@@ -9,10 +9,9 @@ import { Button, Form, Input, Typography, Image } from "antd";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-const { Title } = Typography;
+const { Title, Link } = Typography;
 
-const PartnerLogin = () => {
-  const navigate = useNavigate();
+const PartnerLogin = ({ setAuth }) => {
   const handleLogin = async (values) => {
     try {
       const response = await fetch("http://localhost:5000/partner/login", {
@@ -26,11 +25,14 @@ const PartnerLogin = () => {
       const parseRes = await response.json();
       if (parseRes.token) {
         localStorage.setItem("token", parseRes.token);
-        // TODO: to /partner/home
-        navigate("/partner/home");
+        setAuth(true);
         toast.success("Login successfully");
+      } else {
+        setAuth(false);
+        toast.error("Wrong credential");
       }
     } catch (err) {
+      setAuth(false);
       console.error(err.message);
       toast.error(err.message);
     }
@@ -43,16 +45,12 @@ const PartnerLogin = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "100vh",
+          height: "100%",
           margin: "auto",
         }}
       >
         <Toaster />
-        <div
-          style={{
-            width: "300px",
-          }}
-        >
+        <div>
           <div
             style={{
               display: "flex",
@@ -127,18 +125,19 @@ const PartnerLogin = () => {
                 required
               />
             </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{ borderRadius: "0", width: "100%", margin: "12px 0" }}
-              >
-                Log in
-              </Button>
-              <a className="login-form-forgot" href="">
+            <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
+              Log in
+            </Button>
+            <div
+              style={{
+                padding: "8px 0",
+                textAlign: "center",
+              }}
+            >
+              <Link href="reset-password" style={{}}>
                 Forgot password
-              </a>
-            </Form.Item>
+              </Link>
+            </div>
           </Form>
         </div>
       </section>

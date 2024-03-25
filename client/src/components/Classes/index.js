@@ -1,12 +1,18 @@
 import React from "react";
 import { Button, Tabs, Typography } from "antd";
+import { useNavigate } from "react-router-dom";
 const { Title } = Typography;
 
 const PartnerClasses = () => {
+  const navigate = useNavigate();
+
+  const handleCreateClass = () => {
+    navigate("/partner/create-class");
+  };
   return (
     <>
       <Title level={3}>Classes</Title>
-      <Button>Create a new class</Button>
+      <Button onClick={handleCreateClass}>Create a new class</Button>
       <Tabs
         defaultActiveKey="1"
         type="card"

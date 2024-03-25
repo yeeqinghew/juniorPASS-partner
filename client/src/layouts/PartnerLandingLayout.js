@@ -25,7 +25,6 @@ const PartnerLayout = () => {
             siderBg: "#FCFBF8",
             triggerBg: "#98BDD2",
             lightTriggerBg: "#98BDD2",
-            bodyBg: "#FCFBF8",
           },
           Menu: {
             horizontalItemSelectedColor: "#98BDD2",
@@ -42,6 +41,7 @@ const PartnerLayout = () => {
       <div
         style={{
           backgroundColor: "#FCFBF8",
+          height: "100vh",
         }}
       >
         <Outlet />
