@@ -21,6 +21,23 @@ const Routers = () => {
     setIsAuthenticated(boolean);
   };
 
+  // TODO: first login cannot get this info
+  const getPartnerInfo = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/partner/", {
+        method: "GET",
+        headers: {
+          token: localStorage.getItem("token"),
+        },
+      });
+      const parseRes = await response.json();
+      console.log("fafafasfgag", parseRes);
+      setUser(parseRes);
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
   const isAuth = async () => {
     try {
       const response = await fetch("http://localhost:5000/auth/is-verify", {
@@ -30,10 +47,10 @@ const Routers = () => {
         },
       });
 
-      const parseRes = response.json();
+      const parseRes = await response.json();
       if (parseRes === true) {
         setAuth(true);
-        // TODO: get user
+        getPartnerInfo();
       } else {
         setAuth(false);
       }
@@ -47,7 +64,7 @@ const Routers = () => {
   }, []);
 
   return (
-    <UserContext.Provider value={{}}>
+    <UserContext.Provider value={{ user }}>
       <style>
         @import
         url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap')

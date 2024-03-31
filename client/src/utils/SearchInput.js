@@ -2,7 +2,8 @@ import { Select } from "antd";
 import { useState } from "react";
 
 const SearchInput = (props) => {
-  const { placeholder, addressValue, setAddressValue, style } = props;
+  const { placeholder, addressValue, setAddressValue, style, setFieldValue } =
+    props;
   const [data, setData] = useState([]);
 
   const handleSearch = async (value) => {
@@ -15,6 +16,7 @@ const SearchInput = (props) => {
 
   const handleChange = (newValue, selectedGG) => {
     setAddressValue(selectedGG.valueObject);
+    setFieldValue("address", selectedGG.valueObject);
   };
 
   return (
@@ -23,8 +25,6 @@ const SearchInput = (props) => {
       value={addressValue?.ADDRESS}
       placeholder={placeholder}
       style={style}
-      defaultActiveFirstOption={false}
-      suffixIcon={null}
       filterOption={false}
       onSearch={handleSearch}
       onChange={handleChange}
