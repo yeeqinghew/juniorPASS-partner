@@ -21,7 +21,6 @@ const Routers = () => {
     setIsAuthenticated(boolean);
   };
 
-  // TODO: first login cannot get this info
   const getPartnerInfo = async () => {
     try {
       const response = await fetch("http://localhost:5000/partner/", {
@@ -31,7 +30,6 @@ const Routers = () => {
         },
       });
       const parseRes = await response.json();
-      console.log("fafafasfgag", parseRes);
       setUser(parseRes);
     } catch (error) {
       console.error(error.message);
@@ -61,7 +59,7 @@ const Routers = () => {
 
   useEffect(() => {
     isAuth();
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <UserContext.Provider value={{ user }}>
@@ -89,7 +87,7 @@ const Routers = () => {
             }
           ></Route>
           <Route path="reset-password" element={<ResetPassword />}></Route>
-          <Route element={<PartnerHomeLayout />}>
+          <Route element={<PartnerHomeLayout setAuth={setAuth} />}>
             <Route
               element={
                 <AuthenticatedRoute

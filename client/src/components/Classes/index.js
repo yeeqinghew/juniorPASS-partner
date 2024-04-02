@@ -9,6 +9,7 @@ const PartnerClasses = () => {
   const handleCreateClass = () => {
     navigate("/partner/create-class");
   };
+
   return (
     <>
       <Title level={3}>Classes</Title>

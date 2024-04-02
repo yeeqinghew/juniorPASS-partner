@@ -7,9 +7,11 @@ import {
 } from "@ant-design/icons";
 import { Layout, Menu, Image, Divider, Avatar } from "antd";
 import { Link, Outlet } from "react-router-dom";
+import toast from "react-hot-toast";
+
 const { Header, Sider, Content } = Layout;
 
-const PartnerHomeLayout = () => {
+const PartnerHomeLayout = ({ setAuth }) => {
   return (
     <Layout
       style={{
@@ -90,7 +92,9 @@ const PartnerHomeLayout = () => {
             <Menu.Item key="logout" style={{ float: "right" }}>
               <LogoutOutlined
                 onClick={() => {
-                  // handle Logout
+                  setAuth(false);
+                  localStorage.removeItem("token");
+                  toast.success("Logout successfully");
                 }}
               />
             </Menu.Item>

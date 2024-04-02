@@ -25,8 +25,8 @@ const CreateClass = () => {
   const [ageGroup, setAgeGroup] = useState();
   const [categories, setCategories] = useState();
   const [createClassForm] = Form.useForm();
+  const [distinctMRT, setDistinctMRT] = useState();
   const { user } = useContext(UserContext);
-  console.log("userusreur", user);
 
   async function getMRTLocations() {
     const response = await fetch(
@@ -56,7 +56,6 @@ const CreateClass = () => {
       );
       const parseRes = await response.json();
       setAgeGroup(parseRes);
-      // console.log("parseRes", parseRes);
     } catch (error) {
       console.error("ERROR in fetching getAgeGroups()");
     }
@@ -73,7 +72,7 @@ const CreateClass = () => {
       }
     );
     const parseRes = await response.json();
-    // setCategories(parseRes.enum_range);
+    setCategories(parseRes);
   }
 
   const props = {
@@ -81,15 +80,21 @@ const CreateClass = () => {
     multiple: true,
     fileList: list,
     accept: "images/*",
-    action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
     onChange(info) {
+      console.log("onchange x 1");
       const { status } = info.file;
-      if (status !== "uploading") {
-        // TODO: push into array and save
-        // console.log(info.file, info.fileList);
+      // if (status !== "uploading") {
+      //   console.log(info.file, info.fileList);
+      // }
+      if (status === "uploading") {
+        setList((state) => [...state, info.file]);
+        if (status === "error") {
+          toast.error(`${info.file.name} file upload failed.`);
+        } else {
+          info.file.status = "done";
+        }
       }
       if (status === "done") {
-        setList((prev) => [...prev, info]);
         toast.success(`${info.file.name} file uploaded successfully.`);
       } else if (status === "error") {
         toast.error(`${info.file.name} file upload failed.`);
@@ -98,11 +103,23 @@ const CreateClass = () => {
     onDrop(e) {
       console.log("Dropped files", e.dataTransfer.files);
     },
+    onRemove(e) {},
+    progress: {
+      strokeColor: {
+        "0%": "#108ee9",
+        "100%": "#87d068",
+      },
+      size: 3,
+      format: (percent) => percent && `${parseFloat(percent.toFixed(2))}%`,
+    },
   };
 
   const handleSelectAgeGroup = (values) => {
-    console.log(values);
     createClassForm.setFieldValue("age_group", values);
+  };
+
+  const handleSelectCategory = (values) => {
+    createClassForm.setFieldValue("category", values);
   };
 
   const handleCreateClass = async (values) => {
@@ -118,9 +135,13 @@ const CreateClass = () => {
     );
     const parseRes = await response.json();
     console.log("pparese", parseRes);
+    createClassForm.resetFields();
   };
 
   useEffect(() => {
+    // clean mrt.json
+    mrt && setDistinctMRT([...new Set(mrt.map((mrt) => mrt["Station Name"]))]);
+
     getMRTLocations();
     getAgeGroups();
     getCategories();
@@ -165,7 +186,6 @@ const CreateClass = () => {
           <InputNumber
             min={1}
             max={10}
-            defaultValue={1}
             style={{ width: "300px" }}
             prefix={
               <Avatar
@@ -192,12 +212,15 @@ const CreateClass = () => {
             },
           ]}
         >
-          <Input
-            prefix={<LockOutlined className="site-form-item-icon" />}
-            placeholder="Category"
-            size={"large"}
-            required
-          />
+          <Select placeholder="Select category" onSelect={handleSelectCategory}>
+            {categories &&
+              categories.map((category) => (
+                <Select.Option
+                  key={category.id}
+                  value={category.name}
+                ></Select.Option>
+              ))}
+          </Select>
         </Form.Item>
         <Form.Item
           name="description"
@@ -236,8 +259,6 @@ const CreateClass = () => {
             required
           />
         </Form.Item>
-
-        {/* TODO: Remove duplicate of region */}
         <Form.Item
           name="region"
           rules={[
@@ -247,31 +268,25 @@ const CreateClass = () => {
             },
           ]}
         >
-          <Select
-            placeholder="Region"
-            filterOption={(input, option) =>
-              (option["Station Name"] ?? "").includes(input)
-            }
-            filterSort={(optionA, optionB) =>
-              (optionA["Station Name"] ?? "")
-                .toLowerCase()
-                .localeCompare((optionB["Station Name"] ?? "").toLowerCase())
-            }
-          >
-            {/* TODO: search for mrt station */}
-            {mrt && [
-              ...new Set(
-                mrt.map((station, index) => (
-                  <Select.Option
-                    key={index}
-                    value={station["Station Name"]}
-                  ></Select.Option>
-                ))
-              ),
-            ]}
+          <Select showSearch placeholder="Region">
+            {distinctMRT &&
+              distinctMRT.map((index, mrt) => (
+                <Select.Option
+                  key={index}
+                  value={mrt["Station Name"]}
+                ></Select.Option>
+              ))}
           </Select>
         </Form.Item>
-        <Form.Item name={"age_group"}>
+        <Form.Item
+          name={"age_group"}
+          rules={[
+            {
+              required: true,
+              message: "Please input your category",
+            },
+          ]}
+        >
           <Select
             optionLabelProp="name"
             placeholder="Select age group"
