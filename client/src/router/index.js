@@ -72,6 +72,7 @@ const Routers = () => {
         rel="stylesheet"
         type="text/css"
       ></link>
+      <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1594.0.min.js"></script>
       <Toaster />
       <Routes>
         <Route path="/" element={<Navigate to="partner/login" />}></Route>
