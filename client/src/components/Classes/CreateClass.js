@@ -1,8 +1,8 @@
 import {
   InboxOutlined,
-  MailOutlined,
   PlusCircleOutlined,
   MinusCircleOutlined,
+  LeftOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -14,21 +14,21 @@ import {
   Typography,
   Upload,
   TimePicker,
-  Col,
-  Row,
   Tag,
+  Row,
+  Col,
+  Space,
 } from "antd";
 import { useContext, useEffect, useState } from "react";
 import mrt from "../../data/mrt.json";
 import day from "../../data/day.json";
 import toast from "react-hot-toast";
 import TextArea from "antd/es/input/TextArea";
-import SearchInput from "../../utils/SearchInput";
 import UserContext from "../UserContext";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { Dragger } = Upload;
 
 const CreateClass = () => {
@@ -39,8 +39,9 @@ const CreateClass = () => {
   const [packageTypes, setPackageTypes] = useState();
   const [createClassForm] = Form.useForm();
   const [s3Url, setS3Url] = useState();
-  const [selectedDays, setSelectedDays] = useState();
   const [mrtStations, setMRTStations] = useState({});
+  const [data, setData] = useState([]);
+  const [outletSchedules, setOutletSchedules] = useState([]);
 
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -141,13 +142,12 @@ const CreateClass = () => {
     createClassForm.setFieldValue("category", values);
   };
 
-  const handleSelectDay = (values) => {
-    createClassForm.setFieldValue("day", values);
-    setSelectedDays(values);
-  };
-
   const handleSelectPackage = (values) => {
     createClassForm.setFieldValue("package_types", values);
+  };
+
+  const handleSelectFrequency = (values) => {
+    createClassForm.setFieldValue("frequency", values);
   };
 
   async function getS3Url() {
@@ -157,6 +157,7 @@ const CreateClass = () => {
   }
 
   const handleCreateClass = async (values) => {
+    console.log("values", values);
     // manually set file
     // post request to the server to store any extra data
 
@@ -222,6 +223,10 @@ const CreateClass = () => {
     });
   };
 
+  const handleTimeChange = (time) => {
+    console.log("time", time);
+  };
+
   useEffect(() => {
     cleanMRTJSON();
     getAgeGroups();
@@ -231,11 +236,24 @@ const CreateClass = () => {
 
   return (
     <>
-      <Title level={3}>Create Class</Title>
+      <Space
+        direction="horizontal"
+        style={{
+          alignItems: "center",
+        }}
+      >
+        <LeftOutlined
+          onClick={() => {
+            return navigate(-1);
+          }}
+        />
+        <Title level={3}>Create Class</Title>
+      </Space>
+
       <Form
         name="create-class"
         style={{
-          maxWidth: "500px",
+          maxWidth: "100%",
         }}
         form={createClassForm}
         onFinish={handleCreateClass}
@@ -249,19 +267,14 @@ const CreateClass = () => {
             },
           ]}
         >
-          <Input
-            prefix={<MailOutlined className="site-form-item-icon" />}
-            placeholder="Title"
-            size={"large"}
-            required
-          />
+          <Input placeholder="Title" size={"large"} required />
         </Form.Item>
         <Form.Item
-          name="price"
+          name="credit"
           rules={[
             {
               required: true,
-              message: "Please input your price",
+              message: "Please input your credit",
             },
           ]}
         >
@@ -332,48 +345,6 @@ const CreateClass = () => {
           </Select>
         </Form.Item>
         <Form.Item
-          name="day"
-          rules={[
-            {
-              required: true,
-              message: "Please input your day",
-            },
-          ]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Select day"
-            onChange={handleSelectDay}
-          >
-            {day &&
-              day.map((d, index) => (
-                <Select.Option key={index} value={d}></Select.Option>
-              ))}
-          </Select>
-        </Form.Item>
-        {selectedDays && (
-          <>
-            <Text>Selected Days:</Text>
-            {selectedDays.map((d) => {
-              return (
-                <Row
-                  gutter="sm"
-                  style={{
-                    margin: 12,
-                  }}
-                >
-                  <Col span={8}>
-                    <Text>{d}</Text>
-                  </Col>
-                  <Col>
-                    <TimePicker.RangePicker />
-                  </Col>
-                </Row>
-              );
-            })}
-          </>
-        )}
-        <Form.Item
           name="description"
           rules={[
             {
@@ -384,130 +355,403 @@ const CreateClass = () => {
         >
           <TextArea
             showCount
-            maxLength={100}
+            maxLength={5000}
             placeholder="Description"
             style={{ height: 120, resize: "none" }}
           />
         </Form.Item>
 
-        <Form.List
-          name="locations"
-          rules={[
-            {
-              validator: async (_, locations) => {
-                if (!locations || locations.length <= 0) {
-                  return Promise.reject(new Error("Please pick location"));
-                }
+        {/* dynamic form for multiple outlets */}
+        <Form.Item>
+          <Form.List
+            name="locations"
+            rules={[
+              {
+                validator: async (_, locations) => {
+                  if (!locations || locations.length <= 0) {
+                    return Promise.reject(new Error("Please pick location"));
+                  }
+                },
               },
-            },
-          ]}
-        >
-          {(fields, { add, remove }, { errors }) => (
-            <>
-              <Form.Item>
-                <Button
-                  type="dashed"
-                  onClick={() => add()}
-                  icon={<PlusCircleOutlined />}
-                >
-                  Add location(s)
-                </Button>
-                <Form.ErrorList errors={errors} />
-              </Form.Item>
-              {fields.map((field, index) => (
-                <Row>
-                  <Col span={11}>
-                    <Form.Item
-                      name="address"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input your address",
-                        },
-                      ]}
-                    >
-                      <SearchInput
-                        placeholder="Address"
-                        value={addressValue}
-                        addressValue={addressValue}
-                        setAddressValue={setAddressValue}
-                        setFieldValue={createClassForm.setFieldValue}
-                        required
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={11}>
-                    <Form.Item
-                      name="nearest_mrt"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input the nearest MRT",
-                        },
-                      ]}
-                    >
-                      <Select showSearch placeholder="Nearest MRT">
-                        {!_.isEmpty(mrtStations) &&
-                          Object.keys(mrtStations).map((key, index) => {
-                            return (
-                              <Select.Option
-                                key={index}
-                                value={key}
-                                label={key}
-                              >
-                                {mrtStations[key].map((stat) => {
-                                  var conditionalRendering = [];
-                                  if (stat.includes("NS")) {
-                                    conditionalRendering.push(
-                                      <Tag color="#d5321a">{stat}</Tag>
-                                    );
-                                  } else if (
-                                    stat.includes("EW") ||
-                                    stat.includes("CG")
-                                  ) {
-                                    conditionalRendering.push(
-                                      <Tag color="#079546">{stat}</Tag>
-                                    );
-                                  } else if (stat.includes("CC")) {
-                                    conditionalRendering.push(
-                                      <Tag color="#f79910">{stat}</Tag>
-                                    );
-                                  } else if (stat.includes("TE")) {
-                                    conditionalRendering.push(
-                                      <Tag color="#a45724">{stat}</Tag>
-                                    );
-                                  } else if (stat.includes("NE")) {
-                                    conditionalRendering.push(
-                                      <Tag color="#9d07ad">{stat}</Tag>
-                                    );
-                                  } else if (stat.includes("DT")) {
-                                    conditionalRendering.push(
-                                      <Tag color="#085ec4">{stat}</Tag>
-                                    );
-                                  }
-                                  return conditionalRendering;
-                                })}
-                                {key}
-                              </Select.Option>
-                            );
-                          })}
-                      </Select>
-                    </Form.Item>
-                  </Col>
+            ]}
+          >
+            {(fields, { add, remove }, { errors }) => (
+              <div
+                style={{
+                  border: "1px dotted #cccccc",
+                  borderRadius: "5px",
+                  margin: "12px 0",
+                  padding: "12px ",
+                }}
+              >
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    icon={<PlusCircleOutlined />}
+                  >
+                    Add location(s)
+                  </Button>
+                  <Form.ErrorList errors={errors} />
+                </Form.Item>
 
-                  <Col span={2}>
-                    {fields.length > 1 ? (
-                      <MinusCircleOutlined
-                        className="dynamic-delete-button"
-                        onClick={() => remove(field.name)}
-                      />
-                    ) : null}
-                  </Col>
-                </Row>
-              ))}
-            </>
-          )}
-        </Form.List>
+                <Col>
+                  <Row gutter={16}>
+                    <Col span={1}>
+                      <div>Index</div>
+                    </Col>
+                    <Col span={13}>
+                      <div>Location(s)</div>
+                    </Col>
+                    <Col span={6}>
+                      <div>Schedule(s)</div>
+                    </Col>
+                  </Row>
+
+                  {fields.map((field, index) => (
+                    <Row>
+                      <Col flex="1 0 50%">
+                        <Row
+                          key={`location-${field.key}`}
+                          style={{
+                            marginBottom: 8,
+                            border: "1px dotted #cccccc",
+                            padding: "8px",
+                          }}
+                        >
+                          <Col span={1}>{index}</Col>
+                          <Col span={13} flex="1 0 50%">
+                            <Row>
+                              <Col flex="1 0 50%">
+                                <Form.Item
+                                  name={[field.name, "address"]}
+                                  fieldId={[field.fieldId, "address"]}
+                                  rules={
+                                    [
+                                      // {
+                                      //   required: true,
+                                      //   message: "Please input your address",
+                                      // },
+                                    ]
+                                  }
+                                >
+                                  <Select
+                                    showSearch
+                                    value={addressValue?.ADDRESS}
+                                    placeholder={"Address"}
+                                    filterOption={false}
+                                    onSearch={async (value) => {
+                                      const response = await fetch(
+                                        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${value}&returnGeom=Y&getAddrDetails=Y&pageNum=`
+                                      );
+                                      const parseRes = await response.json();
+                                      setData(parseRes.results);
+                                    }}
+                                    onChange={(newValue, selectedGG) => {
+                                      setAddressValue(selectedGG.valueObject);
+                                      // createClassForm.setFieldValue(
+                                      //   "address",
+                                      //   selectedGG.valueObject
+                                      // );
+
+                                      // TODO: set to outletSchedules
+                                      const stringJson = outletSchedules;
+                                      stringJson[index] = {
+                                        ...stringJson[index],
+                                        address: selectedGG.valueObject,
+                                        schedules: [],
+                                      };
+                                      setOutletSchedules(stringJson);
+
+                                      console.log(
+                                        "outletscheudle after address set",
+                                        outletSchedules
+                                      );
+                                    }}
+                                    notFoundContent={null}
+                                    options={(data || []).map((d) => ({
+                                      value: d.ADDRESS,
+                                      label: d.ADDRESS,
+                                      valueObject: d,
+                                    }))}
+                                  />
+                                </Form.Item>
+                              </Col>
+                              <Col flex="1 0 50%">
+                                <Form.Item
+                                  name={[field.name, "nearest_mrt"]}
+                                  fieldId={[field.fieldId, "nearest_mrt"]}
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input the nearest MRT",
+                                    },
+                                  ]}
+                                >
+                                  <Select
+                                    showSearch
+                                    placeholder="Nearest MRT"
+                                    onChange={(value) => {
+                                      const stringJson = outletSchedules;
+                                      stringJson[index] = {
+                                        ...stringJson[index],
+                                        nearest_mrt: value,
+                                      };
+                                      setOutletSchedules(stringJson);
+
+                                      console.log(
+                                        "after replace",
+                                        outletSchedules
+                                      );
+                                    }}
+                                  >
+                                    {!_.isEmpty(mrtStations) &&
+                                      Object.keys(mrtStations).map(
+                                        (key, index) => {
+                                          return (
+                                            <Select.Option
+                                              key={index}
+                                              value={key}
+                                              label={key}
+                                            >
+                                              {mrtStations[key].map((stat) => {
+                                                var conditionalRendering = [];
+                                                if (stat.includes("NS")) {
+                                                  conditionalRendering.push(
+                                                    <Tag color="#d5321a">
+                                                      {stat}
+                                                    </Tag>
+                                                  );
+                                                } else if (
+                                                  stat.includes("EW") ||
+                                                  stat.includes("CG")
+                                                ) {
+                                                  conditionalRendering.push(
+                                                    <Tag color="#079546">
+                                                      {stat}
+                                                    </Tag>
+                                                  );
+                                                } else if (
+                                                  stat.includes("CC")
+                                                ) {
+                                                  conditionalRendering.push(
+                                                    <Tag color="#f79910">
+                                                      {stat}
+                                                    </Tag>
+                                                  );
+                                                } else if (
+                                                  stat.includes("TE")
+                                                ) {
+                                                  conditionalRendering.push(
+                                                    <Tag color="#a45724">
+                                                      {stat}
+                                                    </Tag>
+                                                  );
+                                                } else if (
+                                                  stat.includes("NE")
+                                                ) {
+                                                  conditionalRendering.push(
+                                                    <Tag color="#9d07ad">
+                                                      {stat}
+                                                    </Tag>
+                                                  );
+                                                } else if (
+                                                  stat.includes("DT")
+                                                ) {
+                                                  conditionalRendering.push(
+                                                    <Tag color="#085ec4">
+                                                      {stat}
+                                                    </Tag>
+                                                  );
+                                                }
+                                                return conditionalRendering;
+                                              })}
+                                              {key}
+                                            </Select.Option>
+                                          );
+                                        }
+                                      )}
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                            </Row>
+                          </Col>
+                          {/* dynamic form for multiple schedules */}
+                          <Col flex="1 0 25%">
+                            <Form.Item>
+                              <Form.List
+                                name={[field.name, "schedules"]}
+                                rules={[
+                                  {
+                                    validator: async (_, schedules) => {
+                                      if (!schedules || schedules.length <= 0) {
+                                        return Promise.reject(
+                                          new Error("Please pick dates")
+                                        );
+                                      }
+                                    },
+                                  },
+                                ]}
+                              >
+                                {(times, { add, remove }, { errors }) => (
+                                  <div
+                                    style={{
+                                      border: "1px dotted #cccccc",
+                                      borderRadius: "5px",
+                                      padding: "12px",
+                                    }}
+                                  >
+                                    {times.map((time, index2) => (
+                                      <div
+                                        key={`schedule-${time.key}`}
+                                        style={{
+                                          display: "flex",
+                                          marginBottom: 8,
+                                        }}
+                                        align="start"
+                                      >
+                                        <Form.Item
+                                          name={[time.name, "day"]}
+                                          fieldId={[time.fieldId, "day"]}
+                                          rules={[
+                                            {
+                                              required: true,
+                                              message: "Missing day",
+                                            },
+                                          ]}
+                                        >
+                                          <Select
+                                            placeholder="Select day"
+                                            onSelect={(value) => {
+                                              var stringJson = outletSchedules;
+
+                                              if (
+                                                _.isEmpty(
+                                                  stringJson[index].schedules
+                                                )
+                                              ) {
+                                                stringJson[index].schedules[
+                                                  value
+                                                ] = [];
+                                              } else {
+                                                stringJson[index].schedules[
+                                                  value
+                                                ] = [
+                                                  ...stringJson[index]
+                                                    .schedules,
+                                                  (stringJson[index].schedules[
+                                                    value
+                                                  ] = []),
+                                                ];
+                                              }
+                                              setOutletSchedules(stringJson);
+                                            }}
+                                          >
+                                            {day &&
+                                              day.map((d, index) => (
+                                                <Select.Option
+                                                  key={index}
+                                                  value={d}
+                                                ></Select.Option>
+                                              ))}
+                                          </Select>
+                                        </Form.Item>
+                                        <Form.Item
+                                          name={[time.name, "timeslot"]}
+                                          fieldId={[time.fieldId, "timeslot"]}
+                                          rules={[
+                                            {
+                                              required: true,
+                                              message: "Missing timeslots",
+                                            },
+                                          ]}
+                                        >
+                                          <TimePicker.RangePicker
+                                            format={"HH:mm"}
+                                            minuteStep={15}
+                                            onChange={handleTimeChange}
+                                          />
+                                        </Form.Item>
+                                        <Form.Item
+                                          name={[time.name, "frequency"]}
+                                          fieldId={[time.fieldId, "frequency"]}
+                                          rules={[
+                                            {
+                                              required: true,
+                                              message: "Missing frequency",
+                                            },
+                                          ]}
+                                        >
+                                          <Select
+                                            placeholder="Select frequency"
+                                            onSelect={handleSelectFrequency}
+                                            options={[
+                                              {
+                                                value: "Biweekly",
+                                                label: "Biweekly",
+                                              },
+                                              {
+                                                value: "Weekly",
+                                                label: "Weekly",
+                                              },
+                                              {
+                                                value: "Monthly",
+                                                label: "Monthly",
+                                              },
+                                            ]}
+                                          ></Select>
+                                        </Form.Item>
+                                        <Form.Item
+                                          style={{
+                                            margin: "0 4px",
+                                          }}
+                                        >
+                                          {times.length > 1 ? (
+                                            <MinusCircleOutlined
+                                              onClick={() => {
+                                                console.log(time.name);
+                                                remove(time.name);
+                                              }}
+                                            />
+                                          ) : null}
+                                        </Form.Item>
+                                      </div>
+                                    ))}
+                                    <Form.Item>
+                                      <Button
+                                        type="dashed"
+                                        onClick={() => {
+                                          add();
+                                        }}
+                                        icon={<PlusCircleOutlined />}
+                                      >
+                                        Add schedule
+                                      </Button>
+                                      <Form.ErrorList errors={errors} />
+                                    </Form.Item>
+                                  </div>
+                                )}
+                              </Form.List>
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      </Col>
+                      <Col>
+                        <Form.Item>
+                          {fields.length > 1 ? (
+                            <MinusCircleOutlined
+                              onClick={() => remove(field.name)}
+                            />
+                          ) : null}
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  ))}
+                </Col>
+              </div>
+            )}
+          </Form.List>
+        </Form.Item>
 
         <Form.Item
           name={"age_group"}
