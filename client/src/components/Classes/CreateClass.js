@@ -41,7 +41,8 @@ const CreateClass = () => {
   const [s3Url, setS3Url] = useState();
   const [mrtStations, setMRTStations] = useState({});
   const [data, setData] = useState([]);
-  const [outletSchedules, setOutletSchedules] = useState([]);
+  const [outlets, setOutlets] = useState([]);
+  const [schedules, setSchedules] = useState({});
 
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -158,6 +159,13 @@ const CreateClass = () => {
 
   const handleCreateClass = async (values) => {
     console.log("values", values);
+
+    var outletSchedules = outlets;
+    Object.values(outletSchedules).forEach((outlet, index) => {
+      outlet["schedules"] = schedules[index];
+    });
+
+    console.log(outletSchedules);
     // manually set file
     // post request to the server to store any extra data
 
@@ -221,10 +229,6 @@ const CreateClass = () => {
       setMRTStations(mrtStations);
       return;
     });
-  };
-
-  const handleTimeChange = (time) => {
-    console.log("time", time);
   };
 
   useEffect(() => {
@@ -449,24 +453,14 @@ const CreateClass = () => {
                                     }}
                                     onChange={(newValue, selectedGG) => {
                                       setAddressValue(selectedGG.valueObject);
-                                      // createClassForm.setFieldValue(
-                                      //   "address",
-                                      //   selectedGG.valueObject
-                                      // );
 
-                                      // TODO: set to outletSchedules
-                                      const stringJson = outletSchedules;
+                                      const stringJson = outlets;
                                       stringJson[index] = {
                                         ...stringJson[index],
                                         address: selectedGG.valueObject,
                                         schedules: [],
                                       };
-                                      setOutletSchedules(stringJson);
-
-                                      console.log(
-                                        "outletscheudle after address set",
-                                        outletSchedules
-                                      );
+                                      setOutlets(stringJson);
                                     }}
                                     notFoundContent={null}
                                     options={(data || []).map((d) => ({
@@ -492,17 +486,12 @@ const CreateClass = () => {
                                     showSearch
                                     placeholder="Nearest MRT"
                                     onChange={(value) => {
-                                      const stringJson = outletSchedules;
+                                      const stringJson = outlets;
                                       stringJson[index] = {
                                         ...stringJson[index],
                                         nearest_mrt: value,
                                       };
-                                      setOutletSchedules(stringJson);
-
-                                      console.log(
-                                        "after replace",
-                                        outletSchedules
-                                      );
+                                      setOutlets(stringJson);
                                     }}
                                   >
                                     {!_.isEmpty(mrtStations) &&
@@ -623,28 +612,48 @@ const CreateClass = () => {
                                           <Select
                                             placeholder="Select day"
                                             onSelect={(value) => {
-                                              var stringJson = outletSchedules;
+                                              // var stringJson = outlets;
 
+                                              // if (
+                                              //   _.isEmpty(
+                                              //     stringJson[index].schedules
+                                              //   )
+                                              // ) {
+                                              //   stringJson[index].schedules[
+                                              //     value
+                                              //   ] = [];
+                                              // } else {
+                                              //   stringJson[index].schedules[
+                                              //     value
+                                              //   ] = [
+                                              //     ...stringJson[index]
+                                              //       .schedules,
+                                              //     (stringJson[index].schedules[
+                                              //       value
+                                              //     ] = []),
+                                              //   ];
+                                              // }
+                                              // setOutlets(stringJson);
+                                              var stringSchedules = schedules;
                                               if (
                                                 _.isEmpty(
-                                                  stringJson[index].schedules
+                                                  stringSchedules[index]
                                                 )
                                               ) {
-                                                stringJson[index].schedules[
-                                                  value
-                                                ] = [];
+                                                stringSchedules[index] = [
+                                                  {
+                                                    day: value,
+                                                  },
+                                                ];
                                               } else {
-                                                stringJson[index].schedules[
-                                                  value
-                                                ] = [
-                                                  ...stringJson[index]
-                                                    .schedules,
-                                                  (stringJson[index].schedules[
-                                                    value
-                                                  ] = []),
+                                                stringSchedules[index] = [
+                                                  ...stringSchedules[index],
+                                                  {
+                                                    day: value,
+                                                  },
                                                 ];
                                               }
-                                              setOutletSchedules(stringJson);
+                                              setSchedules(stringSchedules);
                                             }}
                                           >
                                             {day &&
@@ -669,7 +678,22 @@ const CreateClass = () => {
                                           <TimePicker.RangePicker
                                             format={"HH:mm"}
                                             minuteStep={15}
-                                            onChange={handleTimeChange}
+                                            onChange={(value) => {
+                                              const stringSchedules = schedules;
+                                              const start_time =
+                                                value[0].$H + "" + value[0].$m;
+                                              const end_time =
+                                                value[1].$H + "" + value[1].$m;
+
+                                              stringSchedules[index][index2] = {
+                                                ...stringSchedules[index][
+                                                  index2
+                                                ],
+                                                start_time,
+                                                end_time,
+                                              };
+                                              setSchedules(stringSchedules);
+                                            }}
                                           />
                                         </Form.Item>
                                         <Form.Item
@@ -684,7 +708,16 @@ const CreateClass = () => {
                                         >
                                           <Select
                                             placeholder="Select frequency"
-                                            onSelect={handleSelectFrequency}
+                                            onSelect={(frequnecy) => {
+                                              const stringSchedules = schedules;
+                                              stringSchedules[index][index2] = {
+                                                ...stringSchedules[index][
+                                                  index2
+                                                ],
+                                                frequnecy,
+                                              };
+                                              setSchedules(stringSchedules);
+                                            }}
                                             options={[
                                               {
                                                 value: "Biweekly",
@@ -709,8 +742,16 @@ const CreateClass = () => {
                                           {times.length > 1 ? (
                                             <MinusCircleOutlined
                                               onClick={() => {
-                                                console.log(time.name);
+                                                var stringSchedules = schedules;
                                                 remove(time.name);
+
+                                                stringSchedules[index] = [
+                                                  ...stringSchedules[
+                                                    index
+                                                  ].slice(index2, 1),
+                                                ];
+
+                                                setSchedules(stringSchedules);
                                               }}
                                             />
                                           ) : null}
@@ -740,7 +781,12 @@ const CreateClass = () => {
                         <Form.Item>
                           {fields.length > 1 ? (
                             <MinusCircleOutlined
-                              onClick={() => remove(field.name)}
+                              onClick={() => {
+                                const stringOutlet = outlets;
+                                remove(field.name);
+                                delete stringOutlet[index];
+                                setOutlets(stringOutlet);
+                              }}
                             />
                           ) : null}
                         </Form.Item>
