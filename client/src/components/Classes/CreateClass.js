@@ -32,19 +32,19 @@ const { Title } = Typography;
 const { Dragger } = Upload;
 
 const CreateClass = () => {
-  const [list, setList] = useState([]);
+  const [image, setImage] = useState();
   const [addressValue, setAddressValue] = useState();
   const [ageGroup, setAgeGroup] = useState();
   const [categories, setCategories] = useState();
   const [packageTypes, setPackageTypes] = useState();
   const [createClassForm] = Form.useForm();
-  const [s3Url, setS3Url] = useState();
   const [mrtStations, setMRTStations] = useState({});
   const [data, setData] = useState([]);
   const [outlets, setOutlets] = useState([]);
   const [schedules, setSchedules] = useState({});
 
   const { user } = useContext(UserContext);
+  const token = user && user?.token;
   const navigate = useNavigate();
 
   // async function getMRTLocations() {
@@ -106,24 +106,21 @@ const CreateClass = () => {
   }
 
   const props = {
-    name: "file",
-    multiple: true,
-    fileList: list,
-    listType: "picture",
+    name: "image",
+    maxCount: 1,
+    showUploadList: {
+      showPreviewIcon: true,
+      showRemoveIcon: true,
+    },
     beforeUpload(info) {
-      console.log("info", info);
-      setList((state) => [...state, info]);
+      setImage(info);
       return false;
     },
     onDrop(e) {
       console.log("Dropped files", e.dataTransfer.files);
-      setList((state) => [...state, e.dataTransfer.files]);
     },
-    onRemove(e) {
-      const updatedList = list.filter((l) => {
-        return l !== e;
-      });
-      setList(updatedList);
+    onRemove(info) {
+      setImage(null);
     },
     progress: {
       strokeColor: {
@@ -147,68 +144,50 @@ const CreateClass = () => {
     createClassForm.setFieldValue("package_types", values);
   };
 
-  const handleSelectFrequency = (values) => {
-    createClassForm.setFieldValue("frequency", values);
-  };
-
-  async function getS3Url() {
-    const response = await fetch("http://localhost:5000/misc/s3url");
-    const { url } = await response.json();
-    setS3Url(url);
-  }
-
   const handleCreateClass = async (values) => {
-    console.log("values", values);
-
     var outletSchedules = outlets;
     Object.values(outletSchedules).forEach((outlet, index) => {
-      outlet["schedules"] = schedules[index];
+      outlet["schedules"] = JSON.stringify(schedules[index]);
     });
 
-    console.log(outletSchedules);
-    // manually set file
-    // post request to the server to store any extra data
-
     try {
-      // get secure url from our server
-      getS3Url();
-      // post the image directly to the s3 bucket
-      console.log("s3Url", s3Url);
-      console.log("list", list);
-      await fetch(s3Url, {
+      const response = await fetch("http://localhost:5000/misc/s3url");
+      const { url } = await response.json();
+      // post the image directly to S3 bucket
+      const s3upload = await fetch(url, {
         method: "PUT",
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        body: list,
-      }).then(async (res) => {
-        console.log("res", res);
-        const { status, url } = res;
-        // only create listing if we successfully save image to S3
-        if (status === 200) {
-          const response = await fetch(
-            "http://localhost:5000/listing/createListing",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                ...values,
-                partner_id: user.partner_id,
-                pictures: url,
-              }),
-            }
-          );
-          const parseRes = await response.json();
-          console.log("pparese", parseRes);
-          if (parseRes) {
-            createClassForm.resetFields();
-            toast.success("Class has been created successfully");
-            navigate("/partner/classes");
-          }
-        }
+        body: image,
       });
+
+      const imageURL = url.split("?")[0];
+      if (s3upload.status === 200) {
+        // get the URL and store as image to /createListing
+        const response = await fetch(
+          "http://localhost:5000/listing/createListing",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              ...values,
+              partner_id: user.partner_id,
+              string_outlet_schedules: outletSchedules,
+              image: imageURL,
+            }),
+          }
+        );
+        const parseRes = await response.json();
+        if (response.status === 201) {
+          createClassForm.resetFields();
+          toast.success(parseRes.message);
+          navigate("/partner/classes");
+        }
+      }
     } catch (error) {
       console.error(error.message);
       toast.error("ERROR in creating class. Please try again later.");
@@ -232,11 +211,12 @@ const CreateClass = () => {
   };
 
   useEffect(() => {
+    if (!token) return;
     cleanMRTJSON();
     getAgeGroups();
     getCategories();
     getPackageTypes();
-  }, []);
+  }, [token]);
 
   return (
     <>
@@ -303,7 +283,7 @@ const CreateClass = () => {
           />
         </Form.Item>
         <Form.Item
-          name="packageType"
+          name="package_types"
           rules={[
             {
               required: true,
@@ -320,7 +300,8 @@ const CreateClass = () => {
               packageTypes.map((packageType) => (
                 <Select.Option
                   key={packageType.id}
-                  value={packageType.name}
+                  label={packageType.name}
+                  value={packageType.package_type}
                 ></Select.Option>
               ))}
           </Select>
@@ -478,13 +459,14 @@ const CreateClass = () => {
                                   rules={[
                                     {
                                       required: true,
-                                      message: "Please input the nearest MRT",
+                                      message:
+                                        "Please input the nearest MRT/LRT",
                                     },
                                   ]}
                                 >
                                   <Select
                                     showSearch
-                                    placeholder="Nearest MRT"
+                                    placeholder="Nearest MRT/LRT"
                                     onChange={(value) => {
                                       const stringJson = outlets;
                                       stringJson[index] = {
@@ -549,6 +531,18 @@ const CreateClass = () => {
                                                 ) {
                                                   conditionalRendering.push(
                                                     <Tag color="#085ec4">
+                                                      {stat}
+                                                    </Tag>
+                                                  );
+                                                } else if (
+                                                  stat.includes("BP") ||
+                                                  stat.includes("SW") ||
+                                                  stat.includes("PW") ||
+                                                  stat.includes("PE") ||
+                                                  stat.includes("SE")
+                                                ) {
+                                                  conditionalRendering.push(
+                                                    <Tag color="#718573">
                                                       {stat}
                                                     </Tag>
                                                   );
@@ -837,6 +831,7 @@ const CreateClass = () => {
           </p>
           <p className="ant-upload-hint"></p>
         </Dragger>
+
         <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
           Create
         </Button>

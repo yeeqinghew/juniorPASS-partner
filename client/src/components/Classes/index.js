@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, Card, Tabs, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
-import {
-  EditOutlined,
-  EllipsisOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, SettingOutlined } from "@ant-design/icons";
 import ActiveClasses from "./ActiveClasses";
 import InactiveClasses from "./InactiveClasses";
+import UserContext from "../UserContext";
+import toast from "react-hot-toast";
 
 const { Title } = Typography;
 const { Meta } = Card;
 
 const AllClasses = () => {
   const [listing, setListing] = useState();
+  const { user } = useContext(UserContext);
+  const token = user && user?.token;
+  const navigate = useNavigate();
+
   const getAllListings = async () => {
     try {
       const response = await fetch(
@@ -22,20 +24,26 @@ const AllClasses = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       const parseRes = await response.json();
-      console.log("parseRes", parseRes);
-      setListing(parseRes);
+      if (response.status === 200) {
+        setListing(parseRes);
+      } else {
+        // TODO: 401 Unauthorized ?
+        toast.error(parseRes.error);
+      }
     } catch (error) {
       console.error(error.message);
     }
   };
 
   useEffect(() => {
+    if (!token) return;
     getAllListings();
-  }, []);
+  }, [token]);
 
   return (
     <div
@@ -52,16 +60,25 @@ const AllClasses = () => {
               hoverable
               key={list.listing_id}
               style={{
-                width: 300,
+                maxwidth: 300,
                 margin: 24,
               }}
               actions={[
                 <SettingOutlined key="setting" />,
                 <EditOutlined key="edit" />,
               ]}
-              cover={null}
+              cover={
+                <img
+                  alt="example"
+                  src={list.image}
+                  style={{
+                    width: "200px",
+                    objectFit: "cover",
+                  }}
+                />
+              }
             >
-              <Meta title={list.listing_title} description={list.description} />
+              <Meta title={list.listing_title} />
             </Card>
           );
         })}

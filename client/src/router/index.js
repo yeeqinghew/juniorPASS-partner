@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import PartnerLogin from "../components/Login";
 import PartnerClasses from "../components/Classes";
 import PartnerHomeLayout from "../layouts/PartnerHomeLayout";
 import PartnerLandingLayout from "../layouts/PartnerLandingLayout";
 import PartnerHome from "../components/Home";
 import UserContext from "../components/UserContext";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import AuthenticatedRoute from "./AuthenticatedRoute";
 import NotFound from "../utils/404";
 import ResetPassword from "../components/ResetPassword";
@@ -16,6 +16,8 @@ const Routers = () => {
   const [user, setUser] = useState();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   const setAuth = (boolean) => {
     setIsAuthenticated(boolean);
@@ -26,11 +28,11 @@ const Routers = () => {
       const response = await fetch("http://localhost:5000/partner/", {
         method: "GET",
         headers: {
-          token: localStorage.getItem("token"),
+          Authorization: `Bearer ${token}`,
         },
       });
       const parseRes = await response.json();
-      setUser(parseRes);
+      setUser({ ...parseRes, token: token });
     } catch (error) {
       console.error(error.message);
     }
@@ -41,23 +43,32 @@ const Routers = () => {
       const response = await fetch("http://localhost:5000/auth/is-verify", {
         method: "GET",
         headers: {
-          token: localStorage.getItem("token"),
+          Authorization: `Bearer ${token}`,
         },
       });
 
       const parseRes = await response.json();
-      if (parseRes === true) {
+      if (response.status === 200 && parseRes === true) {
         setAuth(true);
         getPartnerInfo();
+        setLoading(false);
       } else {
+        toast.error(parseRes.error);
+        localStorage.clear();
         setAuth(false);
+        setLoading(false);
+        // TODO: navigate back to login
+        navigate("/partner/login");
       }
     } catch (err) {
       console.error(err.message);
+      localStorage.clear();
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    if (!token) return;
     isAuth();
   }, [isAuthenticated]);
 

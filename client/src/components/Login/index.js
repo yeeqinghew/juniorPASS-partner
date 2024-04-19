@@ -7,7 +7,6 @@ import {
 } from "@ant-design/icons";
 import { Button, Form, Input, Typography, Image } from "antd";
 import toast, { Toaster } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 
 const { Title, Link } = Typography;
 
