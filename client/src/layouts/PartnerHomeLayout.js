@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   DatabaseOutlined,
   AntDesignOutlined,
@@ -6,12 +6,31 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Image, Divider, Avatar } from "antd";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const { Header, Sider, Content } = Layout;
 
 const PartnerHomeLayout = ({ setAuth }) => {
+  const location = useLocation();
+  const [current, setCurrent] = useState(
+    location.pathname === "/" || location.pathname === ""
+      ? "home"
+      : location.pathname.split("/").pop()
+  );
+
+  const handleSelectSideMenu = (e) => {
+    setCurrent(e);
+  };
+
+  useEffect(() => {
+    if (location) {
+      if (current !== location.pathname) {
+        setCurrent(location.pathname);
+      }
+    }
+  }, [location, current]);
+
   return (
     <Layout
       style={{
@@ -60,15 +79,16 @@ const PartnerHomeLayout = ({ setAuth }) => {
 
         <Menu
           mode="inline"
-          defaultSelectedKeys={["1"]}
+          defaultSelectedKeys={[current]}
+          onClick={handleSelectSideMenu}
           items={[
             {
-              key: "1",
+              key: "home",
               icon: <HomeOutlined />,
               label: <Link to="/partner/home">Dashboard</Link>,
             },
             {
-              key: "2",
+              key: "classes",
               icon: <DatabaseOutlined />,
               label: <Link to="/partner/classes">Classes</Link>,
             },
