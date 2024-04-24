@@ -133,6 +133,7 @@ const CreateClass = () => {
   };
 
   const handleSelectAgeGroup = (values) => {
+    console.log("values in agegrou", values);
     createClassForm.setFieldValue("age_group", values);
   };
 
@@ -145,6 +146,7 @@ const CreateClass = () => {
   };
 
   const handleCreateClass = async (values) => {
+    console.log(values);
     var outletSchedules = outlets;
     Object.values(outletSchedules).forEach((outlet, index) => {
       outlet["schedules"] = JSON.stringify(schedules[index]);
@@ -300,9 +302,10 @@ const CreateClass = () => {
               packageTypes.map((packageType) => (
                 <Select.Option
                   key={packageType.id}
-                  label={packageType.name}
                   value={packageType.package_type}
-                ></Select.Option>
+                >
+                  {packageType.name}
+                </Select.Option>
               ))}
           </Select>
         </Form.Item>
@@ -322,10 +325,9 @@ const CreateClass = () => {
           >
             {categories &&
               categories.map((category) => (
-                <Select.Option
-                  key={category.id}
-                  value={category.name}
-                ></Select.Option>
+                <Select.Option key={category.id} value={category.name}>
+                  {category.name}
+                </Select.Option>
               ))}
           </Select>
         </Form.Item>
@@ -394,8 +396,8 @@ const CreateClass = () => {
                   </Row>
 
                   {fields.map((field, index) => (
-                    <Row>
-                      <Col flex="1 0 50%">
+                    <Row key={`location-${field.key}`}>
+                      <Col flex="1 0 50%" key={`location-${field.key}`}>
                         <Row
                           key={`location-${field.key}`}
                           style={{
@@ -407,158 +409,164 @@ const CreateClass = () => {
                           <Col span={1}>{index}</Col>
                           <Col span={13} flex="1 0 50%">
                             <Row>
-                              <Col flex="1 0 50%">
-                                <Form.Item
-                                  name={[field.name, "address"]}
-                                  fieldId={[field.fieldId, "address"]}
-                                  rules={
-                                    [
-                                      // {
-                                      //   required: true,
-                                      //   message: "Please input your address",
-                                      // },
-                                    ]
-                                  }
-                                >
-                                  <Select
-                                    showSearch
-                                    value={addressValue?.ADDRESS}
-                                    placeholder={"Address"}
-                                    filterOption={false}
-                                    onSearch={async (value) => {
-                                      const response = await fetch(
-                                        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${value}&returnGeom=Y&getAddrDetails=Y&pageNum=`
-                                      );
-                                      const parseRes = await response.json();
-                                      setData(parseRes.results);
-                                    }}
-                                    onChange={(newValue, selectedGG) => {
-                                      setAddressValue(selectedGG.valueObject);
-
-                                      const stringJson = outlets;
-                                      stringJson[index] = {
-                                        ...stringJson[index],
-                                        address: selectedGG.valueObject,
-                                        schedules: [],
-                                      };
-                                      setOutlets(stringJson);
-                                    }}
-                                    notFoundContent={null}
-                                    options={(data || []).map((d) => ({
-                                      value: d.ADDRESS,
-                                      label: d.ADDRESS,
-                                      valueObject: d,
-                                    }))}
-                                  />
-                                </Form.Item>
-                              </Col>
-                              <Col flex="1 0 50%">
-                                <Form.Item
-                                  name={[field.name, "nearest_mrt"]}
-                                  fieldId={[field.fieldId, "nearest_mrt"]}
-                                  rules={[
-                                    {
-                                      required: true,
-                                      message:
-                                        "Please input the nearest MRT/LRT",
-                                    },
-                                  ]}
-                                >
-                                  <Select
-                                    showSearch
-                                    placeholder="Nearest MRT/LRT"
-                                    onChange={(value) => {
-                                      const stringJson = outlets;
-                                      stringJson[index] = {
-                                        ...stringJson[index],
-                                        nearest_mrt: value,
-                                      };
-                                      setOutlets(stringJson);
-                                    }}
+                              <Space.Compact block>
+                                <Col flex="1 0 50%">
+                                  <Form.Item
+                                    name={[field.name, "address"]}
+                                    fieldId={[field.fieldId, "address"]}
+                                    rules={
+                                      [
+                                        // {
+                                        //   required: true,
+                                        //   message: "Please input your address",
+                                        // },
+                                      ]
+                                    }
                                   >
-                                    {!_.isEmpty(mrtStations) &&
-                                      Object.keys(mrtStations).map(
-                                        (key, index) => {
-                                          return (
-                                            <Select.Option
-                                              key={index}
-                                              value={key}
-                                              label={key}
-                                            >
-                                              {mrtStations[key].map((stat) => {
-                                                var conditionalRendering = [];
-                                                if (stat.includes("NS")) {
-                                                  conditionalRendering.push(
-                                                    <Tag color="#d5321a">
-                                                      {stat}
-                                                    </Tag>
-                                                  );
-                                                } else if (
-                                                  stat.includes("EW") ||
-                                                  stat.includes("CG")
-                                                ) {
-                                                  conditionalRendering.push(
-                                                    <Tag color="#079546">
-                                                      {stat}
-                                                    </Tag>
-                                                  );
-                                                } else if (
-                                                  stat.includes("CC")
-                                                ) {
-                                                  conditionalRendering.push(
-                                                    <Tag color="#f79910">
-                                                      {stat}
-                                                    </Tag>
-                                                  );
-                                                } else if (
-                                                  stat.includes("TE")
-                                                ) {
-                                                  conditionalRendering.push(
-                                                    <Tag color="#a45724">
-                                                      {stat}
-                                                    </Tag>
-                                                  );
-                                                } else if (
-                                                  stat.includes("NE")
-                                                ) {
-                                                  conditionalRendering.push(
-                                                    <Tag color="#9d07ad">
-                                                      {stat}
-                                                    </Tag>
-                                                  );
-                                                } else if (
-                                                  stat.includes("DT")
-                                                ) {
-                                                  conditionalRendering.push(
-                                                    <Tag color="#085ec4">
-                                                      {stat}
-                                                    </Tag>
-                                                  );
-                                                } else if (
-                                                  stat.includes("BP") ||
-                                                  stat.includes("SW") ||
-                                                  stat.includes("PW") ||
-                                                  stat.includes("PE") ||
-                                                  stat.includes("SE")
-                                                ) {
-                                                  conditionalRendering.push(
-                                                    <Tag color="#718573">
-                                                      {stat}
-                                                    </Tag>
-                                                  );
-                                                }
-                                                return conditionalRendering;
-                                              })}
-                                              {key}
-                                            </Select.Option>
-                                          );
-                                        }
-                                      )}
-                                  </Select>
-                                </Form.Item>
-                              </Col>
+                                    <Select
+                                      showSearch
+                                      value={addressValue?.ADDRESS}
+                                      placeholder={"Address"}
+                                      filterOption={false}
+                                      onSearch={async (value) => {
+                                        const response = await fetch(
+                                          `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${value}&returnGeom=Y&getAddrDetails=Y&pageNum=`
+                                        );
+                                        const parseRes = await response.json();
+                                        setData(parseRes.results);
+                                      }}
+                                      onChange={(newValue, selectedGG) => {
+                                        setAddressValue(selectedGG.valueObject);
+
+                                        const stringJson = outlets;
+                                        stringJson[index] = {
+                                          ...stringJson[index],
+                                          address: selectedGG.valueObject,
+                                          schedules: [],
+                                        };
+                                        setOutlets(stringJson);
+                                      }}
+                                      notFoundContent={null}
+                                      options={(data || []).map((d) => ({
+                                        value: d.ADDRESS,
+                                        label: d.ADDRESS,
+                                        valueObject: d,
+                                      }))}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                <Col flex="1 0 50%">
+                                  <Form.Item
+                                    name={[field.name, "nearest_mrt"]}
+                                    fieldId={[field.fieldId, "nearest_mrt"]}
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message:
+                                          "Please input the nearest MRT/LRT",
+                                      },
+                                    ]}
+                                  >
+                                    <Select
+                                      showSearch
+                                      placeholder="Nearest MRT/LRT"
+                                      onChange={(value) => {
+                                        const stringJson = outlets;
+                                        stringJson[index] = {
+                                          ...stringJson[index],
+                                          nearest_mrt: value,
+                                        };
+                                        setOutlets(stringJson);
+                                      }}
+                                    >
+                                      {!_.isEmpty(mrtStations) &&
+                                        Object.keys(mrtStations).map(
+                                          (key, index) => {
+                                            return (
+                                              <Select.Option
+                                                key={index}
+                                                value={key}
+                                                label={key}
+                                              >
+                                                {mrtStations[key].map(
+                                                  (stat) => {
+                                                    var conditionalRendering =
+                                                      [];
+                                                    if (stat.includes("NS")) {
+                                                      conditionalRendering.push(
+                                                        <Tag color="#d5321a">
+                                                          {stat}
+                                                        </Tag>
+                                                      );
+                                                    } else if (
+                                                      stat.includes("EW") ||
+                                                      stat.includes("CG")
+                                                    ) {
+                                                      conditionalRendering.push(
+                                                        <Tag color="#079546">
+                                                          {stat}
+                                                        </Tag>
+                                                      );
+                                                    } else if (
+                                                      stat.includes("CC")
+                                                    ) {
+                                                      conditionalRendering.push(
+                                                        <Tag color="#f79910">
+                                                          {stat}
+                                                        </Tag>
+                                                      );
+                                                    } else if (
+                                                      stat.includes("TE")
+                                                    ) {
+                                                      conditionalRendering.push(
+                                                        <Tag color="#a45724">
+                                                          {stat}
+                                                        </Tag>
+                                                      );
+                                                    } else if (
+                                                      stat.includes("NE")
+                                                    ) {
+                                                      conditionalRendering.push(
+                                                        <Tag color="#9d07ad">
+                                                          {stat}
+                                                        </Tag>
+                                                      );
+                                                    } else if (
+                                                      stat.includes("DT")
+                                                    ) {
+                                                      conditionalRendering.push(
+                                                        <Tag color="#085ec4">
+                                                          {stat}
+                                                        </Tag>
+                                                      );
+                                                    } else if (
+                                                      stat.includes("BP") ||
+                                                      stat.includes("SW") ||
+                                                      stat.includes("PW") ||
+                                                      stat.includes("PE") ||
+                                                      stat.includes("SE")
+                                                    ) {
+                                                      conditionalRendering.push(
+                                                        <Tag color="#718573">
+                                                          {stat}
+                                                        </Tag>
+                                                      );
+                                                    }
+                                                    return conditionalRendering;
+                                                  }
+                                                )}
+                                                {key}
+                                              </Select.Option>
+                                            );
+                                          }
+                                        )}
+                                    </Select>
+                                  </Form.Item>
+                                </Col>
+                              </Space.Compact>
                             </Row>
                           </Col>
+
                           {/* dynamic form for multiple schedules */}
                           <Col flex="1 0 25%">
                             <Form.Item>
@@ -593,141 +601,132 @@ const CreateClass = () => {
                                         }}
                                         align="start"
                                       >
-                                        <Form.Item
-                                          name={[time.name, "day"]}
-                                          fieldId={[time.fieldId, "day"]}
-                                          rules={[
-                                            {
-                                              required: true,
-                                              message: "Missing day",
-                                            },
-                                          ]}
-                                        >
-                                          <Select
-                                            placeholder="Select day"
-                                            onSelect={(value) => {
-                                              // var stringJson = outlets;
-
-                                              // if (
-                                              //   _.isEmpty(
-                                              //     stringJson[index].schedules
-                                              //   )
-                                              // ) {
-                                              //   stringJson[index].schedules[
-                                              //     value
-                                              //   ] = [];
-                                              // } else {
-                                              //   stringJson[index].schedules[
-                                              //     value
-                                              //   ] = [
-                                              //     ...stringJson[index]
-                                              //       .schedules,
-                                              //     (stringJson[index].schedules[
-                                              //       value
-                                              //     ] = []),
-                                              //   ];
-                                              // }
-                                              // setOutlets(stringJson);
-                                              var stringSchedules = schedules;
-                                              if (
-                                                _.isEmpty(
-                                                  stringSchedules[index]
-                                                )
-                                              ) {
-                                                stringSchedules[index] = [
-                                                  {
-                                                    day: value,
-                                                  },
-                                                ];
-                                              } else {
-                                                stringSchedules[index] = [
-                                                  ...stringSchedules[index],
-                                                  {
-                                                    day: value,
-                                                  },
-                                                ];
-                                              }
-                                              setSchedules(stringSchedules);
-                                            }}
-                                          >
-                                            {day &&
-                                              day.map((d, index) => (
-                                                <Select.Option
-                                                  key={index}
-                                                  value={d}
-                                                ></Select.Option>
-                                              ))}
-                                          </Select>
-                                        </Form.Item>
-                                        <Form.Item
-                                          name={[time.name, "timeslot"]}
-                                          fieldId={[time.fieldId, "timeslot"]}
-                                          rules={[
-                                            {
-                                              required: true,
-                                              message: "Missing timeslots",
-                                            },
-                                          ]}
-                                        >
-                                          <TimePicker.RangePicker
-                                            format={"HH:mm"}
-                                            minuteStep={15}
-                                            onChange={(value) => {
-                                              const stringSchedules = schedules;
-                                              const start_time =
-                                                value[0].$H + "" + value[0].$m;
-                                              const end_time =
-                                                value[1].$H + "" + value[1].$m;
-
-                                              stringSchedules[index][index2] = {
-                                                ...stringSchedules[index][
-                                                  index2
-                                                ],
-                                                start_time,
-                                                end_time,
-                                              };
-                                              setSchedules(stringSchedules);
-                                            }}
-                                          />
-                                        </Form.Item>
-                                        <Form.Item
-                                          name={[time.name, "frequency"]}
-                                          fieldId={[time.fieldId, "frequency"]}
-                                          rules={[
-                                            {
-                                              required: true,
-                                              message: "Missing frequency",
-                                            },
-                                          ]}
-                                        >
-                                          <Select
-                                            placeholder="Select frequency"
-                                            onSelect={(frequnecy) => {
-                                              const stringSchedules = schedules;
-                                              stringSchedules[index][index2] = {
-                                                ...stringSchedules[index][
-                                                  index2
-                                                ],
-                                                frequnecy,
-                                              };
-                                              setSchedules(stringSchedules);
-                                            }}
-                                            options={[
+                                        <Space.Compact block>
+                                          <Form.Item
+                                            name={[time.name, "day"]}
+                                            fieldId={[time.fieldId, "day"]}
+                                            rules={[
                                               {
-                                                value: "Biweekly",
-                                                label: "Biweekly",
-                                              },
-                                              {
-                                                value: "Weekly",
-                                                label: "Weekly",
-                                              },
-                                              {
-                                                value: "Monthly",
-                                                label: "Monthly",
+                                                required: true,
+                                                message: "Missing day",
                                               },
                                             ]}
-                                          ></Select>
-                                        </Form.Item>
+                                          >
+                                            <Select
+                                              placeholder="Select day"
+                                              onSelect={(value) => {
+                                                var stringSchedules = schedules;
+                                                if (
+                                                  _.isEmpty(
+                                                    stringSchedules[index]
+                                                  )
+                                                ) {
+                                                  stringSchedules[index] = [
+                                                    {
+                                                      day: value,
+                                                    },
+                                                  ];
+                                                } else {
+                                                  stringSchedules[index] = [
+                                                    ...stringSchedules[index],
+                                                    {
+                                                      day: value,
+                                                    },
+                                                  ];
+                                                }
+                                                setSchedules(stringSchedules);
+                                              }}
+                                            >
+                                              {day &&
+                                                day.map((d, index) => (
+                                                  <Select.Option
+                                                    key={index}
+                                                    value={d}
+                                                  ></Select.Option>
+                                                ))}
+                                            </Select>
+                                          </Form.Item>
+                                          <Form.Item
+                                            name={[time.name, "timeslot"]}
+                                            fieldId={[time.fieldId, "timeslot"]}
+                                            rules={[
+                                              {
+                                                required: true,
+                                                message: "Missing timeslots",
+                                              },
+                                            ]}
+                                          >
+                                            <TimePicker.RangePicker
+                                              format={"HH:mm"}
+                                              minuteStep={15}
+                                              onChange={(value) => {
+                                                const stringSchedules =
+                                                  schedules;
+                                                const start_time =
+                                                  value[0].$H +
+                                                  "" +
+                                                  value[0].$m;
+                                                const end_time =
+                                                  value[1].$H +
+                                                  "" +
+                                                  value[1].$m;
+
+                                                stringSchedules[index][index2] =
+                                                  {
+                                                    ...stringSchedules[index][
+                                                      index2
+                                                    ],
+                                                    start_time,
+                                                    end_time,
+                                                  };
+                                                setSchedules(stringSchedules);
+                                              }}
+                                            />
+                                          </Form.Item>
+                                          <Form.Item
+                                            name={[time.name, "frequency"]}
+                                            fieldId={[
+                                              time.fieldId,
+                                              "frequency",
+                                            ]}
+                                            rules={[
+                                              {
+                                                required: true,
+                                                message: "Missing frequency",
+                                              },
+                                            ]}
+                                          >
+                                            <Select
+                                              placeholder="Select frequency"
+                                              onSelect={(frequnecy) => {
+                                                const stringSchedules =
+                                                  schedules;
+                                                stringSchedules[index][index2] =
+                                                  {
+                                                    ...stringSchedules[index][
+                                                      index2
+                                                    ],
+                                                    frequnecy,
+                                                  };
+                                                setSchedules(stringSchedules);
+                                              }}
+                                              options={[
+                                                {
+                                                  value: "Biweekly",
+                                                  label: "Biweekly",
+                                                },
+                                                {
+                                                  value: "Weekly",
+                                                  label: "Weekly",
+                                                },
+                                                {
+                                                  value: "Monthly",
+                                                  label: "Monthly",
+                                                },
+                                              ]}
+                                            ></Select>
+                                          </Form.Item>
+                                        </Space.Compact>
                                         <Form.Item
                                           style={{
                                             margin: "0 4px",
@@ -798,27 +797,22 @@ const CreateClass = () => {
           rules={[
             {
               required: true,
-              message: "Please input your category",
+              message: "Please input your age group",
             },
           ]}
         >
           <Select
             mode="multiple"
-            optionLabelProp="name"
             placeholder="Select age group"
             onChange={handleSelectAgeGroup}
           >
             {ageGroup &&
-              ageGroup.map((age, index) => (
-                <Select.Option
-                  key={age.id}
-                  value={
-                    age.max_age !== null
-                      ? `${age.min_age} to ${age.max_age} years old: ${age.name}`
-                      : `${age.name} years old`
-                  }
-                  label={age.name}
-                ></Select.Option>
+              ageGroup.map((age) => (
+                <Select.Option key={age.id} value={age.name}>
+                  {age.max_age !== null
+                    ? `${age.min_age} to ${age.max_age} years old: ${age.name}`
+                    : `${age.name} years old`}
+                </Select.Option>
               ))}
           </Select>
         </Form.Item>

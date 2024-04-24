@@ -5,16 +5,14 @@ import { EditOutlined, SettingOutlined } from "@ant-design/icons";
 import ActiveClasses from "./ActiveClasses";
 import InactiveClasses from "./InactiveClasses";
 import UserContext from "../UserContext";
-import toast from "react-hot-toast";
 
 const { Title } = Typography;
 const { Meta } = Card;
 
-const AllClasses = () => {
+const AllClasses = ({ setAuth }) => {
   const [listing, setListing] = useState();
   const { user } = useContext(UserContext);
   const token = user && user?.token;
-  const navigate = useNavigate();
 
   const getAllListings = async () => {
     try {
@@ -32,8 +30,7 @@ const AllClasses = () => {
       if (response.status === 200) {
         setListing(parseRes);
       } else {
-        // TODO: 401 Unauthorized ?
-        toast.error(parseRes.error);
+        setAuth(false);
       }
     } catch (error) {
       console.error(error.message);
@@ -86,7 +83,7 @@ const AllClasses = () => {
   );
 };
 
-const PartnerClasses = () => {
+const PartnerClasses = ({ setAuth }) => {
   const navigate = useNavigate();
 
   const handleCreateClass = () => {
@@ -105,7 +102,7 @@ const PartnerClasses = () => {
           {
             label: "All",
             key: 1,
-            children: <AllClasses />,
+            children: <AllClasses setAuth={setAuth} />,
           },
           {
             label: "Active",

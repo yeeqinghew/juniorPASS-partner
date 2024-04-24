@@ -6,12 +6,13 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Image, Divider, Avatar } from "antd";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const { Header, Sider, Content } = Layout;
 
-const PartnerHomeLayout = ({ setAuth }) => {
+const PartnerHomeLayout = ({ setAuth, setIsLoggingOut }) => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [current, setCurrent] = useState(
     location.pathname === "/" || location.pathname === ""
@@ -112,9 +113,11 @@ const PartnerHomeLayout = ({ setAuth }) => {
             <Menu.Item key="logout" style={{ float: "right" }}>
               <LogoutOutlined
                 onClick={() => {
+                  localStorage.clear();
                   setAuth(false);
-                  localStorage.removeItem("token");
+                  setIsLoggingOut(true);
                   toast.success("Logout successfully");
+                  navigate("/partner/login");
                 }}
               />
             </Menu.Item>
