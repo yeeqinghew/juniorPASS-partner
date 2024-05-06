@@ -16,16 +16,13 @@ const AllClasses = ({ setAuth }) => {
 
   const getAllListings = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/listing/getAllListings",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch("http://localhost:5000/listings", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const parseRes = await response.json();
       if (response.status === 200) {
         setListing(parseRes);
@@ -110,7 +107,7 @@ const PartnerClasses = ({ setAuth }) => {
             children: <ActiveClasses />,
           },
           {
-            label: "Inctive",
+            label: "Inactive",
             key: 3,
             children: <InactiveClasses />,
           },

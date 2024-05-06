@@ -13,7 +13,7 @@ const { Title, Link } = Typography;
 const PartnerLogin = ({ setAuth }) => {
   const handleLogin = async (values) => {
     try {
-      const response = await fetch("http://localhost:5000/partner/login", {
+      const response = await fetch("http://localhost:5000/partners/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

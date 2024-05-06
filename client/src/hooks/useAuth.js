@@ -14,7 +14,7 @@ const useAuth = () => {
 
   const getPartnerInfo = async () => {
     try {
-      const response = await fetch("http://localhost:5000/partner/", {
+      const response = await fetch("http://localhost:5000/partners/", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

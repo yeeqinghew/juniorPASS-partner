@@ -33,15 +33,12 @@ const { Dragger } = Upload;
 
 const CreateClass = () => {
   const [image, setImage] = useState();
-  const [addressValue, setAddressValue] = useState();
   const [ageGroup, setAgeGroup] = useState();
   const [categories, setCategories] = useState();
   const [packageTypes, setPackageTypes] = useState();
   const [createClassForm] = Form.useForm();
   const [mrtStations, setMRTStations] = useState({});
   const [data, setData] = useState([]);
-  const [outlets, setOutlets] = useState([]);
-  const [schedules, setSchedules] = useState({});
 
   const { user } = useContext(UserContext);
   const token = user && user?.token;
@@ -107,6 +104,7 @@ const CreateClass = () => {
 
   const props = {
     name: "image",
+    required: true,
     maxCount: 1,
     showUploadList: {
       showPreviewIcon: true,
@@ -132,13 +130,12 @@ const CreateClass = () => {
     },
   };
 
-  const handleSelectAgeGroup = (values) => {
-    console.log("values in agegrou", values);
-    createClassForm.setFieldValue("age_group", values);
+  const handleSelectAgeGroups = (values) => {
+    createClassForm.setFieldValue("age_groups", values);
   };
 
-  const handleSelectCategory = (values) => {
-    createClassForm.setFieldValue("category", values);
+  const handleSelectCategories = (values) => {
+    createClassForm.setFieldValue("categories", values);
   };
 
   const handleSelectPackage = (values) => {
@@ -147,10 +144,6 @@ const CreateClass = () => {
 
   const handleCreateClass = async (values) => {
     console.log(values);
-    var outletSchedules = outlets;
-    Object.values(outletSchedules).forEach((outlet, index) => {
-      outlet["schedules"] = JSON.stringify(schedules[index]);
-    });
 
     try {
       const response = await fetch("http://localhost:5000/misc/s3url");
@@ -166,23 +159,19 @@ const CreateClass = () => {
 
       const imageURL = url.split("?")[0];
       if (s3upload.status === 200) {
-        // get the URL and store as image to /createListing
-        const response = await fetch(
-          "http://localhost:5000/listing/createListing",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              ...values,
-              partner_id: user.partner_id,
-              string_outlet_schedules: outletSchedules,
-              image: imageURL,
-            }),
-          }
-        );
+        // get the URL and store as image
+        const response = await fetch("http://localhost:5000/listings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            ...values,
+            partner_id: user.partner_id,
+            image: imageURL,
+          }),
+        });
         const parseRes = await response.json();
         if (response.status === 201) {
           createClassForm.resetFields();
@@ -310,18 +299,18 @@ const CreateClass = () => {
           </Select>
         </Form.Item>
         <Form.Item
-          name="category"
+          name="categories"
           rules={[
             {
               required: true,
-              message: "Please input your category",
+              message: "Please select your categories",
             },
           ]}
         >
           <Select
             mode="multiple"
             placeholder="Select category"
-            onChange={handleSelectCategory}
+            onChange={handleSelectCategories}
           >
             {categories &&
               categories.map((category) => (
@@ -414,18 +403,15 @@ const CreateClass = () => {
                                   <Form.Item
                                     name={[field.name, "address"]}
                                     fieldId={[field.fieldId, "address"]}
-                                    rules={
-                                      [
-                                        // {
-                                        //   required: true,
-                                        //   message: "Please input your address",
-                                        // },
-                                      ]
-                                    }
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "Please input your address",
+                                      },
+                                    ]}
                                   >
                                     <Select
                                       showSearch
-                                      value={addressValue?.ADDRESS}
                                       placeholder={"Address"}
                                       filterOption={false}
                                       onSearch={async (value) => {
@@ -434,17 +420,6 @@ const CreateClass = () => {
                                         );
                                         const parseRes = await response.json();
                                         setData(parseRes.results);
-                                      }}
-                                      onChange={(newValue, selectedGG) => {
-                                        setAddressValue(selectedGG.valueObject);
-
-                                        const stringJson = outlets;
-                                        stringJson[index] = {
-                                          ...stringJson[index],
-                                          address: selectedGG.valueObject,
-                                          schedules: [],
-                                        };
-                                        setOutlets(stringJson);
                                       }}
                                       notFoundContent={null}
                                       options={(data || []).map((d) => ({
@@ -470,14 +445,6 @@ const CreateClass = () => {
                                     <Select
                                       showSearch
                                       placeholder="Nearest MRT/LRT"
-                                      onChange={(value) => {
-                                        const stringJson = outlets;
-                                        stringJson[index] = {
-                                          ...stringJson[index],
-                                          nearest_mrt: value,
-                                        };
-                                        setOutlets(stringJson);
-                                      }}
                                     >
                                       {!_.isEmpty(mrtStations) &&
                                         Object.keys(mrtStations).map(
@@ -612,31 +579,7 @@ const CreateClass = () => {
                                               },
                                             ]}
                                           >
-                                            <Select
-                                              placeholder="Select day"
-                                              onSelect={(value) => {
-                                                var stringSchedules = schedules;
-                                                if (
-                                                  _.isEmpty(
-                                                    stringSchedules[index]
-                                                  )
-                                                ) {
-                                                  stringSchedules[index] = [
-                                                    {
-                                                      day: value,
-                                                    },
-                                                  ];
-                                                } else {
-                                                  stringSchedules[index] = [
-                                                    ...stringSchedules[index],
-                                                    {
-                                                      day: value,
-                                                    },
-                                                  ];
-                                                }
-                                                setSchedules(stringSchedules);
-                                              }}
-                                            >
+                                            <Select placeholder="Select day">
                                               {day &&
                                                 day.map((d, index) => (
                                                   <Select.Option
@@ -657,30 +600,9 @@ const CreateClass = () => {
                                             ]}
                                           >
                                             <TimePicker.RangePicker
+                                              style={{ width: 200 }}
                                               format={"HH:mm"}
                                               minuteStep={15}
-                                              onChange={(value) => {
-                                                const stringSchedules =
-                                                  schedules;
-                                                const start_time =
-                                                  value[0].$H +
-                                                  "" +
-                                                  value[0].$m;
-                                                const end_time =
-                                                  value[1].$H +
-                                                  "" +
-                                                  value[1].$m;
-
-                                                stringSchedules[index][index2] =
-                                                  {
-                                                    ...stringSchedules[index][
-                                                      index2
-                                                    ],
-                                                    start_time,
-                                                    end_time,
-                                                  };
-                                                setSchedules(stringSchedules);
-                                              }}
                                             />
                                           </Form.Item>
                                           <Form.Item
@@ -698,18 +620,6 @@ const CreateClass = () => {
                                           >
                                             <Select
                                               placeholder="Select frequency"
-                                              onSelect={(frequnecy) => {
-                                                const stringSchedules =
-                                                  schedules;
-                                                stringSchedules[index][index2] =
-                                                  {
-                                                    ...stringSchedules[index][
-                                                      index2
-                                                    ],
-                                                    frequnecy,
-                                                  };
-                                                setSchedules(stringSchedules);
-                                              }}
                                               options={[
                                                 {
                                                   value: "Biweekly",
@@ -726,6 +636,7 @@ const CreateClass = () => {
                                               ]}
                                             ></Select>
                                           </Form.Item>
+                                          {/* TODO: if longterm/shortterm, show startdate */}
                                         </Space.Compact>
                                         <Form.Item
                                           style={{
@@ -735,16 +646,7 @@ const CreateClass = () => {
                                           {times.length > 1 ? (
                                             <MinusCircleOutlined
                                               onClick={() => {
-                                                var stringSchedules = schedules;
                                                 remove(time.name);
-
-                                                stringSchedules[index] = [
-                                                  ...stringSchedules[
-                                                    index
-                                                  ].slice(index2, 1),
-                                                ];
-
-                                                setSchedules(stringSchedules);
                                               }}
                                             />
                                           ) : null}
@@ -775,10 +677,7 @@ const CreateClass = () => {
                           {fields.length > 1 ? (
                             <MinusCircleOutlined
                               onClick={() => {
-                                const stringOutlet = outlets;
                                 remove(field.name);
-                                delete stringOutlet[index];
-                                setOutlets(stringOutlet);
                               }}
                             />
                           ) : null}
@@ -793,18 +692,18 @@ const CreateClass = () => {
         </Form.Item>
 
         <Form.Item
-          name={"age_group"}
+          name={"age_groups"}
           rules={[
             {
               required: true,
-              message: "Please input your age group",
+              message: "Please select your age groups",
             },
           ]}
         >
           <Select
             mode="multiple"
-            placeholder="Select age group"
-            onChange={handleSelectAgeGroup}
+            placeholder="Select age groups"
+            onChange={handleSelectAgeGroups}
           >
             {ageGroup &&
               ageGroup.map((age) => (
