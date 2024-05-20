@@ -7,13 +7,15 @@ import {
 } from "@ant-design/icons";
 import { Button, Form, Input, Typography, Image } from "antd";
 import toast, { Toaster } from "react-hot-toast";
+import getBaseURL from "../../utils/config";
 
 const { Title, Link } = Typography;
 
 const PartnerLogin = ({ setAuth }) => {
+  const baseURL = getBaseURL();
   const handleLogin = async (values) => {
     try {
-      const response = await fetch("http://localhost:5000/partners/login", {
+      const response = await fetch(`${baseURL}/partners/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

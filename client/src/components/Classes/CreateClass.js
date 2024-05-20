@@ -18,6 +18,8 @@ import {
   Row,
   Col,
   Space,
+  DatePicker,
+  List,
 } from "antd";
 import { useContext, useEffect, useState } from "react";
 import mrt from "../../data/mrt.json";
@@ -27,11 +29,13 @@ import TextArea from "antd/es/input/TextArea";
 import UserContext from "../UserContext";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
+import getBaseURL from "../../utils/config";
 
 const { Title } = Typography;
 const { Dragger } = Upload;
 
 const CreateClass = () => {
+  const baseURL = getBaseURL();
   const [image, setImage] = useState();
   const [ageGroup, setAgeGroup] = useState();
   const [categories, setCategories] = useState();
@@ -39,6 +43,7 @@ const CreateClass = () => {
   const [createClassForm] = Form.useForm();
   const [mrtStations, setMRTStations] = useState({});
   const [data, setData] = useState([]);
+  const packages = Form.useWatch("package_types", createClassForm);
 
   const { user } = useContext(UserContext);
   const token = user && user?.token;
@@ -64,12 +69,9 @@ const CreateClass = () => {
 
   async function getAgeGroups() {
     try {
-      const response = await fetch(
-        "http://localhost:5000/misc/getAllAgeGroups",
-        {
-          method: "GET",
-        }
-      );
+      const response = await fetch(`${baseURL}/misc/getAllAgeGroups`, {
+        method: "GET",
+      });
       const parseRes = await response.json();
       setAgeGroup(parseRes);
     } catch (error) {
@@ -78,21 +80,18 @@ const CreateClass = () => {
   }
 
   async function getCategories() {
-    const response = await fetch(
-      "http://localhost:5000/misc/getAllCategories",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${baseURL}/misc/getAllCategories`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     const parseRes = await response.json();
     setCategories(parseRes);
   }
 
   async function getPackageTypes() {
-    const response = await fetch("http://localhost:5000/misc/getAllPackages", {
+    const response = await fetch(`${baseURL}/misc/getAllPackages`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -146,7 +145,7 @@ const CreateClass = () => {
     console.log(values);
 
     try {
-      const response = await fetch("http://localhost:5000/misc/s3url");
+      const response = await fetch(`${baseURL}misc/s3url`);
       const { url } = await response.json();
       // post the image directly to S3 bucket
       const s3upload = await fetch(url, {
@@ -160,7 +159,7 @@ const CreateClass = () => {
       const imageURL = url.split("?")[0];
       if (s3upload.status === 200) {
         // get the URL and store as image
-        const response = await fetch("http://localhost:5000/listings", {
+        const response = await fetch(`${baseURL}/listings`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -245,35 +244,6 @@ const CreateClass = () => {
           <Input placeholder="Title" size={"large"} required />
         </Form.Item>
         <Form.Item
-          name="credit"
-          rules={[
-            {
-              required: true,
-              message: "Please input your credit",
-            },
-          ]}
-        >
-          <InputNumber
-            min={1}
-            max={10}
-            style={{ width: "100%" }}
-            prefix={
-              <Avatar
-                src={
-                  <img
-                    src={require("../../images/credit.png")}
-                    alt="credit"
-                    style={{
-                      height: 24,
-                      width: 24,
-                    }}
-                  />
-                }
-              ></Avatar>
-            }
-          />
-        </Form.Item>
-        <Form.Item
           name="package_types"
           rules={[
             {
@@ -297,6 +267,55 @@ const CreateClass = () => {
                 </Select.Option>
               ))}
           </Select>
+        </Form.Item>
+        {createClassForm.getFieldValue("package_types") && (
+          <Form.Item>
+            <List>
+              {createClassForm
+                .getFieldValue("package_types")
+                .map((pack, index) => {
+                  if (pack === "short-term" || pack === "long-term") {
+                    return (
+                      <>
+                        <List.Item key={index}>{pack}</List.Item>
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      <List.Item key={index}>{pack}</List.Item>
+                    </>
+                  );
+                })}
+            </List>
+          </Form.Item>
+        )}
+        <Form.Item
+          name="credit"
+          rules={[
+            {
+              required: true,
+              message: "Please input your credit",
+            },
+          ]}
+        >
+          <InputNumber
+            style={{ width: "100%" }}
+            prefix={
+              <Avatar
+                src={
+                  <img
+                    src={require("../../images/credit.png")}
+                    alt="credit"
+                    style={{
+                      height: 24,
+                      width: 24,
+                    }}
+                  />
+                }
+              ></Avatar>
+            }
+          />
         </Form.Item>
         <Form.Item
           name="categories"
@@ -336,7 +355,6 @@ const CreateClass = () => {
             style={{ height: 120, resize: "none" }}
           />
         </Form.Item>
-
         {/* dynamic form for multiple outlets */}
         <Form.Item>
           <Form.List
@@ -423,9 +441,8 @@ const CreateClass = () => {
                                       }}
                                       notFoundContent={null}
                                       options={(data || []).map((d) => ({
-                                        value: d.ADDRESS,
+                                        value: JSON.stringify(d),
                                         label: d.ADDRESS,
-                                        valueObject: d,
                                       }))}
                                     />
                                   </Form.Item>
@@ -570,6 +587,36 @@ const CreateClass = () => {
                                       >
                                         <Space.Compact block>
                                           <Form.Item
+                                            name="package_types"
+                                            rules={[
+                                              {
+                                                required: true,
+                                                message:
+                                                  "Please select the package type",
+                                              },
+                                            ]}
+                                          >
+                                            <Select
+                                              placeholder="Select package type"
+                                              onChange={handleSelectPackage}
+                                              mode="multiple"
+                                            >
+                                              {packageTypes &&
+                                                packageTypes.map(
+                                                  (packageType) => (
+                                                    <Select.Option
+                                                      key={packageType.id}
+                                                      value={
+                                                        packageType.package_type
+                                                      }
+                                                    >
+                                                      {packageType.name}
+                                                    </Select.Option>
+                                                  )
+                                                )}
+                                            </Select>
+                                          </Form.Item>
+                                          <Form.Item
                                             name={[time.name, "day"]}
                                             fieldId={[time.fieldId, "day"]}
                                             rules={[
@@ -636,7 +683,24 @@ const CreateClass = () => {
                                               ]}
                                             ></Select>
                                           </Form.Item>
-                                          {/* TODO: if longterm/shortterm, show startdate */}
+                                          {/* TODO: useMemo or other method */}
+                                          <>
+                                            <Form.Item
+                                              name={[time.name, "startDate"]}
+                                              fieldId={[
+                                                time.fieldId,
+                                                "startDate",
+                                              ]}
+                                              rules={[
+                                                {
+                                                  required: true,
+                                                  message: "Missing start date",
+                                                },
+                                              ]}
+                                            >
+                                              <DatePicker />
+                                            </Form.Item>
+                                          </>
                                         </Space.Compact>
                                         <Form.Item
                                           style={{
@@ -690,7 +754,6 @@ const CreateClass = () => {
             )}
           </Form.List>
         </Form.Item>
-
         <Form.Item
           name={"age_groups"}
           rules={[
@@ -724,7 +787,6 @@ const CreateClass = () => {
           </p>
           <p className="ant-upload-hint"></p>
         </Dragger>
-
         <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
           Create
         </Button>
