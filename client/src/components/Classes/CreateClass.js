@@ -141,6 +141,16 @@ const CreateClass = () => {
     createClassForm.setFieldValue("package_types", values);
   };
 
+  const handleAddressSearch = _.debounce(async (value) => {
+    if (value) {
+      const response = await fetch(
+        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${value}&returnGeom=Y&getAddrDetails=Y&pageNum=`
+      );
+      const parseRes = await response.json();
+      setData(parseRes.results);
+    }
+  }, 300); // function will execute only after the user has stopped typing for 300ms
+
   const handleCreateClass = async (values) => {
     console.log(values);
 
@@ -432,13 +442,7 @@ const CreateClass = () => {
                                       showSearch
                                       placeholder={"Address"}
                                       filterOption={false}
-                                      onSearch={async (value) => {
-                                        const response = await fetch(
-                                          `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${value}&returnGeom=Y&getAddrDetails=Y&pageNum=`
-                                        );
-                                        const parseRes = await response.json();
-                                        setData(parseRes.results);
-                                      }}
+                                      onSearch={handleAddressSearch}
                                       notFoundContent={null}
                                       options={(data || []).map((d) => ({
                                         value: JSON.stringify(d),
