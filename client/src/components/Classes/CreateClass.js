@@ -36,7 +36,7 @@ const { Dragger } = Upload;
 
 const CreateClass = () => {
   const baseURL = getBaseURL();
-  const [image, setImage] = useState();
+  const [images, setImages] = useState([]);
   const [ageGroup, setAgeGroup] = useState();
   const [categories, setCategories] = useState();
   const [packageTypes, setPackageTypes] = useState();
@@ -103,21 +103,26 @@ const CreateClass = () => {
 
   const props = {
     name: "image",
+    multiple: true,
+    maxCount: 5,
     required: true,
-    maxCount: 1,
     showUploadList: {
       showPreviewIcon: true,
       showRemoveIcon: true,
     },
     beforeUpload(info) {
-      setImage(info);
+      // setImage(info);
+      setImages((prevImages) => [...prevImages, info]);
       return false;
     },
     onDrop(e) {
       console.log("Dropped files", e.dataTransfer.files);
     },
     onRemove(info) {
-      setImage(null);
+      // setImage(null);
+      setImages((prevImages) =>
+        prevImages.filter((img) => img.uid !== info.uid)
+      );
     },
     progress: {
       strokeColor: {
@@ -155,38 +160,44 @@ const CreateClass = () => {
     console.log(values);
 
     try {
-      const response = await fetch(`${baseURL}misc/s3url`);
-      const { url } = await response.json();
-      // post the image directly to S3 bucket
-      const s3upload = await fetch(url, {
-        method: "PUT",
+      const uploadedImageURLs = [];
+      for (let img of images) {
+        const response = await fetch(`${baseURL}/misc/s3url`);
+        const { url } = await response.json();
+        // post the image directly to S3 bucket
+        const s3upload = await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          body: img,
+        });
+
+        if (s3upload.status === 200) {
+          const imageURL = url.split("?")[0];
+          uploadedImageURLs.push(imageURL);
+        }
+      }
+
+      // get the URL and store as image
+      const response = await fetch(`${baseURL}/listings`, {
+        method: "POST",
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: image,
+        body: JSON.stringify({
+          ...values,
+          partner_id: user.partner_id,
+          image: uploadedImageURLs, // TODO: edit this image to images
+        }),
       });
 
-      const imageURL = url.split("?")[0];
-      if (s3upload.status === 200) {
-        // get the URL and store as image
-        const response = await fetch(`${baseURL}/listings`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            ...values,
-            partner_id: user.partner_id,
-            image: imageURL,
-          }),
-        });
-        const parseRes = await response.json();
-        if (response.status === 201) {
-          createClassForm.resetFields();
-          toast.success(parseRes.message);
-          navigate("/partner/classes");
-        }
+      const parseRes = await response.json();
+      if (response.status === 201) {
+        createClassForm.resetFields();
+        toast.success(parseRes.message);
+        navigate("/partner/classes");
       }
     } catch (error) {
       console.error(error.message);
@@ -590,7 +601,7 @@ const CreateClass = () => {
                                         align="start"
                                       >
                                         <Space.Compact block>
-                                          <Form.Item
+                                          {/* <Form.Item
                                             name="package_types"
                                             rules={[
                                               {
@@ -619,7 +630,7 @@ const CreateClass = () => {
                                                   )
                                                 )}
                                             </Select>
-                                          </Form.Item>
+                                          </Form.Item> */}
                                           <Form.Item
                                             name={[time.name, "day"]}
                                             fieldId={[time.fieldId, "day"]}
