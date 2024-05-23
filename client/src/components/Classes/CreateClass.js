@@ -43,7 +43,7 @@ const CreateClass = () => {
   const [createClassForm] = Form.useForm();
   const [mrtStations, setMRTStations] = useState({});
   const [data, setData] = useState([]);
-  const packages = Form.useWatch("package_types", createClassForm);
+  const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
 
   const { user } = useContext(UserContext);
   const token = user && user?.token;
@@ -143,6 +143,7 @@ const CreateClass = () => {
   };
 
   const handleSelectPackage = (values) => {
+    setSelectedPackageTypes(values);
     createClassForm.setFieldValue("package_types", values);
   };
 
@@ -189,7 +190,9 @@ const CreateClass = () => {
         body: JSON.stringify({
           ...values,
           partner_id: user.partner_id,
-          image: uploadedImageURLs, // TODO: edit this image to images
+          images: JSON.stringify(uploadedImageURLs),
+          short_term_start_date: values.short_term_start_date || null,
+          long_term_start_date: values.long_term_start_date || null,
         }),
       });
 
@@ -289,26 +292,35 @@ const CreateClass = () => {
               ))}
           </Select>
         </Form.Item>
-        {createClassForm.getFieldValue("package_types") && (
-          <Form.Item>
-            <List>
-              {createClassForm
-                .getFieldValue("package_types")
-                .map((pack, index) => {
-                  if (pack === "short-term" || pack === "long-term") {
-                    return (
-                      <>
-                        <List.Item key={index}>{pack}</List.Item>
-                      </>
-                    );
-                  }
-                  return (
-                    <>
-                      <List.Item key={index}>{pack}</List.Item>
-                    </>
-                  );
-                })}
-            </List>
+        {createClassForm
+          .getFieldValue("package_types")
+          ?.includes("short-term") && (
+          <Form.Item
+            name="short_term_start_date"
+            rules={[
+              {
+                required: true,
+                message: "Please select the start date for short-term",
+              },
+            ]}
+          >
+            <DatePicker placeholder="Select short-term start date" />
+          </Form.Item>
+        )}
+
+        {createClassForm
+          .getFieldValue("package_types")
+          ?.includes("long-term") && (
+          <Form.Item
+            name="long_term_start_date"
+            rules={[
+              {
+                required: true,
+                message: "Please select the start date for long-term",
+              },
+            ]}
+          >
+            <DatePicker placeholder="Select long-term start date" />
           </Form.Item>
         )}
         <Form.Item
@@ -698,24 +710,6 @@ const CreateClass = () => {
                                               ]}
                                             ></Select>
                                           </Form.Item>
-                                          {/* TODO: useMemo or other method */}
-                                          <>
-                                            <Form.Item
-                                              name={[time.name, "startDate"]}
-                                              fieldId={[
-                                                time.fieldId,
-                                                "startDate",
-                                              ]}
-                                              rules={[
-                                                {
-                                                  required: true,
-                                                  message: "Missing start date",
-                                                },
-                                              ]}
-                                            >
-                                              <DatePicker />
-                                            </Form.Item>
-                                          </>
                                         </Space.Compact>
                                         <Form.Item
                                           style={{

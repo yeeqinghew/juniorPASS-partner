@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Card } from "antd";
+import { Card, Carousel } from "antd";
 import { useNavigate } from "react-router-dom";
 import { EditOutlined, SettingOutlined } from "@ant-design/icons";
 import UserContext from "../UserContext";
@@ -73,14 +73,21 @@ const AllClasses = ({ setAuth }) => {
                 <EditOutlined key="edit" />,
               ]}
               cover={
-                <img
-                  alt="example"
-                  src={list.image}
-                  style={{
-                    width: "200px",
-                    objectFit: "cover",
-                  }}
-                />
+                <Carousel autoplay>
+                  {list.images.map((imgUrl, index) => (
+                    <div key={index}>
+                      <img
+                        alt={`carousel-${index}`}
+                        src={imgUrl}
+                        style={{
+                          width: "100%",
+                          height: "200px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                  ))}
+                </Carousel>
               }
             >
               <Meta title={list.listing_title} />
