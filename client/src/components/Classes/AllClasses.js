@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import { Card, Carousel } from "antd";
 import { useNavigate } from "react-router-dom";
 import { EditOutlined, SettingOutlined } from "@ant-design/icons";
@@ -9,12 +9,12 @@ const { Meta } = Card;
 
 const AllClasses = ({ setAuth }) => {
   const baseURL = getBaseURL();
-  const [listing, setListing] = useState();
+  const [listing, setListing] = useState([]);
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const token = user && user?.token;
 
-  const getAllListings = async () => {
+  const getAllListings = useCallback(async () => {
     try {
       const response = await fetch(`${baseURL}/listings`, {
         method: "GET",
@@ -32,7 +32,7 @@ const AllClasses = ({ setAuth }) => {
     } catch (error) {
       console.error(error.message);
     }
-  };
+  }, [baseURL, token, setAuth]);
 
   const handleClickClass = (list) => {
     navigate(`/partner/class/${list?.listing_id}`, {
@@ -45,7 +45,7 @@ const AllClasses = ({ setAuth }) => {
   useEffect(() => {
     if (!token) return;
     getAllListings();
-  }, [token]);
+  }, [token, getAllListings]);
 
   return (
     <div
@@ -56,44 +56,42 @@ const AllClasses = ({ setAuth }) => {
       }}
     >
       {listing &&
-        listing.map((list) => {
-          return (
-            <Card
-              hoverable
-              onClick={() => {
-                handleClickClass(list);
-              }}
-              key={list.listing_id}
-              style={{
-                maxwidth: 300,
-                margin: 24,
-              }}
-              actions={[
-                <SettingOutlined key="setting" />,
-                <EditOutlined key="edit" />,
-              ]}
-              cover={
-                <Carousel autoplay>
-                  {list.images.map((imgUrl, index) => (
-                    <div key={index}>
-                      <img
-                        alt={`carousel-${index}`}
-                        src={imgUrl}
-                        style={{
-                          width: "100%",
-                          height: "200px",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </div>
-                  ))}
-                </Carousel>
-              }
-            >
-              <Meta title={list.listing_title} />
-            </Card>
-          );
-        })}
+        listing.map((list) => (
+          <Card
+            hoverable
+            onClick={() => {
+              handleClickClass(list);
+            }}
+            key={list.listing_id}
+            style={{
+              maxWidth: 300,
+              margin: 24,
+            }}
+            actions={[
+              <SettingOutlined key="setting" />,
+              <EditOutlined key="edit" />,
+            ]}
+            cover={
+              <Carousel autoplay>
+                {list.images.map((imgUrl, index) => (
+                  <div key={index}>
+                    <img
+                      alt={`carousel-${index}`}
+                      src={imgUrl}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                ))}
+              </Carousel>
+            }
+          >
+            <Meta title={list.listing_title} />
+          </Card>
+        ))}
     </div>
   );
 };

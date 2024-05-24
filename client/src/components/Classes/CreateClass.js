@@ -13,13 +13,11 @@ import {
   Select,
   Typography,
   Upload,
-  TimePicker,
   Tag,
   Row,
   Col,
   Space,
   DatePicker,
-  List,
 } from "antd";
 import { useContext, useEffect, useState } from "react";
 import mrt from "../../data/mrt.json";
@@ -30,6 +28,7 @@ import UserContext from "../UserContext";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 import getBaseURL from "../../utils/config";
+import TimeRangePicker from "../../utils/TimeRangePicker";
 
 const { Title } = Typography;
 const { Dragger } = Upload;
@@ -673,11 +672,7 @@ const CreateClass = () => {
                                               },
                                             ]}
                                           >
-                                            <TimePicker.RangePicker
-                                              style={{ width: 200 }}
-                                              format={"HH:mm"}
-                                              minuteStep={15}
-                                            />
+                                            <TimeRangePicker />
                                           </Form.Item>
                                           <Form.Item
                                             name={[time.name, "frequency"]}
