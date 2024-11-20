@@ -29,6 +29,7 @@ import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 import getBaseURL from "../../utils/config";
 import TimeRangePicker from "../../utils/TimeRangePicker";
+import { DataContext } from "../../hooks/DataContext";
 
 const { Title } = Typography;
 const { Dragger } = Upload;
@@ -36,9 +37,7 @@ const { Dragger } = Upload;
 const CreateClass = () => {
   const baseURL = getBaseURL();
   const [images, setImages] = useState([]);
-  const [ageGroup, setAgeGroup] = useState();
-  const [categories, setCategories] = useState();
-  const [packageTypes, setPackageTypes] = useState();
+  const { categories, packageTypes, ageGroups } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
   const [mrtStations, setMRTStations] = useState({});
   const [data, setData] = useState([]);
@@ -65,40 +64,6 @@ const CreateClass = () => {
   //   const parseRes = await response.json();
   //   // console.log(parseRes);
   // }
-
-  async function getAgeGroups() {
-    try {
-      const response = await fetch(`${baseURL}/misc/getAllAgeGroups`, {
-        method: "GET",
-      });
-      const parseRes = await response.json();
-      setAgeGroup(parseRes);
-    } catch (error) {
-      console.error("ERROR in fetching getAgeGroups()");
-    }
-  }
-
-  async function getCategories() {
-    const response = await fetch(`${baseURL}/misc/getAllCategories`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const parseRes = await response.json();
-    setCategories(parseRes);
-  }
-
-  async function getPackageTypes() {
-    const response = await fetch(`${baseURL}/misc/getAllPackages`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const parseRes = await response.json();
-    setPackageTypes(parseRes);
-  }
 
   const props = {
     name: "image",
@@ -226,9 +191,6 @@ const CreateClass = () => {
   useEffect(() => {
     if (!token) return;
     cleanMRTJSON();
-    getAgeGroups();
-    getCategories();
-    getPackageTypes();
   }, [token]);
 
   return (
@@ -772,8 +734,8 @@ const CreateClass = () => {
             placeholder="Select age groups"
             onChange={handleSelectAgeGroups}
           >
-            {ageGroup &&
-              ageGroup.map((age) => (
+            {ageGroups &&
+              ageGroups.map((age) => (
                 <Select.Option key={age.id} value={age.name}>
                   {age.max_age !== null
                     ? `${age.min_age} to ${age.max_age} years old: ${age.name}`

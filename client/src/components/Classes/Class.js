@@ -14,24 +14,73 @@ import {
   Typography,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import getBaseURL from "../../utils/config";
 
 const { Title } = Typography;
 const Class = () => {
+  const baseURL = getBaseURL();
   const { state } = useLocation();
   const { list } = state;
+  const [ageGroup, setAgeGroup] = useState();
+  const [categories, setCategories] = useState();
+  const [packageTypes, setPackageTypes] = useState();
   const [editClassForm] = Form.useForm();
+
+  async function getAgeGroups() {
+    try {
+      const response = await fetch(`${baseURL}/misc/getAllAgeGroups`, {
+        method: "GET",
+      });
+      const parseRes = await response.json();
+      setAgeGroup(parseRes);
+    } catch (error) {
+      console.error("ERROR in fetching getAgeGroups()");
+    }
+  }
+
+  async function getCategories() {
+    const response = await fetch(`${baseURL}/misc/getAllCategories`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const parseRes = await response.json();
+    setCategories(parseRes);
+  }
+
+  async function getPackageTypes() {
+    const response = await fetch(`${baseURL}/misc/getAllPackages`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const parseRes = await response.json();
+    setPackageTypes(parseRes);
+  }
 
   const handleEditClass = () => {};
 
   useEffect(() => {
+    getAgeGroups();
+    getCategories();
+    getPackageTypes();
+  }, []);
+
+  useEffect(() => {
+    console.log("list: ", list);
     editClassForm.setFieldsValue({
       // Set initial values of the form fields
 
       title: list?.listing_title,
       credit: list?.credit,
       description: list?.description,
+      package_types: list?.package_types,
+      category: list?.categories,
+      age_groups: list?.age_groups,
     });
   }, [editClassForm, list]);
 
@@ -87,7 +136,7 @@ const Class = () => {
             }
           />
         </Form.Item>
-        {/* <Form.Item
+        <Form.Item
           name="package_types"
           rules={[
             {
@@ -98,8 +147,9 @@ const Class = () => {
         >
           <Select
             placeholder="Select package type"
-            onChange={handleSelectPackage}
+            // onChange={handleSelectPackage}
             mode="multiple"
+            value={list?.package_types}
           >
             {packageTypes &&
               packageTypes.map((packageType) => (
@@ -111,20 +161,15 @@ const Class = () => {
                 </Select.Option>
               ))}
           </Select>
-        </Form.Item> */}
-        {/* <Form.Item
-          name="categories"
-          rules={[
-            {
-              required: true,
-              message: "Please select your categories",
-            },
-          ]}
+        </Form.Item>
+        <Form.Item
+          name="category"
+          rules={[{ required: true, message: "Please select your categories" }]}
         >
           <Select
-            mode="multiple"
             placeholder="Select category"
-            onChange={handleSelectCategories}
+            mode="multiple"
+            value={list?.categories}
           >
             {categories &&
               categories.map((category) => (
@@ -133,7 +178,7 @@ const Class = () => {
                 </Select.Option>
               ))}
           </Select>
-        </Form.Item> */}
+        </Form.Item>
         <Form.Item
           name="description"
           rules={[
@@ -203,7 +248,7 @@ const Class = () => {
           </Form.List>
         </Form.Item>
 
-        {/* <Form.Item
+        <Form.Item
           name={"age_groups"}
           rules={[
             {
@@ -215,7 +260,8 @@ const Class = () => {
           <Select
             mode="multiple"
             placeholder="Select age groups"
-            onChange={handleSelectAgeGroups}
+            // onChange={handleSelectAgeGroups}
+            value={list?.age_groups}
           >
             {ageGroup &&
               ageGroup.map((age) => (
@@ -226,7 +272,7 @@ const Class = () => {
                 </Select.Option>
               ))}
           </Select>
-        </Form.Item> */}
+        </Form.Item>
 
         <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
           Create

@@ -4,6 +4,7 @@ import {
   AntDesignOutlined,
   HomeOutlined,
   LogoutOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Image, Divider, Avatar } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -87,6 +88,11 @@ const PartnerHomeLayout = ({ setAuth, setIsLoggingOut }) => {
               key: "home",
               icon: <HomeOutlined />,
               label: <Link to="/partner/home">Dashboard</Link>,
+            },
+            {
+              key: "profile",
+              icon: <UserOutlined />,
+              label: <Link to="/partner/profile">Profile</Link>,
             },
             {
               key: "classes",
