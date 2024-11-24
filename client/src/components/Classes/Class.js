@@ -17,6 +17,7 @@ import TextArea from "antd/es/input/TextArea";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import getBaseURL from "../../utils/config";
+import useFormInitialization from "../../hooks/useFormInitialization";
 
 const { Title } = Typography;
 const Class = () => {
@@ -28,67 +29,15 @@ const Class = () => {
   const [packageTypes, setPackageTypes] = useState();
   const [editClassForm] = Form.useForm();
 
-  async function getAgeGroups() {
-    try {
-      const response = await fetch(`${baseURL}/misc/getAllAgeGroups`, {
-        method: "GET",
-      });
-      const parseRes = await response.json();
-      setAgeGroup(parseRes);
-    } catch (error) {
-      console.error("ERROR in fetching getAgeGroups()");
-    }
-  }
-
-  async function getCategories() {
-    const response = await fetch(`${baseURL}/misc/getAllCategories`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const parseRes = await response.json();
-    setCategories(parseRes);
-  }
-
-  async function getPackageTypes() {
-    const response = await fetch(`${baseURL}/misc/getAllPackages`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const parseRes = await response.json();
-    setPackageTypes(parseRes);
-  }
-
   const handleEditClass = () => {};
 
-  useEffect(() => {
-    getAgeGroups();
-    getCategories();
-    getPackageTypes();
-  }, []);
-
-  useEffect(() => {
-    console.log("list: ", list);
-    editClassForm.setFieldsValue({
-      // Set initial values of the form fields
-
-      title: list?.listing_title,
-      credit: list?.credit,
-      description: list?.description,
-      package_types: list?.package_types,
-      category: list?.categories,
-      age_groups: list?.age_groups,
-    });
-  }, [editClassForm, list]);
+  useFormInitialization(editClassForm, list);
 
   return (
     <>
       <Title level={3}>{list.listing_title}</Title>
       <Form
-        name="create-class"
+        name="edit-class"
         style={{
           maxWidth: "100%",
         }}

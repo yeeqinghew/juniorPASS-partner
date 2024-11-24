@@ -125,6 +125,17 @@ const CreateClass = () => {
     console.log(values);
 
     try {
+      // tranform the locations data
+      const transformedLocations = values.locations.map((location) => ({
+        address: JSON.parse(location.address),
+        nearest_mrt: location.nearest_mrt,
+        schedules: location.schedules.map((schedule) => ({
+          day: schedule.day,
+          timeslot: schedule.timeslot,
+          frequency: schedule.frequency,
+        })),
+      }));
+
       const uploadedImageURLs = [];
       for (let img of images) {
         const response = await fetch(`${baseURL}/misc/s3url`);
@@ -155,6 +166,7 @@ const CreateClass = () => {
           ...values,
           partner_id: user.partner_id,
           images: JSON.stringify(uploadedImageURLs),
+          locations: transformedLocations,
           short_term_start_date: values.short_term_start_date || null,
           long_term_start_date: values.long_term_start_date || null,
         }),
@@ -663,6 +675,10 @@ const CreateClass = () => {
                                                 {
                                                   value: "Monthly",
                                                   label: "Monthly",
+                                                },
+                                                {
+                                                  value: "Yearly",
+                                                  label: "Yearly",
                                                 },
                                               ]}
                                             ></Select>

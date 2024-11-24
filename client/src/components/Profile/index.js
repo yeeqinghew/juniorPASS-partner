@@ -13,6 +13,7 @@ const Profile = () => {
   const [userProfile, setUserProfile] = useState({});
   const token = localStorage.getItem("token");
   const { categories, packageTypes, ageGroups } = useContext(DataContext);
+  const [profileForm] = Form.useForm();
 
   useEffect(() => {
     async function retrieveUser() {
@@ -26,6 +27,7 @@ const Profile = () => {
 
         const parseRes = await response.json();
         setUserProfile(parseRes);
+        profileForm.setFieldValue({});
         setLoading(false); // Set loading to false once data is fetched
       } catch (error) {
         message.error("Error fetching profile data");
@@ -63,6 +65,7 @@ const Profile = () => {
 
   return (
     <Form
+      form={profileForm}
       name="edit-profile"
       initialValues={userProfile}
       onFinish={handleFormSubmit}
