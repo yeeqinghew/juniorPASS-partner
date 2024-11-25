@@ -35,11 +35,7 @@ const AllClasses = ({ setAuth }) => {
   }, [baseURL, token, setAuth]);
 
   const handleClickClass = (list) => {
-    navigate(`/partner/class/${list?.listing_id}`, {
-      state: {
-        list,
-      },
-    });
+    navigate(`/partner/class/${list?.listing_id}`, {});
   };
 
   useEffect(() => {

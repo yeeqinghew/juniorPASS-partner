@@ -82,7 +82,7 @@ const Routers = () => {
                   path="classes"
                   element={<PartnerClasses setAuth={setAuth} />}
                 />
-                <Route path="class/:id" element={<Class />} />
+                <Route path="class/:listing_id" element={<Class />} />
                 <Route path="create-class" element={<CreateClass />} />
               </Route>
             </Route>

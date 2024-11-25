@@ -14,28 +14,63 @@ import {
   Typography,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import getBaseURL from "../../utils/config";
 import useFormInitialization from "../../hooks/useFormInitialization";
+import UserContext from "../UserContext";
+import TimeRangePicker from "../../utils/TimeRangePicker";
+import _ from "lodash";
 
 const { Title } = Typography;
 const Class = () => {
   const baseURL = getBaseURL();
-  const { state } = useLocation();
-  const { list } = state;
+  const { user } = useContext(UserContext);
+  const token = user && user?.token;
+  const { listing_id } = useParams();
+  const [listing, setListing] = useState();
   const [ageGroup, setAgeGroup] = useState();
   const [categories, setCategories] = useState();
   const [packageTypes, setPackageTypes] = useState();
   const [editClassForm] = Form.useForm();
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    async function fetchClassDetails() {
+      try {
+        const response = await fetch(`${baseURL}/listings/${listing_id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const parseRes = await response.json();
+        setListing(parseRes);
+      } catch (error) {
+        console.error("Error fetching class details:", error);
+      }
+    }
+    fetchClassDetails();
+  }, [listing_id]);
+
+  useFormInitialization(editClassForm, listing);
+
+  const handleAddressSearch = _.debounce(async (value) => {
+    if (value) {
+      const response = await fetch(
+        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${value}&returnGeom=Y&getAddrDetails=Y&pageNum=`
+      );
+      const parseRes = await response.json();
+      setData(parseRes.results);
+    }
+  }, 300); // function will execute only after the user has stopped typing for 300ms
 
   const handleEditClass = () => {};
 
-  useFormInitialization(editClassForm, list);
-
   return (
     <>
-      <Title level={3}>{list.listing_title}</Title>
+      <Title level={3}>{listing?.listing_title}</Title>
       <Form
         name="edit-class"
         style={{
@@ -98,7 +133,7 @@ const Class = () => {
             placeholder="Select package type"
             // onChange={handleSelectPackage}
             mode="multiple"
-            value={list?.package_types}
+            value={listing?.package_types}
           >
             {packageTypes &&
               packageTypes.map((packageType) => (
@@ -118,7 +153,7 @@ const Class = () => {
           <Select
             placeholder="Select category"
             mode="multiple"
-            value={list?.categories}
+            value={listing?.categories}
           >
             {categories &&
               categories.map((category) => (
@@ -140,7 +175,6 @@ const Class = () => {
           <TextArea
             showCount
             maxLength={5000}
-            placeholder="Description"
             style={{ height: 120, resize: "none" }}
           />
         </Form.Item>
@@ -191,6 +225,56 @@ const Class = () => {
                       <div>Schedule(s)</div>
                     </Col>
                   </Row>
+
+                  {fields.map((field, index) => {
+                    return (
+                      <Row key={`location-${field.key}`}>
+                        <Col flex={"1 0 50%"} key={`location-${field.key}`}>
+                          <Row
+                            key={`location-${field.key}`}
+                            style={{
+                              marginBottom: 8,
+                              border: "1px dotted #cccccc",
+                              padding: "8px",
+                            }}
+                          >
+                            <Col span={1}>{index}</Col>
+                            <Col span={13} flex="1 0 50%">
+                              <Row>
+                                <Space.Compact block>
+                                  <Col flex="1 0 50%">
+                                    <Form.Item
+                                      name={[field.name, "address"]}
+                                      fieldId={[field.fieldId, "address"]}
+                                      rules={[
+                                        {
+                                          required: true,
+                                          message: "Please input your address",
+                                        },
+                                      ]}
+                                    >
+                                      <Select
+                                        {...field}
+                                        showSearch
+                                        placeholder={"Address"}
+                                        filterOption={false}
+                                        onSearch={handleAddressSearch}
+                                        notFoundContent={null}
+                                        options={(data || []).map((d) => ({
+                                          value: JSON.stringify(d),
+                                          label: d.ADDRESS,
+                                        }))}
+                                      />
+                                    </Form.Item>
+                                  </Col>
+                                </Space.Compact>
+                              </Row>
+                            </Col>
+                          </Row>
+                        </Col>
+                      </Row>
+                    );
+                  })}
                 </Col>
               </div>
             )}
@@ -210,7 +294,7 @@ const Class = () => {
             mode="multiple"
             placeholder="Select age groups"
             // onChange={handleSelectAgeGroups}
-            value={list?.age_groups}
+            value={listing?.age_groups}
           >
             {ageGroup &&
               ageGroup.map((age) => (
