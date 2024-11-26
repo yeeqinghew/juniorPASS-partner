@@ -4,21 +4,26 @@ import dayjs from "dayjs";
 
 const { RangePicker } = TimePicker;
 
-const TimeRangePicker = (props) => {
-  const handleChange = (values) => {
-    console.log(values);
-    if (values) {
-      const formattedValues = values.map((value) => {
-        return dayjs(value).format("HH:mm");
-      });
+const TimeRangePicker = ({ value = [], onChange }) => {
+  const formattedValues = value.length
+    ? value.map((time) => dayjs(time, "HH:mm"))
+    : [];
 
-      props.onChange(formattedValues);
+  const handleChange = (values) => {
+    if (values) {
+      onChange(formattedValues);
     } else {
-      props.onChange([]);
+      onChange([]);
     }
   };
 
-  return <RangePicker format="HH:mm" onChange={handleChange} />;
+  return (
+    <RangePicker
+      format="HH:mm"
+      value={formattedValues}
+      onChange={handleChange}
+    />
+  );
 };
 
 export default TimeRangePicker;

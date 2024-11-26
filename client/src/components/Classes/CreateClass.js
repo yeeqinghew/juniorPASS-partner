@@ -13,23 +13,22 @@ import {
   Select,
   Typography,
   Upload,
-  Tag,
   Row,
   Col,
   Space,
   DatePicker,
 } from "antd";
-import { useContext, useEffect, useState } from "react";
-import mrt from "../../data/mrt.json";
-import day from "../../data/day.json";
+import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import TextArea from "antd/es/input/TextArea";
 import UserContext from "../UserContext";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 import getBaseURL from "../../utils/config";
-import TimeRangePicker from "../../utils/TimeRangePicker";
 import { DataContext } from "../../hooks/DataContext";
+import useMRTStations from "../../hooks/useMrtStations";
+import useAddressSearch from "../../hooks/useAddressSearch";
+import ScheduleItem from "../../utils/ScheduleItem";
 
 const { Title } = Typography;
 const { Dragger } = Upload;
@@ -39,11 +38,10 @@ const CreateClass = () => {
   const [images, setImages] = useState([]);
   const { categories, packageTypes, ageGroups } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
-  const [mrtStations, setMRTStations] = useState({});
-  const [data, setData] = useState([]);
   const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
-
+  const { addressData, handleAddressSearch } = useAddressSearch();
   const { user } = useContext(UserContext);
+  const { mrtStations, renderTags } = useMRTStations();
   const token = user && user?.token;
   const navigate = useNavigate();
 
@@ -111,16 +109,6 @@ const CreateClass = () => {
     createClassForm.setFieldValue("package_types", values);
   };
 
-  const handleAddressSearch = _.debounce(async (value) => {
-    if (value) {
-      const response = await fetch(
-        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${value}&returnGeom=Y&getAddrDetails=Y&pageNum=`
-      );
-      const parseRes = await response.json();
-      setData(parseRes.results);
-    }
-  }, 300); // function will execute only after the user has stopped typing for 300ms
-
   const handleCreateClass = async (values) => {
     console.log(values);
 
@@ -183,27 +171,6 @@ const CreateClass = () => {
       toast.error("ERROR in creating class. Please try again later.");
     }
   };
-
-  const cleanMRTJSON = () => {
-    // clean mrt.json
-    mrt.forEach((mrt) => {
-      if (mrtStations[mrt["Station Name"]]) {
-        const value = mrtStations[mrt["Station Name"]];
-        value.push(mrt["Station"]);
-        mrtStations[mrt["Station Name"]] = value;
-        setMRTStations(mrtStations);
-        return;
-      }
-      mrtStations[mrt["Station Name"]] = [mrt["Station"]];
-      setMRTStations(mrtStations);
-      return;
-    });
-  };
-
-  useEffect(() => {
-    if (!token) return;
-    cleanMRTJSON();
-  }, [token]);
 
   return (
     <>
@@ -440,7 +407,7 @@ const CreateClass = () => {
                                       filterOption={false}
                                       onSearch={handleAddressSearch}
                                       notFoundContent={null}
-                                      options={(data || []).map((d) => ({
+                                      options={(addressData || []).map((d) => ({
                                         value: JSON.stringify(d),
                                         label: d.ADDRESS,
                                       }))}
@@ -472,73 +439,7 @@ const CreateClass = () => {
                                                 value={key}
                                                 label={key}
                                               >
-                                                {mrtStations[key].map(
-                                                  (stat) => {
-                                                    var conditionalRendering =
-                                                      [];
-                                                    if (stat.includes("NS")) {
-                                                      conditionalRendering.push(
-                                                        <Tag color="#d5321a">
-                                                          {stat}
-                                                        </Tag>
-                                                      );
-                                                    } else if (
-                                                      stat.includes("EW") ||
-                                                      stat.includes("CG")
-                                                    ) {
-                                                      conditionalRendering.push(
-                                                        <Tag color="#079546">
-                                                          {stat}
-                                                        </Tag>
-                                                      );
-                                                    } else if (
-                                                      stat.includes("CC")
-                                                    ) {
-                                                      conditionalRendering.push(
-                                                        <Tag color="#f79910">
-                                                          {stat}
-                                                        </Tag>
-                                                      );
-                                                    } else if (
-                                                      stat.includes("TE")
-                                                    ) {
-                                                      conditionalRendering.push(
-                                                        <Tag color="#a45724">
-                                                          {stat}
-                                                        </Tag>
-                                                      );
-                                                    } else if (
-                                                      stat.includes("NE")
-                                                    ) {
-                                                      conditionalRendering.push(
-                                                        <Tag color="#9d07ad">
-                                                          {stat}
-                                                        </Tag>
-                                                      );
-                                                    } else if (
-                                                      stat.includes("DT")
-                                                    ) {
-                                                      conditionalRendering.push(
-                                                        <Tag color="#085ec4">
-                                                          {stat}
-                                                        </Tag>
-                                                      );
-                                                    } else if (
-                                                      stat.includes("BP") ||
-                                                      stat.includes("SW") ||
-                                                      stat.includes("PW") ||
-                                                      stat.includes("PE") ||
-                                                      stat.includes("SE")
-                                                    ) {
-                                                      conditionalRendering.push(
-                                                        <Tag color="#718573">
-                                                          {stat}
-                                                        </Tag>
-                                                      );
-                                                    }
-                                                    return conditionalRendering;
-                                                  }
-                                                )}
+                                                {renderTags(mrtStations[key])}
                                                 {key}
                                               </Select.Option>
                                             );
@@ -576,128 +477,12 @@ const CreateClass = () => {
                                       padding: "12px",
                                     }}
                                   >
-                                    {times.map((time, index2) => (
-                                      <div
-                                        key={`schedule-${time.key}`}
-                                        style={{
-                                          display: "flex",
-                                          marginBottom: 8,
-                                        }}
-                                        align="start"
-                                      >
-                                        <Space.Compact block>
-                                          {/* <Form.Item
-                                            name="package_types"
-                                            rules={[
-                                              {
-                                                required: true,
-                                                message:
-                                                  "Please select the package type",
-                                              },
-                                            ]}
-                                          >
-                                            <Select
-                                              placeholder="Select package type"
-                                              onChange={handleSelectPackage}
-                                              mode="multiple"
-                                            >
-                                              {packageTypes &&
-                                                packageTypes.map(
-                                                  (packageType) => (
-                                                    <Select.Option
-                                                      key={packageType.id}
-                                                      value={
-                                                        packageType.package_type
-                                                      }
-                                                    >
-                                                      {packageType.name}
-                                                    </Select.Option>
-                                                  )
-                                                )}
-                                            </Select>
-                                          </Form.Item> */}
-                                          <Form.Item
-                                            name={[time.name, "day"]}
-                                            fieldId={[time.fieldId, "day"]}
-                                            rules={[
-                                              {
-                                                required: true,
-                                                message: "Missing day",
-                                              },
-                                            ]}
-                                          >
-                                            <Select placeholder="Select day">
-                                              {day &&
-                                                day.map((d, index) => (
-                                                  <Select.Option
-                                                    key={index}
-                                                    value={d}
-                                                  ></Select.Option>
-                                                ))}
-                                            </Select>
-                                          </Form.Item>
-                                          <Form.Item
-                                            name={[time.name, "timeslot"]}
-                                            fieldId={[time.fieldId, "timeslot"]}
-                                            rules={[
-                                              {
-                                                required: true,
-                                                message: "Missing timeslots",
-                                              },
-                                            ]}
-                                          >
-                                            <TimeRangePicker />
-                                          </Form.Item>
-                                          <Form.Item
-                                            name={[time.name, "frequency"]}
-                                            fieldId={[
-                                              time.fieldId,
-                                              "frequency",
-                                            ]}
-                                            rules={[
-                                              {
-                                                required: true,
-                                                message: "Missing frequency",
-                                              },
-                                            ]}
-                                          >
-                                            <Select
-                                              placeholder="Select frequency"
-                                              options={[
-                                                {
-                                                  value: "Biweekly",
-                                                  label: "Biweekly",
-                                                },
-                                                {
-                                                  value: "Weekly",
-                                                  label: "Weekly",
-                                                },
-                                                {
-                                                  value: "Monthly",
-                                                  label: "Monthly",
-                                                },
-                                                {
-                                                  value: "Yearly",
-                                                  label: "Yearly",
-                                                },
-                                              ]}
-                                            ></Select>
-                                          </Form.Item>
-                                        </Space.Compact>
-                                        <Form.Item
-                                          style={{
-                                            margin: "0 4px",
-                                          }}
-                                        >
-                                          {times.length > 1 ? (
-                                            <MinusCircleOutlined
-                                              onClick={() => {
-                                                remove(time.name);
-                                              }}
-                                            />
-                                          ) : null}
-                                        </Form.Item>
-                                      </div>
+                                    {times.map((time) => (
+                                      <ScheduleItem
+                                        key={time.key}
+                                        field={time}
+                                        remove={remove}
+                                      />
                                     ))}
                                     <Form.Item>
                                       <Button

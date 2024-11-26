@@ -23,8 +23,6 @@ const useFormInitialization = (form, list) => {
       })),
     }));
 
-    console.log(locations);
-
     // Initialize form values
     form.setFieldsValue({
       title: list?.listing_title,

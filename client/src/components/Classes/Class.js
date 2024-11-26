@@ -21,6 +21,10 @@ import useFormInitialization from "../../hooks/useFormInitialization";
 import UserContext from "../UserContext";
 import TimeRangePicker from "../../utils/TimeRangePicker";
 import _ from "lodash";
+import useMRTStations from "../../hooks/useMrtStations";
+import day from "../../data/day.json";
+import useAddressSearch from "../../hooks/useAddressSearch";
+import ScheduleItem from "../../utils/ScheduleItem";
 
 const { Title } = Typography;
 const Class = () => {
@@ -33,7 +37,8 @@ const Class = () => {
   const [categories, setCategories] = useState();
   const [packageTypes, setPackageTypes] = useState();
   const [editClassForm] = Form.useForm();
-  const [data, setData] = useState([]);
+  const { mrtStations, renderTags } = useMRTStations();
+  const { addressData, handleAddressSearch } = useAddressSearch();
 
   useEffect(() => {
     async function fetchClassDetails() {
@@ -55,16 +60,6 @@ const Class = () => {
   }, [listing_id]);
 
   useFormInitialization(editClassForm, listing);
-
-  const handleAddressSearch = _.debounce(async (value) => {
-    if (value) {
-      const response = await fetch(
-        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${value}&returnGeom=Y&getAddrDetails=Y&pageNum=`
-      );
-      const parseRes = await response.json();
-      setData(parseRes.results);
-    }
-  }, 300); // function will execute only after the user has stopped typing for 300ms
 
   const handleEditClass = () => {};
 
@@ -260,15 +255,104 @@ const Class = () => {
                                         filterOption={false}
                                         onSearch={handleAddressSearch}
                                         notFoundContent={null}
-                                        options={(data || []).map((d) => ({
-                                          value: JSON.stringify(d),
-                                          label: d.ADDRESS,
-                                        }))}
+                                        options={(addressData || []).map(
+                                          (d) => ({
+                                            value: JSON.stringify(d),
+                                            label: d.ADDRESS,
+                                          })
+                                        )}
                                       />
+                                    </Form.Item>
+                                  </Col>
+                                  <Col flex="1 0 50%">
+                                    <Form.Item
+                                      name={[field.name, "nearest_mrt"]}
+                                      fieldId={[field.fieldId, "nearest_mrt"]}
+                                      rules={[
+                                        {
+                                          required: true,
+                                          message:
+                                            "Please input the nearest MRT/LRT",
+                                        },
+                                      ]}
+                                    >
+                                      <Select
+                                        showSearch
+                                        placeholder="Nearest MRT/LRT"
+                                      >
+                                        {!_.isEmpty(mrtStations) &&
+                                          Object.keys(mrtStations).map(
+                                            (key, index) => {
+                                              return (
+                                                <Select.Option
+                                                  key={index}
+                                                  value={key}
+                                                  label={key}
+                                                >
+                                                  {renderTags(mrtStations[key])}
+                                                  {key}
+                                                </Select.Option>
+                                              );
+                                            }
+                                          )}
+                                      </Select>
                                     </Form.Item>
                                   </Col>
                                 </Space.Compact>
                               </Row>
+                            </Col>
+
+                            {/* dynamic form for multiple schedules */}
+                            <Col flex="1 0 25%">
+                              <Form.Item>
+                                <Form.List
+                                  name={[field.name, "schedules"]}
+                                  rules={[
+                                    {
+                                      validator: async (_, schedules) => {
+                                        if (
+                                          !schedules ||
+                                          schedules.length <= 0
+                                        ) {
+                                          return Promise.reject(
+                                            new Error("Please pick dates")
+                                          );
+                                        }
+                                      },
+                                    },
+                                  ]}
+                                >
+                                  {(times, { add, remove }, { errors }) => (
+                                    <div
+                                      style={{
+                                        border: "1px dotted #cccccc",
+                                        borderRadius: "5px",
+                                        padding: "12px",
+                                      }}
+                                    >
+                                      {times.map((time) => (
+                                        <ScheduleItem
+                                          key={time.key}
+                                          field={time}
+                                          remove={remove}
+                                        />
+                                      ))}
+                                      <Form.Item>
+                                        <Button
+                                          type="dashed"
+                                          onClick={() => {
+                                            add();
+                                          }}
+                                          icon={<PlusCircleOutlined />}
+                                        >
+                                          Add schedule
+                                        </Button>
+                                        <Form.ErrorList errors={errors} />
+                                      </Form.Item>
+                                    </div>
+                                  )}
+                                </Form.List>
+                              </Form.Item>
                             </Col>
                           </Row>
                         </Col>
