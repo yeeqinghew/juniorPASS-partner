@@ -3,16 +3,17 @@ import { Form, Input, Button, Upload, message, Select, Avatar } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import getBaseURL from "../../utils/config";
 import Spinner from "../../utils/Spinner";
-import { DataContext } from "../../hooks/DataContext";
+import UserContext from "../UserContext";
 
 const { Option } = Select;
+const { TextArea } = Input;
 
 const Profile = () => {
+  const { user } = useContext(UserContext);
   const baseURL = getBaseURL();
   const [loading, setLoading] = useState(true); // Loading state for data fetch
   const [userProfile, setUserProfile] = useState({});
   const token = localStorage.getItem("token");
-  const { categories, packageTypes, ageGroups } = useContext(DataContext);
   const [profileForm] = Form.useForm();
 
   useEffect(() => {
@@ -38,10 +39,28 @@ const Profile = () => {
     retrieveUser();
   }, []);
 
-  const handleFormSubmit = (values) => {
-    // Send form data to the backend API for updating the profile
-    message.success("Profile updated successfully!");
-    console.log("Updated Profile:", values);
+  const handleFormSubmit = async (values) => {
+    try {
+      const response = await fetch(`${baseURL}/partners/${user.partner_id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values), // Ensure JSON payload
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.success("Profile updated successfully!");
+      } else {
+        throw new Error("Failed to update profile");
+      }
+    } catch (err) {
+      console.error("Error in handleFormSubmit:", err);
+      message.error("Error updating profile");
+    }
   };
 
   const handleImageChange = (file) => {
@@ -81,17 +100,36 @@ const Profile = () => {
       </Form.Item>
 
       {/* TODO: Load existing picture and allow user to change display picture */}
-      <Form.Item label="Display Picture" name="displayPicture">
+      <Form.Item label="Display Picture">
         <Upload
           accept="image/*"
           showUploadList={false}
           beforeUpload={handleImageChange}
         >
-          <Button icon={<UploadOutlined />}>Upload Image</Button>
+          <Button icon={<UploadOutlined />}>Upload New Picture</Button>
         </Upload>
-        {userProfile.displayPicture && (
-          <Avatar size={64} src={userProfile.displayPicture} />
+        {userProfile.displayPicture?.preview || userProfile.picture ? (
+          <Avatar
+            size={64}
+            src={userProfile.displayPicture?.preview || userProfile.picture}
+            alt="Display Picture"
+            style={{ marginTop: 8 }}
+          />
+        ) : (
+          <Avatar
+            size={64}
+            icon={<UploadOutlined />}
+            style={{ marginTop: 8 }}
+          />
         )}
+      </Form.Item>
+
+      <Form.Item
+        label="Description"
+        name="description"
+        rules={[{ required: true, message: "Please enter your name" }]}
+      >
+        <TextArea value={userProfile?.description} />
       </Form.Item>
 
       {/* TODO: to change to multiselect and existing value */}
@@ -125,11 +163,13 @@ const Profile = () => {
       </Form.Item>
 
       <Form.Item
-        label="Phone Number"
+        label="Contact Number"
         name="phone_number"
-        rules={[{ required: true, message: "Please enter your phone number" }]}
+        rules={[
+          { required: true, message: "Please enter your contact number" },
+        ]}
       >
-        <Input placeholder="Enter phone number" />
+        <Input placeholder="Enter contact number" />
       </Form.Item>
 
       <Form.Item>

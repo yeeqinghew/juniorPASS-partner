@@ -8,9 +8,9 @@ import getBaseURL from "../../utils/config";
 const { Meta } = Card;
 
 const AllClasses = ({ setAuth }) => {
+  const { user } = useContext(UserContext);
   const baseURL = getBaseURL();
   const [listing, setListing] = useState([]);
-  const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const token = user && user?.token;
 
