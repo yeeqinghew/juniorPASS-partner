@@ -36,7 +36,7 @@ const { Dragger } = Upload;
 const CreateClass = () => {
   const baseURL = getBaseURL();
   const [images, setImages] = useState([]);
-  const { categories, packageTypes, ageGroups } = useContext(DataContext);
+  const { packageTypes, ageGroups } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
   const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
   const { addressData, handleAddressSearch } = useAddressSearch();
@@ -98,10 +98,6 @@ const CreateClass = () => {
 
   const handleSelectAgeGroups = (values) => {
     createClassForm.setFieldValue("age_groups", values);
-  };
-
-  const handleSelectCategories = (values) => {
-    createClassForm.setFieldValue("categories", values);
   };
 
   const handleSelectPackage = (values) => {
@@ -289,28 +285,6 @@ const CreateClass = () => {
               ></Avatar>
             }
           />
-        </Form.Item>
-        <Form.Item
-          name="categories"
-          rules={[
-            {
-              required: true,
-              message: "Please select your categories",
-            },
-          ]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Select category"
-            onChange={handleSelectCategories}
-          >
-            {categories &&
-              categories.map((category) => (
-                <Select.Option key={category.id} value={category.name}>
-                  {category.name}
-                </Select.Option>
-              ))}
-          </Select>
         </Form.Item>
         <Form.Item
           name="description"

@@ -9,8 +9,6 @@ import {
   Row,
   Select,
   Space,
-  Tag,
-  TimePicker,
   Typography,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
@@ -19,12 +17,11 @@ import { useParams } from "react-router-dom";
 import getBaseURL from "../../utils/config";
 import useFormInitialization from "../../hooks/useFormInitialization";
 import UserContext from "../UserContext";
-import TimeRangePicker from "../../utils/TimeRangePicker";
 import _ from "lodash";
 import useMRTStations from "../../hooks/useMrtStations";
-import day from "../../data/day.json";
 import useAddressSearch from "../../hooks/useAddressSearch";
 import ScheduleItem from "../../utils/ScheduleItem";
+import { DataContext } from "../../hooks/DataContext";
 
 const { Title } = Typography;
 const Class = () => {
@@ -33,12 +30,10 @@ const Class = () => {
   const token = user && user?.token;
   const { listing_id } = useParams();
   const [listing, setListing] = useState();
-  const [ageGroup, setAgeGroup] = useState();
-  const [categories, setCategories] = useState();
-  const [packageTypes, setPackageTypes] = useState();
   const [editClassForm] = Form.useForm();
   const { mrtStations, renderTags } = useMRTStations();
   const { addressData, handleAddressSearch } = useAddressSearch();
+  const { categories, packageTypes, ageGroups } = useContext(DataContext);
 
   useEffect(() => {
     async function fetchClassDetails() {
@@ -62,6 +57,9 @@ const Class = () => {
   useFormInitialization(editClassForm, listing);
 
   const handleEditClass = () => {};
+  console.log(listing?.age_groups?.map((age) => age.name)); // Logs the value passed to Select
+
+  console.log(ageGroups); // Logs all available options for Select
 
   return (
     <>
@@ -144,11 +142,12 @@ const Class = () => {
         <Form.Item
           name="category"
           rules={[{ required: true, message: "Please select your categories" }]}
+          initialValue={listing?.age_groups?.map((age) => age.name)} // Set initial value
         >
           <Select
             placeholder="Select category"
             mode="multiple"
-            value={listing?.categories}
+            value={listing?.age_groups?.map((age) => age.name)} // Correctly maps names
           >
             {categories &&
               categories.map((category) => (
@@ -366,7 +365,7 @@ const Class = () => {
         </Form.Item>
 
         <Form.Item
-          name={"age_groups"}
+          name="age_groups"
           rules={[
             {
               required: true,
@@ -374,25 +373,19 @@ const Class = () => {
             },
           ]}
         >
-          <Select
-            mode="multiple"
-            placeholder="Select age groups"
-            // onChange={handleSelectAgeGroups}
-            value={listing?.age_groups}
-          >
-            {ageGroup &&
-              ageGroup.map((age) => (
-                <Select.Option key={age.id} value={age.name}>
-                  {age.max_age !== null
-                    ? `${age.min_age} to ${age.max_age} years old: ${age.name}`
-                    : `${age.name} years old`}
-                </Select.Option>
-              ))}
+          <Select mode="multiple" placeholder="Select age groups">
+            {ageGroups.map((age) => (
+              <Select.Option key={age.id} value={age.name}>
+                {age.max_age !== null
+                  ? `${age.min_age} to ${age.max_age} years old: ${age.name}`
+                  : `${age.min_age}+ years old`}
+              </Select.Option>
+            ))}
           </Select>
         </Form.Item>
 
         <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
-          Create
+          Save changes
         </Button>
       </Form>
     </>

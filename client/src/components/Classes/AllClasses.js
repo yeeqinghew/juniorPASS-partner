@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
-import { Card, Carousel } from "antd";
+import { Card, Carousel, Dropdown, Menu } from "antd";
 import { useNavigate } from "react-router-dom";
 import { EditOutlined, SettingOutlined } from "@ant-design/icons";
 import UserContext from "../UserContext";
@@ -34,6 +34,20 @@ const AllClasses = ({ setAuth }) => {
     }
   }, [baseURL, token, setAuth]);
 
+  const menu = (list) => (
+    <Menu>
+      <Menu.Item
+        key="archive"
+        onClick={() =>
+          // TODO: handleArchive(list.listing_id)
+          console.log(list.listing_id)
+        }
+      >
+        Archive
+      </Menu.Item>
+    </Menu>
+  );
+
   const handleClickClass = (list) => {
     navigate(`/partner/class/${list?.listing_id}`, {});
   };
@@ -55,17 +69,31 @@ const AllClasses = ({ setAuth }) => {
         listing.map((list) => (
           <Card
             hoverable
-            onClick={() => {
-              handleClickClass(list);
-            }}
             key={list.listing_id}
             style={{
               maxWidth: 300,
               margin: 24,
             }}
             actions={[
-              <SettingOutlined key="setting" />,
-              <EditOutlined key="edit" />,
+              <Dropdown
+                overlay={menu(list)}
+                trigger={["click"]}
+                placement="top"
+                key="setting"
+              >
+                <SettingOutlined
+                  key="setting"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click
+                  }}
+                />
+              </Dropdown>,
+              <EditOutlined
+                key="edit"
+                onClick={() => {
+                  handleClickClass(list);
+                }}
+              />,
             ]}
             cover={
               <Carousel autoplay>

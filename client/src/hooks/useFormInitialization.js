@@ -30,7 +30,7 @@ const useFormInitialization = (form, list) => {
       description: list?.description,
       package_types: list?.package_types,
       category: list?.categories,
-      age_groups: list?.age_groups,
+      age_groups: list?.age_groups?.map((age) => age.name),
       locations,
     });
   }, [form, list]);
