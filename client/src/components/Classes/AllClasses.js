@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { EditOutlined, SettingOutlined } from "@ant-design/icons";
 import UserContext from "../UserContext";
 import getBaseURL from "../../utils/config";
+import toast from "react-hot-toast";
 
 const { Meta } = Card;
 
@@ -37,16 +38,40 @@ const AllClasses = ({ setAuth }) => {
     }
   }, [baseURL, token, setAuth]);
 
-  const menu = (list) => (
-    <Menu>
-      <Menu.Item
-        key="archive"
-        onClick={() =>
-          // TODO: handleArchive(list.listing_id)
-          console.log(list.listing_id)
+  const handleArchive = async (listing) => {
+    console.log(listing);
+    try {
+      const newStatus = !listing?.active;
+      const response = await fetch(
+        `${baseURL}/listings/${listing.listing_id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ active: newStatus }),
         }
-      >
-        Archive
+      );
+
+      if (response.ok) {
+        toast.success(
+          `Listing ${listing.listing_id} is now ${
+            newStatus ? "active" : "inactive"
+          }.`
+        );
+        // Optionally, update the UI state if needed
+      } else {
+        toast.error("Failed to update listing status:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error updating listing status:", error);
+    }
+  };
+
+  const menu = (listing) => (
+    <Menu>
+      <Menu.Item key="archive" onClick={() => handleArchive(listing)}>
+        {listing.active ? "Inactive it" : "Activate it"}
       </Menu.Item>
     </Menu>
   );
