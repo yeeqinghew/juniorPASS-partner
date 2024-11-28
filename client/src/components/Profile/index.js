@@ -4,17 +4,19 @@ import { UploadOutlined } from "@ant-design/icons";
 import getBaseURL from "../../utils/config";
 import Spinner from "../../utils/Spinner";
 import UserContext from "../UserContext";
+import useAddressSearch from "../../hooks/useAddressSearch";
 
 const { Option } = Select;
 const { TextArea } = Input;
 
 const Profile = () => {
   const { user } = useContext(UserContext);
+  const { addressData, handleAddressSearch } = useAddressSearch();
   const baseURL = getBaseURL();
-  const [loading, setLoading] = useState(true); // Loading state for data fetch
-  const [userProfile, setUserProfile] = useState({});
   const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true); // Loading state for data fetch
   const [profileForm] = Form.useForm();
+  const [userProfile, setUserProfile] = useState({});
 
   useEffect(() => {
     async function retrieveUser() {
@@ -99,6 +101,10 @@ const Profile = () => {
         <Input placeholder="Enter your name" />
       </Form.Item>
 
+      <Form.Item label="Email" name="email">
+        <Input disabled />
+      </Form.Item>
+
       {/* TODO: Load existing picture and allow user to change display picture */}
       <Form.Item label="Display Picture">
         <Upload
@@ -129,7 +135,7 @@ const Profile = () => {
         name="description"
         rules={[{ required: true, message: "Please enter your name" }]}
       >
-        <TextArea value={userProfile?.description} />
+        <TextArea value={userProfile?.description} rows={8} />
       </Form.Item>
 
       {/* TODO: to change to multiselect and existing value */}
@@ -153,18 +159,32 @@ const Profile = () => {
         <Input placeholder="Enter website URL" />
       </Form.Item>
 
-      {/* TODO: Search by address */}
       <Form.Item
-        label="Address"
-        name="address"
-        rules={[{ required: true, message: "Please enter your address" }]}
+        name={"address"}
+        fieldId={"address"}
+        rules={[
+          {
+            required: true,
+            message: "Please input your address",
+          },
+        ]}
       >
-        <Input placeholder="Enter your address" />
+        <Select
+          showSearch
+          placeholder={"Address"}
+          filterOption={false}
+          onSearch={handleAddressSearch}
+          notFoundContent={null}
+          options={(addressData || []).map((d) => ({
+            value: JSON.stringify(d),
+            label: d.ADDRESS,
+          }))}
+        />
       </Form.Item>
 
       <Form.Item
         label="Contact Number"
-        name="phone_number"
+        name="contact_number"
         rules={[
           { required: true, message: "Please enter your contact number" },
         ]}

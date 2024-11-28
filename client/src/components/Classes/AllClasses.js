@@ -16,13 +16,16 @@ const AllClasses = ({ setAuth }) => {
 
   const getAllListings = useCallback(async () => {
     try {
-      const response = await fetch(`${baseURL}/listings`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${baseURL}/listings/partner/${user.partner_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const parseRes = await response.json();
       if (response.status === 200) {
         setListing(parseRes);

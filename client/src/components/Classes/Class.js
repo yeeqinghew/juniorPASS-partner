@@ -33,7 +33,7 @@ const Class = () => {
   const [editClassForm] = Form.useForm();
   const { mrtStations, renderTags } = useMRTStations();
   const { addressData, handleAddressSearch } = useAddressSearch();
-  const { categories, packageTypes, ageGroups } = useContext(DataContext);
+  const { packageTypes, ageGroups } = useContext(DataContext);
 
   useEffect(() => {
     async function fetchClassDetails() {
@@ -57,9 +57,6 @@ const Class = () => {
   useFormInitialization(editClassForm, listing);
 
   const handleEditClass = () => {};
-  console.log(listing?.age_groups?.map((age) => age.name)); // Logs the value passed to Select
-
-  console.log(ageGroups); // Logs all available options for Select
 
   return (
     <>
@@ -139,24 +136,7 @@ const Class = () => {
               ))}
           </Select>
         </Form.Item>
-        <Form.Item
-          name="category"
-          rules={[{ required: true, message: "Please select your categories" }]}
-          initialValue={listing?.age_groups?.map((age) => age.name)} // Set initial value
-        >
-          <Select
-            placeholder="Select category"
-            mode="multiple"
-            value={listing?.age_groups?.map((age) => age.name)} // Correctly maps names
-          >
-            {categories &&
-              categories.map((category) => (
-                <Select.Option key={category.id} value={category.name}>
-                  {category.name}
-                </Select.Option>
-              ))}
-          </Select>
-        </Form.Item>
+
         <Form.Item
           name="description"
           rules={[

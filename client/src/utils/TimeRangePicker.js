@@ -6,12 +6,12 @@ const { RangePicker } = TimePicker;
 
 const TimeRangePicker = ({ value = [], onChange }) => {
   const formattedValues = value.length
-    ? value.map((time) => dayjs(time, "HH:mm"))
+    ? value.map((time) => (dayjs.isDayjs(time) ? time : dayjs(time, "HH:mm")))
     : [];
 
   const handleChange = (values) => {
     if (values) {
-      onChange(formattedValues);
+      onChange(values.map((time) => time.format("HH:mm")));
     } else {
       onChange([]);
     }

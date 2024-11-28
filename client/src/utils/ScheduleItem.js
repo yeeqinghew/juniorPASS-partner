@@ -1,6 +1,8 @@
 import { Form, Select } from "antd";
 import { MinusCircleOutlined } from "@ant-design/icons";
 import TimeRangePicker from "./TimeRangePicker";
+import day from "../data/day.json";
+import frequency from "../data/frequency.json";
 
 const ScheduleItem = ({ field, remove }) => (
   <div style={{ display: "flex", marginBottom: 8 }}>
@@ -9,7 +11,7 @@ const ScheduleItem = ({ field, remove }) => (
       rules={[{ required: true, message: "Missing day" }]}
     >
       <Select placeholder="Select day">
-        {["Monday", "Tuesday", "Wednesday"].map((day) => (
+        {day.map((day) => (
           <Select.Option key={day} value={day}>
             {day}
           </Select.Option>
@@ -35,24 +37,7 @@ const ScheduleItem = ({ field, remove }) => (
     >
       <Select
         placeholder="Select frequency"
-        options={[
-          {
-            value: "Biweekly",
-            label: "Biweekly",
-          },
-          {
-            value: "Weekly",
-            label: "Weekly",
-          },
-          {
-            value: "Monthly",
-            label: "Monthly",
-          },
-          {
-            value: "Yearly",
-            label: "Yearly",
-          },
-        ]}
+        options={frequency.map((freq) => ({ value: freq, label: freq }))}
       ></Select>
     </Form.Item>
 

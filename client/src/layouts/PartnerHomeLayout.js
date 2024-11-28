@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   DatabaseOutlined,
-  AntDesignOutlined,
   HomeOutlined,
   LogoutOutlined,
   UserOutlined,
@@ -9,10 +8,12 @@ import {
 import { Layout, Menu, Image, Divider, Avatar } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import UserContext from "../components/UserContext";
 
 const { Header, Sider, Content } = Layout;
 
 const PartnerHomeLayout = ({ setAuth, setIsLoggingOut }) => {
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [current, setCurrent] = useState(
@@ -75,7 +76,7 @@ const PartnerHomeLayout = ({ setAuth, setIsLoggingOut }) => {
         >
           <Avatar
             size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }}
-            icon={<AntDesignOutlined />}
+            src={<Image preview={false} src={user?.picture} />}
           />
         </div>
 
