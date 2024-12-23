@@ -29,67 +29,69 @@ const Routers = () => {
 
   return (
     <UserContext.Provider value={{ user }}>
-      <DataProvider>
-        <head>
-          <link
-            href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
-            rel="stylesheet"
-          />
-          <link
-            href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css"
-            rel="stylesheet"
-            type="text/css"
-          ></link>
-          <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1594.0.min.js"></script>
-        </head>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css"
+          rel="stylesheet"
+          type="text/css"
+        ></link>
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1594.0.min.js"></script>
+      </head>
 
-        <Toaster />
-        <Routes>
-          <Route path="/" element={<Navigate to="partner/login" />} />
-          <Route path="/partner/*" element={<PartnerLandingLayout />}>
+      <Toaster />
+      <Routes>
+        <Route path="/" element={<Navigate to="partner/login" />} />
+        <Route path="/partner/*" element={<PartnerLandingLayout />}>
+          <Route
+            path="login"
+            element={
+              !isAuthenticated ? (
+                <PartnerLogin setAuth={setAuth} />
+              ) : (
+                <Navigate replace to="/partner/home" />
+              )
+            }
+          />
+          <Route path="reset-password" element={<ResetPassword />} />
+          <Route
+            element={
+              <PartnerHomeLayout
+                setAuth={setAuth}
+                setLoading={setLoading}
+                setIsLoggingOut={setIsLoggingOut}
+              />
+            }
+          >
             <Route
-              path="login"
               element={
-                !isAuthenticated ? (
-                  <PartnerLogin setAuth={setAuth} />
-                ) : (
-                  <Navigate replace to="/partner/home" />
-                )
-              }
-            />
-            <Route path="reset-password" element={<ResetPassword />} />
-            <Route
-              element={
-                <PartnerHomeLayout
-                  setAuth={setAuth}
-                  setLoading={setLoading}
-                  setIsLoggingOut={setIsLoggingOut}
+                <AuthenticatedRoute
+                  isAuthenticated={isAuthenticated}
+                  loading={loading}
+                  isLoggingOut={isLoggingOut}
                 />
               }
             >
-              <Route
-                element={
-                  <AuthenticatedRoute
-                    isAuthenticated={isAuthenticated}
-                    loading={loading}
-                    isLoggingOut={isLoggingOut}
+              {isAuthenticated && (
+                <DataProvider>
+                  <Route path="home" element={<PartnerHome />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route
+                    path="classes"
+                    element={<PartnerClasses setAuth={setAuth} />}
                   />
-                }
-              >
-                <Route path="home" element={<PartnerHome />} />
-                <Route path="profile" element={<Profile />} />
-                <Route
-                  path="classes"
-                  element={<PartnerClasses setAuth={setAuth} />}
-                />
-                <Route path="class/:listing_id" element={<Class />} />
-                <Route path="create-class" element={<CreateClass />} />
-              </Route>
+                  <Route path="class/:listing_id" element={<Class />} />
+                  <Route path="create-class" element={<CreateClass />} />
+                </DataProvider>
+              )}
             </Route>
           </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </DataProvider>
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </UserContext.Provider>
   );
 };
