@@ -11,7 +11,7 @@ const PartnerClasses = ({ setAuth }) => {
   const navigate = useNavigate();
 
   const handleCreateClass = () => {
-    navigate("/partner/create-class");
+    navigate("/portal/create-class");
   };
 
   return (

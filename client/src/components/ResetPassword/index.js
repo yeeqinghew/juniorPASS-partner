@@ -58,7 +58,7 @@ const ResetPassword = () => {
               textAlign: "center",
             }}
           >
-            <Link to="/partner/login">Back to login</Link>
+            <Link to="/portal/login">Back to login</Link>
           </div>
         </Form>
       </div>

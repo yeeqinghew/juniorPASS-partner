@@ -12,7 +12,7 @@ const AuthenticatedRoute = ({
   // Check if the user is not authenticated and loading is complete
   if (!isAuthenticated && !loading && !isLoggingOut) {
     toast.error("You have not logged in");
-    return <Navigate to="/partner/login" />;
+    return <Navigate to="/portal/login" />;
   }
 
   // Show loading spinner while authentication status is being determined

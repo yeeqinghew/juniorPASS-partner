@@ -160,7 +160,7 @@ const CreateClass = () => {
       if (response.status === 201) {
         createClassForm.resetFields();
         toast.success(parseRes.message);
-        navigate("/partner/classes");
+        navigate("/portal/classes");
       }
     } catch (error) {
       console.error(error.message);

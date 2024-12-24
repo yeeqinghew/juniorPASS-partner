@@ -44,15 +44,15 @@ const Routers = () => {
 
       <Toaster />
       <Routes>
-        <Route path="/" element={<Navigate to="partner/login" />} />
-        <Route path="/partner/*" element={<PartnerLandingLayout />}>
+        <Route path="/" element={<Navigate to="portal/login" />} />
+        <Route path="/portal/*" element={<PartnerLandingLayout />}>
           <Route
             path="login"
             element={
               !isAuthenticated ? (
                 <PartnerLogin setAuth={setAuth} />
               ) : (
-                <Navigate replace to="/partner/home" />
+                <Navigate replace to="/portal/home" />
               )
             }
           />
@@ -90,7 +90,7 @@ const Routers = () => {
             </Route>
           </Route>
         </Route>
-        {/* <Route path="*" element={<NotFound />} /> */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </UserContext.Provider>
   );

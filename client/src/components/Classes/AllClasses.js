@@ -77,7 +77,7 @@ const AllClasses = ({ setAuth }) => {
   );
 
   const handleClickClass = (list) => {
-    navigate(`/partner/class/${list?.listing_id}`, {});
+    navigate(`/portal/class/${list?.listing_id}`, {});
   };
 
   useEffect(() => {
