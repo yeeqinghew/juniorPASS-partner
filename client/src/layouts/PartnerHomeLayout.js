@@ -88,17 +88,17 @@ const PartnerHomeLayout = ({ setAuth, setIsLoggingOut }) => {
             {
               key: "home",
               icon: <HomeOutlined />,
-              label: <Link to="/portal/home">Dashboard</Link>,
+              label: <Link to="/home">Dashboard</Link>,
             },
             {
               key: "profile",
               icon: <UserOutlined />,
-              label: <Link to="/portal/profile">Profile</Link>,
+              label: <Link to="/profile">Profile</Link>,
             },
             {
               key: "classes",
               icon: <DatabaseOutlined />,
-              label: <Link to="/portal/classes">Classes</Link>,
+              label: <Link to="/classes">Classes</Link>,
             },
           ]}
         />
@@ -124,7 +124,7 @@ const PartnerHomeLayout = ({ setAuth, setIsLoggingOut }) => {
                   setAuth(false);
                   setIsLoggingOut(true);
                   toast.success("Logout successfully");
-                  navigate("/portal/login");
+                  navigate("/login");
                 }}
               />
             </Menu.Item>
