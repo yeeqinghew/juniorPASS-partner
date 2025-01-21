@@ -59,35 +59,35 @@ const Routers = () => {
           <Route path="reset-password" element={<ResetPassword />} />
           <Route
             element={
-              <PartnerHomeLayout
-                setAuth={setAuth}
-                setLoading={setLoading}
-                setIsLoggingOut={setIsLoggingOut}
+              <AuthenticatedRoute
+                isAuthenticated={isAuthenticated}
+                loading={loading}
+                isLoggingOut={isLoggingOut}
               />
             }
           >
-            <Route
-              element={
-                <AuthenticatedRoute
-                  isAuthenticated={isAuthenticated}
-                  loading={loading}
-                  isLoggingOut={isLoggingOut}
+            {isAuthenticated && (
+              <Route
+                element={
+                  <DataProvider>
+                    <PartnerHomeLayout
+                      setAuth={setAuth}
+                      setLoading={setLoading}
+                      setIsLoggingOut={setIsLoggingOut}
+                    />
+                  </DataProvider>
+                }
+              >
+                <Route path="home" element={<PartnerHome />} />
+                <Route path="profile" element={<Profile />} />
+                <Route
+                  path="classes"
+                  element={<PartnerClasses setAuth={setAuth} />}
                 />
-              }
-            >
-              {isAuthenticated && (
-                <DataProvider>
-                  <Route path="home" element={<PartnerHome />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route
-                    path="classes"
-                    element={<PartnerClasses setAuth={setAuth} />}
-                  />
-                  <Route path="class/:listing_id" element={<Class />} />
-                  <Route path="create-class" element={<CreateClass />} />
-                </DataProvider>
-              )}
-            </Route>
+                <Route path="class/:listing_id" element={<Class />} />
+                <Route path="create-class" element={<CreateClass />} />
+              </Route>
+            )}
           </Route>
         </Route>
         <Route path="*" element={<NotFound />} />
