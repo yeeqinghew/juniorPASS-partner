@@ -17,15 +17,7 @@ import Profile from "../components/Profile";
 import { DataProvider } from "../hooks/DataContext";
 
 const Routers = () => {
-  const {
-    isAuthenticated,
-    loading,
-    setLoading,
-    isLoggingOut,
-    setIsLoggingOut,
-    user,
-    setAuth,
-  } = useAuth();
+  const { isAuthenticated, loading, setLoading, user, setAuth } = useAuth();
 
   return (
     <UserContext.Provider value={{ user }}>
@@ -62,32 +54,28 @@ const Routers = () => {
               <AuthenticatedRoute
                 isAuthenticated={isAuthenticated}
                 loading={loading}
-                isLoggingOut={isLoggingOut}
               />
             }
           >
-            {isAuthenticated && (
+            <Route
+              element={
+                <DataProvider>
+                  <PartnerHomeLayout
+                    setAuth={setAuth}
+                    setLoading={setLoading}
+                  />
+                </DataProvider>
+              }
+            >
+              <Route path="home" element={<PartnerHome />} />
+              <Route path="profile" element={<Profile />} />
               <Route
-                element={
-                  <DataProvider>
-                    <PartnerHomeLayout
-                      setAuth={setAuth}
-                      setLoading={setLoading}
-                      setIsLoggingOut={setIsLoggingOut}
-                    />
-                  </DataProvider>
-                }
-              >
-                <Route path="home" element={<PartnerHome />} />
-                <Route path="profile" element={<Profile />} />
-                <Route
-                  path="classes"
-                  element={<PartnerClasses setAuth={setAuth} />}
-                />
-                <Route path="class/:listing_id" element={<Class />} />
-                <Route path="create-class" element={<CreateClass />} />
-              </Route>
-            )}
+                path="classes"
+                element={<PartnerClasses setAuth={setAuth} />}
+              />
+              <Route path="class/:listing_id" element={<Class />} />
+              <Route path="create-class" element={<CreateClass />} />
+            </Route>
           </Route>
         </Route>
         <Route path="*" element={<NotFound />} />

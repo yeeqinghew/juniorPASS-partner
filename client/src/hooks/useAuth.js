@@ -7,7 +7,6 @@ const useAuth = () => {
   const [user, setUser] = useState();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const token = localStorage.getItem("token");
 
   const setAuth = (boolean) => {
@@ -68,8 +67,6 @@ const useAuth = () => {
     isAuthenticated,
     loading,
     setLoading,
-    isLoggingOut,
-    setIsLoggingOut,
     user,
     setAuth,
   };
