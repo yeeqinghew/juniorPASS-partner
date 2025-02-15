@@ -1,10 +1,26 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Form, Input, Button, Upload, message, Select, Avatar } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import {
+  Form,
+  Input,
+  Button,
+  Upload,
+  message,
+  Select,
+  Avatar,
+  Row,
+  Col,
+} from "antd";
+import {
+  MinusCircleOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import getBaseURL from "../../utils/config";
 import Spinner from "../../utils/Spinner";
 import UserContext from "../UserContext";
 import useAddressSearch from "../../hooks/useAddressSearch";
+import _ from "lodash";
+import useMRTStations from "../../hooks/useMrtStations";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -12,6 +28,7 @@ const { TextArea } = Input;
 const Profile = () => {
   const { user } = useContext(UserContext);
   const { addressData, handleAddressSearch } = useAddressSearch();
+  const { mrtStations, renderTags } = useMRTStations();
   const baseURL = getBaseURL();
   const token = localStorage.getItem("token");
   const [loading, setLoading] = useState(true); // Loading state for data fetch
@@ -20,18 +37,58 @@ const Profile = () => {
 
   useEffect(() => {
     async function retrieveUser() {
+      if (!user || !user.partner_id) return;
+      if (!token) return;
+
+      setLoading(true);
+
       try {
-        const response = await fetch(`${baseURL}/partners/`, {
+        const partnerResponse = await fetch(`${baseURL}/partners/`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        const parseRes = await response.json();
-        setUserProfile(parseRes);
-        profileForm.setFieldValue({});
-        setLoading(false); // Set loading to false once data is fetched
+        if (!partnerResponse.ok) {
+          throw new Error(
+            `Failed to fetch profile data: ${partnerResponse.statusText}`
+          );
+        }
+
+        const partnerData = await partnerResponse.json();
+        setUserProfile(partnerData);
+
+        const outletsResponse = await fetch(
+          `${baseURL}/partners/${user?.partner_id}/outlets`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!outletsResponse.ok) {
+          throw new Error(
+            `Failed to fetch outlets data: ${outletsResponse.statusText}`
+          );
+        }
+
+        let outletsData = await outletsResponse.json();
+        outletsData = outletsData.map((outlet) => ({
+          ...outlet,
+          address: JSON.parse(outlet.address), // Convert string to object
+        }));
+
+        // reset the form and stop loading
+        profileForm.setFieldsValue({
+          outlets: outletsData.map((outlet) => ({
+            address: JSON.stringify(outlet.address),
+            nearest_mrt: outlet.nearest_mrt,
+          })),
+        });
+
+        setLoading(false);
       } catch (error) {
         message.error("Error fetching profile data");
         setLoading(false); // Hide loading state even on error
@@ -190,6 +247,83 @@ const Profile = () => {
         ]}
       >
         <Input placeholder="Enter contact number" />
+      </Form.Item>
+
+      <Form.Item label="Outlets">
+        <Form.List name={"outlets"}>
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map((field) => (
+                <Row key={field.key} gutter={24}>
+                  <Col span={10}>
+                    <Form.Item
+                      name={[field.name, "address"]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input your address",
+                        },
+                      ]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder={"Address"}
+                        filterOption={false}
+                        onSearch={handleAddressSearch}
+                        notFoundContent={null}
+                        options={(addressData || []).map((d) => ({
+                          value: JSON.stringify(d),
+                          label: d.ADDRESS,
+                        }))}
+                      />
+                    </Form.Item>
+                  </Col>
+
+                  <Col span={10}>
+                    <Form.Item
+                      name={[field.name, "nearest_mrt"]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input the nearest MRT/LRT",
+                        },
+                      ]}
+                    >
+                      <Select showSearch placeholder={"Nearest MRT/LRT"}>
+                        {!_.isEmpty(mrtStations) &&
+                          Object.keys(mrtStations).map((key, index) => (
+                            <Option key={index} value={key} label={key}>
+                              {renderTags(mrtStations[key])}
+                              {key}
+                            </Option>
+                          ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+
+                  <Col span={4}>
+                    <Button
+                      type="dashed"
+                      icon={<MinusCircleOutlined />}
+                      onClick={() => remove(field.name)}
+                    ></Button>
+                  </Col>
+                </Row>
+              ))}
+
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  block
+                  icon={<PlusOutlined />}
+                >
+                  Add Outlet
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
       </Form.Item>
 
       <Form.Item>
