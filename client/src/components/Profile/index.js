@@ -83,7 +83,7 @@ const Profile = () => {
         // reset the form and stop loading
         profileForm.setFieldsValue({
           outlets: outletsData.map((outlet) => ({
-            address: JSON.stringify(outlet.address),
+            address: JSON.stringify(outlet.address.SEARCHVAL),
             nearest_mrt: outlet.nearest_mrt,
           })),
         });

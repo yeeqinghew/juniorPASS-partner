@@ -1,7 +1,6 @@
 import {
   InboxOutlined,
   PlusCircleOutlined,
-  MinusCircleOutlined,
   LeftOutlined,
 } from "@ant-design/icons";
 import {
@@ -18,7 +17,7 @@ import {
   Space,
   DatePicker,
 } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import TextArea from "antd/es/input/TextArea";
 import UserContext from "../UserContext";
@@ -26,8 +25,6 @@ import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 import getBaseURL from "../../utils/config";
 import { DataContext } from "../../hooks/DataContext";
-import useMRTStations from "../../hooks/useMrtStations";
-import useAddressSearch from "../../hooks/useAddressSearch";
 import ScheduleItem from "../../utils/ScheduleItem";
 
 const { Title } = Typography;
@@ -39,11 +36,11 @@ const CreateClass = () => {
   const { packageTypes, ageGroups } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
   const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
-  const { addressData, handleAddressSearch } = useAddressSearch();
   const { user } = useContext(UserContext);
-  const { mrtStations, renderTags } = useMRTStations();
   const token = user && user?.token;
   const navigate = useNavigate();
+  // Stores the selected outlet and its schedule
+  const [outlets, setOutlets] = useState([]);
 
   // async function getMRTLocations() {
   //   const response = await fetch(
@@ -62,6 +59,36 @@ const CreateClass = () => {
   //   const parseRes = await response.json();
   //   // console.log(parseRes);
   // }
+
+  // Fetch outlets for the current partner
+  const fetchOutlets = async () => {
+    try {
+      const response = await fetch(
+        `${baseURL}/partners/${user.partner_id}/outlets`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setOutlets(data); // Set the outlets state
+      } else {
+        throw new Error("Failed to fetch outlets");
+      }
+    } catch (error) {
+      console.error("Error fetching outlets:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.partner_id) {
+      fetchOutlets(); // Fetch outlets when the user is available and has a partner_id
+    }
+  }, [user?.partner_id]);
 
   const props = {
     name: "image",
@@ -201,7 +228,7 @@ const CreateClass = () => {
             },
           ]}
         >
-          <Input placeholder="Title" size={"large"} required />
+          <Input placeholder="Class Title" size={"large"} required />
         </Form.Item>
         <Form.Item
           name="package_types"
@@ -243,7 +270,6 @@ const CreateClass = () => {
             <DatePicker placeholder="Select short-term start date" />
           </Form.Item>
         )}
-
         {createClassForm
           .getFieldValue("package_types")
           ?.includes("long-term") && (
@@ -270,20 +296,7 @@ const CreateClass = () => {
         >
           <InputNumber
             style={{ width: "100%" }}
-            prefix={
-              <Avatar
-                src={
-                  <img
-                    src={require("../../images/credit.png")}
-                    alt="credit"
-                    style={{
-                      height: 24,
-                      width: 24,
-                    }}
-                  />
-                }
-              ></Avatar>
-            }
+            prefix={<Avatar src={require("../../images/credit.png")}></Avatar>}
           />
         </Form.Item>
         <Form.Item
@@ -298,202 +311,9 @@ const CreateClass = () => {
           <TextArea
             showCount
             maxLength={5000}
-            placeholder="Description"
+            placeholder="Class Description"
             style={{ height: 120, resize: "none" }}
           />
-        </Form.Item>
-        {/* dynamic form for multiple outlets */}
-        <Form.Item>
-          <Form.List
-            name="locations"
-            rules={[
-              {
-                validator: async (_, locations) => {
-                  if (!locations || locations.length <= 0) {
-                    return Promise.reject(new Error("Please pick location"));
-                  }
-                },
-              },
-            ]}
-          >
-            {(fields, { add, remove }, { errors }) => (
-              <div
-                style={{
-                  border: "1px dotted #cccccc",
-                  borderRadius: "5px",
-                  margin: "12px 0",
-                  padding: "12px ",
-                }}
-              >
-                <Form.Item>
-                  <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    icon={<PlusCircleOutlined />}
-                  >
-                    Add location(s)
-                  </Button>
-                  <Form.ErrorList errors={errors} />
-                </Form.Item>
-
-                <Col>
-                  <Row gutter={16}>
-                    <Col span={1}>
-                      <div>Index</div>
-                    </Col>
-                    <Col span={13}>
-                      <div>Location(s)</div>
-                    </Col>
-                    <Col span={6}>
-                      <div>Schedule(s)</div>
-                    </Col>
-                  </Row>
-
-                  {fields.map((field, index) => (
-                    <Row key={`location-${field.key}`}>
-                      <Col flex="1 0 50%" key={`location-${field.key}`}>
-                        <Row
-                          key={`location-${field.key}`}
-                          style={{
-                            marginBottom: 8,
-                            border: "1px dotted #cccccc",
-                            padding: "8px",
-                          }}
-                        >
-                          <Col span={1}>{index}</Col>
-                          <Col span={13} flex="1 0 50%">
-                            <Row>
-                              <Space.Compact block>
-                                <Col flex="1 0 50%">
-                                  <Form.Item
-                                    name={[field.name, "address"]}
-                                    fieldId={[field.fieldId, "address"]}
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please input your address",
-                                      },
-                                    ]}
-                                  >
-                                    <Select
-                                      showSearch
-                                      placeholder={"Address"}
-                                      filterOption={false}
-                                      onSearch={handleAddressSearch}
-                                      notFoundContent={null}
-                                      options={(addressData || []).map((d) => ({
-                                        value: JSON.stringify(d),
-                                        label: d.ADDRESS,
-                                      }))}
-                                    />
-                                  </Form.Item>
-                                </Col>
-                                <Col flex="1 0 50%">
-                                  <Form.Item
-                                    name={[field.name, "nearest_mrt"]}
-                                    fieldId={[field.fieldId, "nearest_mrt"]}
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message:
-                                          "Please input the nearest MRT/LRT",
-                                      },
-                                    ]}
-                                  >
-                                    <Select
-                                      showSearch
-                                      placeholder="Nearest MRT/LRT"
-                                    >
-                                      {!_.isEmpty(mrtStations) &&
-                                        Object.keys(mrtStations).map(
-                                          (key, index) => {
-                                            return (
-                                              <Select.Option
-                                                key={index}
-                                                value={key}
-                                                label={key}
-                                              >
-                                                {renderTags(mrtStations[key])}
-                                                {key}
-                                              </Select.Option>
-                                            );
-                                          }
-                                        )}
-                                    </Select>
-                                  </Form.Item>
-                                </Col>
-                              </Space.Compact>
-                            </Row>
-                          </Col>
-
-                          {/* dynamic form for multiple schedules */}
-                          <Col flex="1 0 25%">
-                            <Form.Item>
-                              <Form.List
-                                name={[field.name, "schedules"]}
-                                rules={[
-                                  {
-                                    validator: async (_, schedules) => {
-                                      if (!schedules || schedules.length <= 0) {
-                                        return Promise.reject(
-                                          new Error("Please pick dates")
-                                        );
-                                      }
-                                    },
-                                  },
-                                ]}
-                              >
-                                {(times, { add, remove }, { errors }) => (
-                                  <div
-                                    style={{
-                                      border: "1px dotted #cccccc",
-                                      borderRadius: "5px",
-                                      padding: "12px",
-                                    }}
-                                  >
-                                    {times.map((time) => (
-                                      <ScheduleItem
-                                        key={time.key}
-                                        field={time}
-                                        remove={remove}
-                                      />
-                                    ))}
-                                    <Form.Item>
-                                      <Button
-                                        type="dashed"
-                                        onClick={() => {
-                                          add();
-                                        }}
-                                        icon={<PlusCircleOutlined />}
-                                      >
-                                        Add schedule
-                                      </Button>
-                                      <Form.ErrorList errors={errors} />
-                                    </Form.Item>
-                                  </div>
-                                )}
-                              </Form.List>
-                            </Form.Item>
-                          </Col>
-                        </Row>
-                      </Col>
-                      <Col>
-                        <Form.Item>
-                          {fields.length > 1 ? (
-                            <MinusCircleOutlined
-                              onClick={() => {
-                                remove(field.name);
-                              }}
-                            />
-                          ) : null}
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  ))}
-                </Col>
-              </div>
-            )}
-          </Form.List>
         </Form.Item>
         <Form.Item
           name={"age_groups"}
@@ -519,7 +339,91 @@ const CreateClass = () => {
               ))}
           </Select>
         </Form.Item>
-        <Dragger {...props}>
+
+        {/* Add another outlet button */}
+        <Button
+          type="dashed"
+          icon={<PlusCircleOutlined />}
+          onClick={(selectedOutlet) => {
+            if (
+              !outlets.some(
+                (outlet) => outlet.outlet_id === selectedOutlet.outlet_id
+              )
+            ) {
+              setOutlets([...outlets, selectedOutlet]);
+            }
+          }}
+          style={{ marginBottom: "16px" }}
+        >
+          Add outlet
+        </Button>
+
+        {/* Render each outlet field dynamically */}
+        {outlets.map((outlet, index) => (
+          <Row key={outlet.outlet_id} gutter={[16, 16]}>
+            <Col flex="1 0 25%">
+              {/* Outlet selection */}
+              <Form.Item
+                name={[`outlet_${index}`, "outlet_id"]}
+                label={`Outlet ${index + 1}`}
+                rules={[{ required: true, message: "Please select an outlet" }]}
+              >
+                <Select placeholder="Select an outlet">
+                  {outlets.map((outletOption) => (
+                    <Select.Option
+                      key={outletOption.outlet_id}
+                      value={outletOption.outlet_id}
+                    >
+                      {outletOption.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              {/* Dynamic Schedules List */}
+              <Form.Item label="Schedules">
+                <Form.Item>
+                  <Form.List
+                    name={[`outlet_${index}`, "schedules"]}
+                    initialValue={[{}]}
+                    rules={[
+                      {
+                        validator: async (_, schedules) =>
+                          !schedules || schedules.length <= 0
+                            ? Promise.reject(new Error("Please pick dates"))
+                            : Promise.resolve(),
+                      },
+                    ]}
+                  >
+                    {(fields, { remove }) => (
+                      <div
+                        style={{
+                          border: "1px dotted #cccccc",
+                          borderRadius: "5px",
+                          padding: "12px",
+                        }}
+                      >
+                        {fields.map((field) => (
+                          <Row key={field.key} gutter={[16, 8]} align="middle">
+                            <Col span={20}>
+                              <ScheduleItem
+                                key={fields.key}
+                                field={fields}
+                                remove={remove}
+                              />
+                            </Col>
+                          </Row>
+                        ))}
+                      </div>
+                    )}
+                  </Form.List>
+                </Form.Item>
+              </Form.Item>
+            </Col>
+          </Row>
+        ))}
+
+        <Dragger {...props} style={{ marginBottom: "24px" }}>
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
@@ -528,8 +432,14 @@ const CreateClass = () => {
           </p>
           <p className="ant-upload-hint"></p>
         </Dragger>
-        <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
-          Create
+        <Button
+          type="primary"
+          size="large"
+          block
+          htmlType="submit"
+          loading={false}
+        >
+          Create Class
         </Button>
       </Form>
     </>
