@@ -83,7 +83,7 @@ const Profile = () => {
         // reset the form and stop loading
         profileForm.setFieldsValue({
           outlets: outletsData.map((outlet) => ({
-            address: JSON.stringify(outlet.address.SEARCHVAL),
+            address: JSON.stringify(outlet.address),
             nearest_mrt: outlet.nearest_mrt,
           })),
         });
@@ -217,6 +217,7 @@ const Profile = () => {
       </Form.Item>
 
       <Form.Item
+        label="Address (HQ)"
         name={"address"}
         fieldId={"address"}
         rules={[
@@ -275,6 +276,13 @@ const Profile = () => {
                           value: JSON.stringify(d),
                           label: d.ADDRESS,
                         }))}
+                        value={
+                          profileForm.getFieldValue([
+                            "outlets",
+                            field.name,
+                            "address",
+                          ])?.ADDRESS
+                        }
                       />
                     </Form.Item>
                   </Col>
