@@ -340,88 +340,101 @@ const CreateClass = () => {
           </Select>
         </Form.Item>
 
-        {/* Add another outlet button */}
-        <Button
-          type="dashed"
-          icon={<PlusCircleOutlined />}
-          onClick={(selectedOutlet) => {
-            if (
-              !outlets.some(
-                (outlet) => outlet.outlet_id === selectedOutlet.outlet_id
-              )
-            ) {
-              setOutlets([...outlets, selectedOutlet]);
-            }
-          }}
-          style={{ marginBottom: "16px" }}
-        >
-          Add outlet
-        </Button>
-
-        {/* Render each outlet field dynamically */}
-        {outlets.map((outlet, index) => (
-          <Row key={outlet.outlet_id} gutter={[16, 16]}>
-            <Col flex="1 0 25%">
-              {/* Outlet selection */}
-              <Form.Item
-                name={[`outlet_${index}`, "outlet_id"]}
-                label={`Outlet ${index + 1}`}
-                rules={[{ required: true, message: "Please select an outlet" }]}
+        <Form.List name="outlets">
+          {(outletFields, { add: addOutlet, remove: removeOutlet }) => (
+            <>
+              <Button
+                type="dashed"
+                icon={<PlusCircleOutlined />}
+                style={{ marginBottom: "16px" }}
+                onClick={() => addOutlet({ schedules: [{}] })} // Ensure schedules exist in each new outlet
               >
-                <Select placeholder="Select an outlet">
-                  {outlets.map((outletOption) => (
-                    <Select.Option
-                      key={outletOption.outlet_id}
-                      value={outletOption.outlet_id}
-                    >
-                      {outletOption.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
+                Add outlet
+              </Button>
 
-              {/* Dynamic Schedules List */}
-              <Form.Item label="Schedules">
-                <Form.Item>
-                  <Form.List
-                    name={[`outlet_${index}`, "schedules"]}
-                    initialValue={[{}]}
-                    rules={[
-                      {
-                        validator: async (_, schedules) =>
-                          !schedules || schedules.length <= 0
-                            ? Promise.reject(new Error("Please pick dates"))
-                            : Promise.resolve(),
-                      },
-                    ]}
-                  >
-                    {(fields, { remove }) => (
-                      <div
-                        style={{
-                          border: "1px dotted #cccccc",
-                          borderRadius: "5px",
-                          padding: "12px",
-                        }}
-                      >
-                        {fields.map((field) => (
-                          <Row key={field.key} gutter={[16, 8]} align="middle">
-                            <Col span={20}>
-                              <ScheduleItem
-                                key={fields.key}
-                                field={fields}
-                                remove={remove}
-                              />
-                            </Col>
-                          </Row>
-                        ))}
-                      </div>
-                    )}
-                  </Form.List>
-                </Form.Item>
-              </Form.Item>
-            </Col>
-          </Row>
-        ))}
+              {outletFields.map((outletField, outletIndex) => (
+                <div
+                  key={outletField.key}
+                  style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "5px",
+                    padding: "12px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <Col flex="1 0 25%">
+                    {/* Outlet Selection */}
+                    <Form.Item
+                      name={[outletField.name, "outlet_id"]}
+                      label="Outlet"
+                      rules={[
+                        { required: true, message: "Please select an outlet" },
+                      ]}
+                    >
+                      <Select placeholder="Select an outlet">
+                        {outlets.map((outletOption) => {
+                          const parsedAddress = JSON.parse(
+                            outletOption.address
+                          ); // Convert string to object
+                          return (
+                            <Select.Option
+                              key={outletOption.outlet_id}
+                              value={outletOption.outlet_id}
+                            >
+                              {parsedAddress.ADDRESS}{" "}
+                              {/* Show human-readable address */}
+                            </Select.Option>
+                          );
+                        })}
+                      </Select>
+                    </Form.Item>
+
+                    {/* Dynamic Schedules List */}
+                    <Form.List name={[outletField.name, "schedules"]}>
+                      {(scheduleFields, { remove: removeSchedule }) => (
+                        <div
+                          style={{
+                            border: "1px dotted #cccccc",
+                            borderRadius: "5px",
+                            padding: "12px",
+                          }}
+                        >
+                          {scheduleFields.map((scheduleField) => (
+                            <Row
+                              key={scheduleField.key}
+                              gutter={[16, 8]}
+                              align="middle"
+                            >
+                              <Col span={20}>
+                                <ScheduleItem
+                                  key={scheduleField.key}
+                                  field={scheduleField}
+                                  remove={() =>
+                                    removeSchedule(scheduleField.name)
+                                  }
+                                />
+                              </Col>
+                            </Row>
+                          ))}
+                        </div>
+                      )}
+                    </Form.List>
+
+                    {/* Remove Outlet Button */}
+                    <Button
+                      type="dashed"
+                      danger
+                      onClick={() => removeOutlet(outletField.name)}
+                      style={{ marginTop: "10px" }}
+                    >
+                      Remove Outlet
+                    </Button>
+                  </Col>
+                </div>
+              ))}
+            </>
+          )}
+        </Form.List>
 
         <Dragger {...props} style={{ marginBottom: "24px" }}>
           <p className="ant-upload-drag-icon">
