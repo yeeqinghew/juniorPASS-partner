@@ -12,7 +12,7 @@ import UserContext from "../components/UserContext";
 
 const { Header, Sider, Content } = Layout;
 
-const PartnerHomeLayout = ({ setAuth, setIsLoggingOut }) => {
+const PartnerHomeLayout = ({ setAuth }) => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -122,7 +122,6 @@ const PartnerHomeLayout = ({ setAuth, setIsLoggingOut }) => {
                 onClick={() => {
                   localStorage.clear();
                   setAuth(false);
-                  setIsLoggingOut(true);
                   toast.success("Logout successfully");
                   navigate("/login");
                 }}
