@@ -137,16 +137,6 @@ const CreateClass = () => {
 
     try {
       // tranform the locations data
-      const transformedLocations = values.locations.map((location) => ({
-        address: JSON.parse(location.address),
-        nearest_mrt: location.nearest_mrt,
-        schedules: location.schedules.map((schedule) => ({
-          day: schedule.day,
-          timeslot: schedule.timeslot,
-          frequency: schedule.frequency,
-        })),
-      }));
-
       const uploadedImageURLs = [];
       for (let img of images) {
         const response = await fetch(`${baseURL}/misc/s3url`);
@@ -177,7 +167,7 @@ const CreateClass = () => {
           ...values,
           partner_id: user.partner_id,
           images: JSON.stringify(uploadedImageURLs),
-          locations: transformedLocations,
+          // locations: transformedLocations,
           short_term_start_date: values.short_term_start_date || null,
           long_term_start_date: values.long_term_start_date || null,
         }),
@@ -381,8 +371,7 @@ const CreateClass = () => {
                               key={outletOption.outlet_id}
                               value={outletOption.outlet_id}
                             >
-                              {parsedAddress.ADDRESS}{" "}
-                              {/* Show human-readable address */}
+                              {parsedAddress.ADDRESS}
                             </Select.Option>
                           );
                         })}
@@ -391,7 +380,10 @@ const CreateClass = () => {
 
                     {/* Dynamic Schedules List */}
                     <Form.List name={[outletField.name, "schedules"]}>
-                      {(scheduleFields, { remove: removeSchedule }) => (
+                      {(
+                        scheduleFields,
+                        { add: addSchedule, remove: removeSchedule }
+                      ) => (
                         <div
                           style={{
                             border: "1px dotted #cccccc",
@@ -415,12 +407,21 @@ const CreateClass = () => {
                                 />
                               </Col>
                             </Row>
-                          ))}
+                          ))}{" "}
+                          <Form.Item>
+                            <Button
+                              type="dashed"
+                              onClick={() => addSchedule()}
+                              icon={<PlusCircleOutlined />}
+                            >
+                              Add schedule
+                            </Button>
+                            {/* <Form.ErrorList errors={errors} /> */}
+                          </Form.Item>
                         </div>
                       )}
                     </Form.List>
 
-                    {/* Remove Outlet Button */}
                     <Button
                       type="dashed"
                       danger
