@@ -125,7 +125,7 @@ const AllClasses = ({ setAuth }) => {
             ]}
             cover={
               <Carousel autoplay>
-                {list.images.map((imgUrl, index) => (
+                {list?.images.map((imgUrl, index) => (
                   <div key={index}>
                     <img
                       alt={`carousel-${index}`}

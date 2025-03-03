@@ -39,26 +39,7 @@ const CreateClass = () => {
   const { user } = useContext(UserContext);
   const token = user && user?.token;
   const navigate = useNavigate();
-  // Stores the selected outlet and its schedule
   const [outlets, setOutlets] = useState([]);
-
-  // async function getMRTLocations() {
-  //   const response = await fetch(
-  //     "https://www.onemap.gov.sg/api/auth/post/getToken",
-  //     {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         email: process.env.REACT_APP_ONEMAPS_EMAIL,
-  //         password: process.env.REACT_APP_ONEMAPS_PASSWORD,
-  //       }),
-  //     }
-  //   );
-  //   const parseRes = await response.json();
-  //   // console.log(parseRes);
-  // }
 
   // Fetch outlets for the current partner
   const fetchOutlets = async () => {
@@ -136,28 +117,8 @@ const CreateClass = () => {
     console.log(values);
 
     try {
-      // tranform the locations data
-      const uploadedImageURLs = [];
-      for (let img of images) {
-        const response = await fetch(`${baseURL}/misc/s3url`);
-        const { url } = await response.json();
-        // post the image directly to S3 bucket
-        const s3upload = await fetch(url, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          body: img,
-        });
-
-        if (s3upload.status === 200) {
-          const imageURL = url.split("?")[0];
-          uploadedImageURLs.push(imageURL);
-        }
-      }
-
-      // get the URL and store as image
-      const response = await fetch(`${baseURL}/listings`, {
+      // 1. Create the listing first
+      const createListingResponse = await fetch(`${baseURL}/listings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -166,18 +127,87 @@ const CreateClass = () => {
         body: JSON.stringify({
           ...values,
           partner_id: user.partner_id,
-          images: JSON.stringify(uploadedImageURLs),
-          // locations: transformedLocations,
+          images: [], // temporarily empty, will be updated later
           short_term_start_date: values.short_term_start_date || null,
           long_term_start_date: values.long_term_start_date || null,
         }),
       });
 
-      const parseRes = await response.json();
-      if (response.status === 201) {
+      const createListingResult = await createListingResponse.json();
+      if (createListingResponse.status !== 201) {
+        throw new Error(
+          createListingResult.error || "Failed to create listing"
+        );
+      }
+
+      const listingId = createListingResult.data.listing_id;
+
+      // 2. upload images to S3 with correct folder path
+      const uploadedImageURLs = [];
+      for (let img of images) {
+        try {
+          const response = await fetch(
+            `${baseURL}/misc/s3url?folder=partners/${user?.partner_id}/${listingId}`
+          );
+          const { uploadURL } = await response.json();
+
+          // post the image directly to S3 bucket
+          const s3upload = await fetch(uploadURL, {
+            method: "PUT",
+            headers: {
+              "Content-Type": img.type,
+            },
+            body: img,
+          });
+
+          if (s3upload.status !== 200) {
+            throw new Error("Failed to upload image");
+          }
+
+          const imageURL = uploadURL.split("?")[0];
+          uploadedImageURLs.push(imageURL);
+        } catch (error) {
+          console.error("Image upload failed:", error);
+
+          // 3. (Rollback): delete the listing if any image upload fails
+          await fetch(`${baseURL}/listings/${listingId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          throw new Error("Image upload failed. Listing has been rolled back.");
+        }
+      }
+
+      // 4. Update the lsiting with the uploaded image URLs
+      const updateListingResponse = await fetch(
+        `${baseURL}/listings/${listingId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            images: JSON.stringify(uploadedImageURLs),
+          }),
+        }
+      );
+
+      const updateListingResult = await updateListingResponse.json();
+      if (updateListingResponse.status === 200) {
         createClassForm.resetFields();
-        toast.success(parseRes.message);
+        toast.success(
+          updateListingResult.message || "Listing created successfully"
+        );
         navigate("/classes");
+      } else {
+        throw new Error(
+          updateListingResult.error || "Failed to update listing with images"
+        );
       }
     } catch (error) {
       console.error(error.message);
@@ -407,7 +437,7 @@ const CreateClass = () => {
                                 />
                               </Col>
                             </Row>
-                          ))}{" "}
+                          ))}
                           <Form.Item>
                             <Button
                               type="dashed"

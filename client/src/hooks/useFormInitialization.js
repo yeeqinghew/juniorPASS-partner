@@ -27,7 +27,7 @@ const useFormInitialization = (form, list) => {
     form.setFieldsValue({
       title: list?.listing_title,
       credit: list?.credit,
-      description: list?.description,
+      description: list?.listing_description,
       package_types: list?.package_types,
       age_groups: list?.age_groups?.map((age) => age.name),
       locations,

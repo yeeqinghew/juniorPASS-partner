@@ -33,6 +33,7 @@ const Class = () => {
   const [editClassForm] = Form.useForm();
   const { mrtStations, renderTags } = useMRTStations();
   const { addressData, handleAddressSearch } = useAddressSearch();
+  const [outlets, setOutlets] = useState([]);
   const { packageTypes, ageGroups } = useContext(DataContext);
 
   useEffect(() => {
@@ -154,195 +155,112 @@ const Class = () => {
         </Form.Item>
 
         {/* dynamic form for multiple outlets */}
-        <Form.Item>
-          <Form.List
-            name="locations"
-            rules={[
-              {
-                validator: async (_, locations) => {
-                  if (!locations || locations.length <= 0) {
-                    return Promise.reject(new Error("Please pick location"));
-                  }
-                },
-              },
-            ]}
-          >
-            {(fields, { add, remove }, { errors }) => (
-              <div
-                style={{
-                  border: "1px dotted #cccccc",
-                  borderRadius: "5px",
-                  margin: "12px 0",
-                  padding: "12px ",
-                }}
+        <Form.List name="outlets">
+          {(outletFields, { add: addOutlet, remove: removeOutlet }) => (
+            <>
+              <Button
+                type="dashed"
+                icon={<PlusCircleOutlined />}
+                style={{ marginBottom: "16px" }}
+                onClick={() => addOutlet({ schedules: [{}] })} // Ensure schedules exist in each new outlet
               >
-                <Form.Item>
-                  <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    icon={<PlusCircleOutlined />}
-                  >
-                    Add location(s)
-                  </Button>
-                  <Form.ErrorList errors={errors} />
-                </Form.Item>
+                Add outlet
+              </Button>
 
-                <Col>
-                  <Row gutter={16}>
-                    <Col span={1}>
-                      <div>Index</div>
-                    </Col>
-                    <Col span={13}>
-                      <div>Location(s)</div>
-                    </Col>
-                    <Col span={6}>
-                      <div>Schedule(s)</div>
-                    </Col>
-                  </Row>
+              {outletFields.map((outletField, outletIndex) => (
+                <div
+                  key={outletField.key}
+                  style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "5px",
+                    padding: "12px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <Col flex="1 0 25%">
+                    {/* Outlet Selection */}
+                    <Form.Item
+                      name={[outletField.name, "outlet_id"]}
+                      label="Outlet"
+                      rules={[
+                        { required: true, message: "Please select an outlet" },
+                      ]}
+                    >
+                      <Select placeholder="Select an outlet">
+                        {outlets.map((outletOption) => {
+                          const parsedAddress = JSON.parse(
+                            outletOption.address
+                          ); // Convert string to object
+                          return (
+                            <Select.Option
+                              key={outletOption.outlet_id}
+                              value={outletOption.outlet_id}
+                            >
+                              {parsedAddress.ADDRESS}
+                            </Select.Option>
+                          );
+                        })}
+                      </Select>
+                    </Form.Item>
 
-                  {fields.map((field, index) => {
-                    return (
-                      <Row key={`location-${field.key}`}>
-                        <Col flex={"1 0 50%"} key={`location-${field.key}`}>
-                          <Row
-                            key={`location-${field.key}`}
-                            style={{
-                              marginBottom: 8,
-                              border: "1px dotted #cccccc",
-                              padding: "8px",
-                            }}
-                          >
-                            <Col span={1}>{index}</Col>
-                            <Col span={13} flex="1 0 50%">
-                              <Row>
-                                <Space.Compact block>
-                                  <Col flex="1 0 50%">
-                                    <Form.Item
-                                      name={[field.name, "address"]}
-                                      fieldId={[field.fieldId, "address"]}
-                                      rules={[
-                                        {
-                                          required: true,
-                                          message: "Please input your address",
-                                        },
-                                      ]}
-                                    >
-                                      <Select
-                                        {...field}
-                                        showSearch
-                                        placeholder={"Address"}
-                                        filterOption={false}
-                                        onSearch={handleAddressSearch}
-                                        notFoundContent={null}
-                                        options={(addressData || []).map(
-                                          (d) => ({
-                                            value: JSON.stringify(d),
-                                            label: d.ADDRESS,
-                                          })
-                                        )}
-                                      />
-                                    </Form.Item>
-                                  </Col>
-                                  <Col flex="1 0 50%">
-                                    <Form.Item
-                                      name={[field.name, "nearest_mrt"]}
-                                      fieldId={[field.fieldId, "nearest_mrt"]}
-                                      rules={[
-                                        {
-                                          required: true,
-                                          message:
-                                            "Please input the nearest MRT/LRT",
-                                        },
-                                      ]}
-                                    >
-                                      <Select
-                                        showSearch
-                                        placeholder="Nearest MRT/LRT"
-                                      >
-                                        {!_.isEmpty(mrtStations) &&
-                                          Object.keys(mrtStations).map(
-                                            (key, index) => {
-                                              return (
-                                                <Select.Option
-                                                  key={index}
-                                                  value={key}
-                                                  label={key}
-                                                >
-                                                  {renderTags(mrtStations[key])}
-                                                  {key}
-                                                </Select.Option>
-                                              );
-                                            }
-                                          )}
-                                      </Select>
-                                    </Form.Item>
-                                  </Col>
-                                </Space.Compact>
-                              </Row>
-                            </Col>
+                    {/* Dynamic Schedules List */}
+                    <Form.List name={[outletField.name, "schedules"]}>
+                      {(
+                        scheduleFields,
+                        { add: addSchedule, remove: removeSchedule }
+                      ) => (
+                        <div
+                          style={{
+                            border: "1px dotted #cccccc",
+                            borderRadius: "5px",
+                            padding: "12px",
+                          }}
+                        >
+                          {scheduleFields.map((scheduleField) => (
+                            <Row
+                              key={scheduleField.key}
+                              gutter={[16, 8]}
+                              align="middle"
+                            >
+                              <Col span={20}>
+                                <ScheduleItem
+                                  key={scheduleField.key}
+                                  field={scheduleField}
+                                  remove={() =>
+                                    removeSchedule(scheduleField.name)
+                                  }
+                                />
+                              </Col>
+                            </Row>
+                          ))}
+                          <Form.Item>
+                            <Button
+                              type="dashed"
+                              onClick={() => addSchedule()}
+                              icon={<PlusCircleOutlined />}
+                            >
+                              Add schedule
+                            </Button>
+                            {/* <Form.ErrorList errors={errors} /> */}
+                          </Form.Item>
+                        </div>
+                      )}
+                    </Form.List>
 
-                            {/* dynamic form for multiple schedules */}
-                            <Col flex="1 0 25%">
-                              <Form.Item>
-                                <Form.List
-                                  name={[field.name, "schedules"]}
-                                  rules={[
-                                    {
-                                      validator: async (_, schedules) => {
-                                        if (
-                                          !schedules ||
-                                          schedules.length <= 0
-                                        ) {
-                                          return Promise.reject(
-                                            new Error("Please pick dates")
-                                          );
-                                        }
-                                      },
-                                    },
-                                  ]}
-                                >
-                                  {(times, { add, remove }, { errors }) => (
-                                    <div
-                                      style={{
-                                        border: "1px dotted #cccccc",
-                                        borderRadius: "5px",
-                                        padding: "12px",
-                                      }}
-                                    >
-                                      {times.map((time) => (
-                                        <ScheduleItem
-                                          key={time.key}
-                                          field={time}
-                                          remove={remove}
-                                        />
-                                      ))}
-                                      <Form.Item>
-                                        <Button
-                                          type="dashed"
-                                          onClick={() => {
-                                            add();
-                                          }}
-                                          icon={<PlusCircleOutlined />}
-                                        >
-                                          Add schedule
-                                        </Button>
-                                        <Form.ErrorList errors={errors} />
-                                      </Form.Item>
-                                    </div>
-                                  )}
-                                </Form.List>
-                              </Form.Item>
-                            </Col>
-                          </Row>
-                        </Col>
-                      </Row>
-                    );
-                  })}
-                </Col>
-              </div>
-            )}
-          </Form.List>
-        </Form.Item>
+                    <Button
+                      type="dashed"
+                      danger
+                      onClick={() => removeOutlet(outletField.name)}
+                      style={{ marginTop: "10px" }}
+                    >
+                      Remove Outlet
+                    </Button>
+                  </Col>
+                </div>
+              ))}
+            </>
+          )}
+        </Form.List>
 
         <Form.Item
           name="age_groups"
