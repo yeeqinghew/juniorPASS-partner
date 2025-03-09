@@ -124,7 +124,6 @@ const Class = () => {
             placeholder="Select package type"
             // onChange={handleSelectPackage}
             mode="multiple"
-            value={listing?.package_types}
           >
             {packageTypes &&
               packageTypes.map((packageType) => (
