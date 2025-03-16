@@ -1,14 +1,18 @@
-import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  InboxOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import {
   Avatar,
   Button,
   Col,
   Form,
+  Image,
   Input,
   InputNumber,
   Row,
   Select,
-  Space,
   Typography,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
@@ -18,10 +22,9 @@ import getBaseURL from "../../utils/config";
 import useFormInitialization from "../../hooks/useFormInitialization";
 import UserContext from "../UserContext";
 import _ from "lodash";
-import useMRTStations from "../../hooks/useMrtStations";
-import useAddressSearch from "../../hooks/useAddressSearch";
 import ScheduleItem from "../../utils/ScheduleItem";
 import { DataContext } from "../../hooks/DataContext";
+import Dragger from "antd/es/upload/Dragger";
 
 const { Title } = Typography;
 const Class = () => {
@@ -31,8 +34,6 @@ const Class = () => {
   const { listing_id } = useParams();
   const [listing, setListing] = useState();
   const [editClassForm] = Form.useForm();
-  const { mrtStations, renderTags } = useMRTStations();
-  const { addressData, handleAddressSearch } = useAddressSearch();
   const [outlets, setOutlets] = useState([]);
   const { packageTypes, ageGroups } = useContext(DataContext);
 
@@ -58,6 +59,39 @@ const Class = () => {
   useFormInitialization(editClassForm, listing);
 
   const handleEditClass = () => {};
+
+  const props = {
+    name: "image",
+    multiple: true,
+    maxCount: 5,
+    required: true,
+    showUploadList: {
+      showPreviewIcon: true,
+      showRemoveIcon: true,
+    },
+    beforeUpload(info) {
+      // setImage(info);
+      // setImages((prevImages) => [...prevImages, info]);
+      return false;
+    },
+    onDrop(e) {
+      console.log("Dropped files", e.dataTransfer.files);
+    },
+    onRemove(info) {
+      // setImage(null);
+      // setImages((prevImages) =>
+      //   prevImages.filter((img) => img.uid !== info.uid)
+      // );
+    },
+    progress: {
+      strokeColor: {
+        "0%": "#108ee9",
+        "100%": "#87d068",
+      },
+      size: 3,
+      format: (percent) => percent && `${parseFloat(percent.toFixed(2))}%`,
+    },
+  };
 
   return (
     <>
@@ -280,6 +314,35 @@ const Class = () => {
             ))}
           </Select>
         </Form.Item>
+
+        {/* Display existing iamges */}
+        <Form.Item className="flex flex-wrap gap-2">
+          {listing?.images &&
+            listing?.images.map((image, index) => (
+              <div id={index}>
+                <Image
+                  src={image}
+                  width={120}
+                  height={120}
+                  className="rounded-lg"
+                />
+                <Button
+                  danger
+                  className="absolute top-1 right-1"
+                  icon={<DeleteOutlined />}
+                ></Button>
+              </div>
+            ))}
+        </Form.Item>
+        <Dragger {...props} style={{ marginBottom: "24px" }}>
+          <p className="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">
+            Click or drag file to this area to upload
+          </p>
+          <p className="ant-upload-hint"></p>
+        </Dragger>
 
         <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
           Save changes

@@ -85,8 +85,8 @@ const CreateClass = () => {
       setImages((prevImages) => [...prevImages, info]);
       return false;
     },
-    onDrop(e) {
-      console.log("Dropped files", e.dataTransfer.files);
+    onDrop(info) {
+      console.log("Dropped files", info.dataTransfer.files);
     },
     onRemove(info) {
       // setImage(null);
