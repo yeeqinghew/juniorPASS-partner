@@ -9,9 +9,10 @@ import {
   Avatar,
   Row,
   Col,
+  Tooltip,
 } from "antd";
 import {
-  MinusCircleOutlined,
+  InfoCircleOutlined,
   PlusOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
@@ -250,9 +251,18 @@ const Profile = () => {
         <Input placeholder="Enter contact number" />
       </Form.Item>
 
-      <Form.Item label="Outlets">
+      <Form.Item
+        label={
+          <span>
+            Outlets&nbsp;
+            <Tooltip title="Please contact admin for the removal of outlets.">
+              <InfoCircleOutlined />
+            </Tooltip>
+          </span>
+        }
+      >
         <Form.List name={"outlets"}>
-          {(fields, { add, remove }) => (
+          {(fields, { add }) => (
             <>
               {fields.map((field) => (
                 <Row key={field.key} gutter={24}>
@@ -307,14 +317,6 @@ const Profile = () => {
                           ))}
                       </Select>
                     </Form.Item>
-                  </Col>
-
-                  <Col span={4}>
-                    <Button
-                      type="dashed"
-                      icon={<MinusCircleOutlined />}
-                      onClick={() => remove(field.name)}
-                    ></Button>
                   </Col>
                 </Row>
               ))}
