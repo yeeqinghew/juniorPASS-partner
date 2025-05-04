@@ -1,0 +1,57 @@
+/* NotificationBell.css */
+
+.dropdown-content {
+  width: 300px;
+  max-height: 400px;
+  background-color: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-content .notification-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.dropdown-content .notification-item {
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.dropdown-content .load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.dropdown-content .notification-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #1890ff;
+  margin-left: 8px;
+}
+
+.custom-badge .ant-badge-count {
+  min-width: 16px;
+  height: 16px;
+  font-size: 10px;
+  line-height: 16px;
+  padding: 0 5px;
+}
+
+.custom-badge .ant-scroll-number {
+  transition: all 0.5s ease;
+}
