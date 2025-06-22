@@ -38,12 +38,12 @@ const AllClasses = ({ setAuth }) => {
     }
   }, [baseURL, token, setAuth]);
 
-  const handleArchive = async (listing) => {
-    console.log(listing);
+  const handleArchive = async (listingToUpdate) => {
     try {
-      const newStatus = !listing?.active;
+      const newStatus = !listingToUpdate?.active;
+
       const response = await fetch(
-        `${baseURL}/listings/${listing.listing_id}/status`,
+        `${baseURL}/listings/${listingToUpdate.listing_id}/status`,
         {
           method: "PATCH",
           headers: {
@@ -54,24 +54,34 @@ const AllClasses = ({ setAuth }) => {
       );
 
       if (response.ok) {
-        toast.success(
-          `Listing ${listing.listing_id} is now ${
-            newStatus ? "active" : "inactive"
-          }.`
+        // Update listing state locally
+        setListing((prevListings) =>
+          prevListings.map((item) =>
+            item.listing_id === listingToUpdate.listing_id
+              ? { ...item, active: newStatus }
+              : item
+          )
         );
-        // Optionally, update the UI state if needed
+
+        toast.success(
+          newStatus
+            ? "Listing activated. It will now appear on the homepage."
+            : "Listing archived. It will be removed from the homepage."
+        );
       } else {
         toast.error("Failed to update listing status:", response.statusText);
       }
     } catch (error) {
       console.error("Error updating listing status:", error);
+      toast.error(
+        "An error occurred while updating the listing. Please try again later."
+      );
     }
   };
-
   const menu = (listing) => (
     <Menu>
       <Menu.Item key="archive" onClick={() => handleArchive(listing)}>
-        {listing.active ? "Inactive it" : "Activate it"}
+        {listing.active ? "Archive" : "Activate"}
       </Menu.Item>
     </Menu>
   );
