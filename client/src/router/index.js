@@ -15,6 +15,7 @@ import useAuth from "../hooks/useAuth";
 import Class from "../components/Classes/Class";
 import Profile from "../components/Profile";
 import { DataProvider } from "../hooks/DataContext";
+import NotificationDetail from "../components/NotificationDetail/NotificationDetail";
 
 const Routers = () => {
   const { isAuthenticated, loading, setLoading, user, setAuth } = useAuth();
@@ -75,6 +76,10 @@ const Routers = () => {
               />
               <Route path="class/:listing_id" element={<Class />} />
               <Route path="create-class" element={<CreateClass />} />
+              <Route
+                path="notifications/:id"
+                element={<NotificationDetail />}
+              />
             </Route>
           </Route>
         </Route>

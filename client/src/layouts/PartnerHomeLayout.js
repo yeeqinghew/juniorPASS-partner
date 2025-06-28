@@ -9,6 +9,7 @@ import { Layout, Menu, Image, Divider, Avatar } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import UserContext from "../components/UserContext";
+import NotificationBell from "../components/NotificationBell";
 
 const { Header, Sider, Content } = Layout;
 
@@ -116,28 +117,28 @@ const PartnerHomeLayout = ({ setAuth }) => {
           <Menu
             mode="horizontal"
             style={{ flex: 1, minWidth: 0, display: "block" }}
-          >
-            <Menu.Item key="logout" style={{ float: "right" }}>
-              <LogoutOutlined
-                onClick={() => {
-                  localStorage.clear();
-                  setAuth(false);
-                  toast.success("Logout successfully");
-                  navigate("/login");
-                }}
-              />
-            </Menu.Item>
-            <Menu.Item
-              key="notification"
-              style={{ float: "right" }}
-              onClick={() => {
-                // TODO: Popover antd to show a list of notifcations
-              }}
-            >
-              {/* TODO: <Badge> */}
-              <i className="fa fa-bell-o"></i>
-            </Menu.Item>
-          </Menu>
+            items={[
+              {
+                key: "logout",
+                style: { float: "right" },
+                label: (
+                  <LogoutOutlined
+                    onClick={() => {
+                      localStorage.clear();
+                      setAuth(false);
+                      toast.success("Logout successfully");
+                      navigate("/login");
+                    }}
+                  />
+                ),
+              },
+              {
+                key: "notification",
+                style: { float: "right" },
+                label: <NotificationBell />,
+              },
+            ]}
+          />
         </Header>
         <Content
           style={{
