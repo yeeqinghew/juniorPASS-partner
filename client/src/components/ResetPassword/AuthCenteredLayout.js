@@ -10,9 +10,10 @@ const AuthCenteredLayout = ({ children }) => {
         justifyContent: "center",
         alignItems: "center",
         height: "100%",
+        minHeight: "100vh",
       }}
     >
-      <div style={{ textAlign: "center" }}>
+      <div style={{ width: "100%", maxWidth: 600, textAlign: "center" }}>
         <Image
           src={logo}
           preview={false}
