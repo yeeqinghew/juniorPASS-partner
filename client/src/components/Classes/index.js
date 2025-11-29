@@ -1,11 +1,13 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Button, Tabs, Typography } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import ActiveClasses from "./ActiveClasses";
 import InactiveClasses from "./InactiveClasses";
 import AllClasses from "./AllClasses";
 import UserContext from "../UserContext";
 import getBaseURL from "../../utils/config";
+import "./Classes.css";
 
 const { Title } = Typography;
 
@@ -38,7 +40,7 @@ const PartnerClasses = ({ setAuth }) => {
     } catch (error) {
       console.error(error.message);
     }
-  }, [baseURL, token, setAuth]);
+  }, [baseURL, token, setAuth, user?.partner_id]);
 
   useEffect(() => {
     if (!token) return;
@@ -50,29 +52,42 @@ const PartnerClasses = ({ setAuth }) => {
   };
 
   return (
-    <>
-      <Title level={3}>Classes</Title>
-      <Button onClick={handleCreateClass}>Create a new class</Button>
+    <div className="classes-container">
+      <div className="classes-header">
+        <Title level={2} className="classes-title">
+          My Classes
+        </Title>
+        <Button 
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleCreateClass}
+          className="create-class-button"
+        >
+          Create New Class
+        </Button>
+      </div>
+      
       <Tabs
         defaultActiveKey="1"
         type="card"
-        size={"small"}
+        size="large"
+        className="classes-tabs"
         items={[
           {
-            label: "All",
-            key: 1,
+            label: `All Classes (${listing.length})`,
+            key: "1",
             children: <AllClasses listing={listing} setListing={setListing} />,
           },
           {
-            label: "Active",
-            key: 2,
+            label: `Active (${listing.filter((l) => l.active).length})`,
+            key: "2",
             children: (
-              <ActiveClasses listing={listing.filter((l) => l.active)} />
+              <ActiveClasses listing={listing.filter((l) => l.active)} setListing={setListing} />
             ),
           },
           {
-            label: "Inactive",
-            key: 3,
+            label: `Inactive (${listing.filter((l) => !l.active).length})`,
+            key: "3",
             children: (
               <InactiveClasses
                 listing={listing.filter((l) => !l.active)}
@@ -82,7 +97,7 @@ const PartnerClasses = ({ setAuth }) => {
           },
         ]}
       />
-    </>
+    </div>
   );
 };
 

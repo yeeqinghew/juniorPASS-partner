@@ -25,6 +25,7 @@ import _ from "lodash";
 import ScheduleItem from "../../utils/ScheduleItem";
 import { DataContext } from "../../hooks/DataContext";
 import Dragger from "antd/es/upload/Dragger";
+import "./ClassEdit.css";
 
 const { Title } = Typography;
 const Class = () => {
@@ -36,6 +37,36 @@ const Class = () => {
   const [editClassForm] = Form.useForm();
   const [outlets, setOutlets] = useState([]);
   const { packageTypes, ageGroups } = useContext(DataContext);
+
+  // Fetch outlets for the current partner
+  const fetchOutlets = async () => {
+    try {
+      const response = await fetch(
+        `${baseURL}/partners/${user.partner_id}/outlets`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setOutlets(data);
+      } else {
+        throw new Error("Failed to fetch outlets");
+      }
+    } catch (error) {
+      console.error("Error fetching outlets:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.partner_id) {
+      fetchOutlets();
+    }
+  }, [user?.partner_id]);
 
   useEffect(() => {
     async function fetchClassDetails() {
@@ -94,19 +125,25 @@ const Class = () => {
   };
 
   return (
-    <>
-      <Title level={3}>{listing?.listing_title}</Title>
+    <div className="class-edit-container">
+      <div className="class-edit-header">
+        <Title level={2} className="class-edit-title">
+          {listing?.listing_title || "Edit Class"}
+        </Title>
+      </div>
+
       <Form
         name="edit-class"
-        style={{
-          maxWidth: "100%",
-        }}
+        className="class-edit-form"
         form={editClassForm}
         autoComplete="off"
         onFinish={handleEditClass}
+        layout="vertical"
       >
+        <div className="form-section-header">Basic Information</div>
         <Form.Item
           name="title"
+          label="Class Title"
           rules={[
             {
               required: true,
@@ -114,39 +151,11 @@ const Class = () => {
             },
           ]}
         >
-          <Input size={"large"} required />
-        </Form.Item>
-        <Form.Item
-          name="credit"
-          rules={[
-            {
-              required: true,
-              message: "Please input your credit",
-            },
-          ]}
-        >
-          <InputNumber
-            min={1}
-            max={10}
-            style={{ width: "100%" }}
-            prefix={
-              <Avatar
-                src={
-                  <img
-                    src={require("../../images/credit.png")}
-                    alt="credit"
-                    style={{
-                      height: 24,
-                      width: 24,
-                    }}
-                  />
-                }
-              ></Avatar>
-            }
-          />
+          <Input size="large" placeholder="Enter class title" />
         </Form.Item>
         <Form.Item
           name="package_types"
+          label="Package Types"
           rules={[
             {
               required: true,
@@ -155,9 +164,9 @@ const Class = () => {
           ]}
         >
           <Select
-            placeholder="Select package type"
-            // onChange={handleSelectPackage}
+            placeholder="Select package types"
             mode="multiple"
+            size="large"
           >
             {packageTypes &&
               packageTypes.map((packageType) => (
@@ -173,19 +182,44 @@ const Class = () => {
 
         <Form.Item
           name="description"
+          label="Description"
           rules={[
             {
               required: true,
-              message: "Please input your description",
+              message: "Please input a description",
             },
           ]}
         >
           <TextArea
             showCount
             maxLength={5000}
+            placeholder="Describe your class..."
             style={{ height: 120, resize: "none" }}
           />
         </Form.Item>
+
+        <Form.Item
+          name="age_groups"
+          label="Age Groups"
+          rules={[
+            {
+              required: true,
+              message: "Please select age groups",
+            },
+          ]}
+        >
+          <Select mode="multiple" placeholder="Select age groups" size="large">
+            {ageGroups.map((age) => (
+              <Select.Option key={age.id} value={age.name}>
+                {age.max_age !== null
+                  ? `${age.min_age} to ${age.max_age} years old: ${age.name}`
+                  : `${age.min_age}+ years old`}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <div className="form-section-header">Outlets & Schedules</div>
 
         {/* dynamic form for multiple outlets */}
         <Form.List name="outlets">
@@ -194,32 +228,28 @@ const Class = () => {
               <Button
                 type="dashed"
                 icon={<PlusCircleOutlined />}
+                className="add-outlet-button"
                 style={{ marginBottom: "16px" }}
-                onClick={() => addOutlet({ schedules: [{}] })} // Ensure schedules exist in each new outlet
+                onClick={() => addOutlet({ schedules: [{}] })}
+                block
               >
-                Add outlet
+                Add Outlet
               </Button>
 
               {outletFields.map((outletField, outletIndex) => (
-                <div
-                  key={outletField.key}
-                  style={{
-                    border: "1px solid #ccc",
-                    borderRadius: "5px",
-                    padding: "12px",
-                    marginBottom: "12px",
-                  }}
-                >
+                <div key={outletField.key} className="outlet-section">
+                  <div className="outlet-section-title">
+                    Outlet {outletIndex + 1}
+                  </div>
                   <Col flex="1 0 25%">
-                    {/* Outlet Selection */}
                     <Form.Item
                       name={[outletField.name, "outlet_id"]}
-                      label="Outlet"
+                      label="Select Outlet Location"
                       rules={[
                         { required: true, message: "Please select an outlet" },
                       ]}
                     >
-                      <Select placeholder="Select an outlet">
+                      <Select placeholder="Select an outlet" size="large">
                         {outlets.map((outletOption) => {
                           const parsedAddress = JSON.parse(
                             outletOption.address
@@ -242,13 +272,7 @@ const Class = () => {
                         scheduleFields,
                         { add: addSchedule, remove: removeSchedule }
                       ) => (
-                        <div
-                          style={{
-                            border: "1px dotted #cccccc",
-                            borderRadius: "5px",
-                            padding: "12px",
-                          }}
-                        >
+                        <div className="schedule-section">
                           {scheduleFields.map((scheduleField) => (
                             <Row
                               key={scheduleField.key}
@@ -271,10 +295,11 @@ const Class = () => {
                               type="dashed"
                               onClick={() => addSchedule()}
                               icon={<PlusCircleOutlined />}
+                              className="add-schedule-button"
+                              block
                             >
-                              Add schedule
+                              Add Schedule
                             </Button>
-                            {/* <Form.ErrorList errors={errors} /> */}
                           </Form.Item>
                         </div>
                       )}
@@ -284,7 +309,9 @@ const Class = () => {
                       type="dashed"
                       danger
                       onClick={() => removeOutlet(outletField.name)}
+                      className="remove-outlet-button"
                       style={{ marginTop: "10px" }}
+                      block
                     >
                       Remove Outlet
                     </Button>
@@ -295,46 +322,35 @@ const Class = () => {
           )}
         </Form.List>
 
-        <Form.Item
-          name="age_groups"
-          rules={[
-            {
-              required: true,
-              message: "Please select your age groups",
-            },
-          ]}
-        >
-          <Select mode="multiple" placeholder="Select age groups">
-            {ageGroups.map((age) => (
-              <Select.Option key={age.id} value={age.name}>
-                {age.max_age !== null
-                  ? `${age.min_age} to ${age.max_age} years old: ${age.name}`
-                  : `${age.min_age}+ years old`}
-              </Select.Option>
-            ))}
-          </Select>
+        <div className="form-section-header">Images</div>
+
+        <Form.Item>
+          <div className="image-grid">
+            {listing?.images &&
+              listing?.images.map((image, index) => (
+                <div key={index} className="image-item">
+                  <Image
+                    src={image}
+                    width={120}
+                    height={120}
+                    alt={`Class image ${index + 1}`}
+                  />
+                  <Button
+                    danger
+                    className="image-delete-button"
+                    icon={<DeleteOutlined />}
+                    size="small"
+                  />
+                </div>
+              ))}
+          </div>
         </Form.Item>
 
-        {/* Display existing iamges */}
-        <Form.Item className="flex flex-wrap gap-2">
-          {listing?.images &&
-            listing?.images.map((image, index) => (
-              <div id={index}>
-                <Image
-                  src={image}
-                  width={120}
-                  height={120}
-                  className="rounded-lg"
-                />
-                <Button
-                  danger
-                  className="absolute top-1 right-1"
-                  icon={<DeleteOutlined />}
-                ></Button>
-              </div>
-            ))}
-        </Form.Item>
-        <Dragger {...props} style={{ marginBottom: "24px" }}>
+        <Dragger
+          {...props}
+          className="upload-dragger"
+          style={{ marginBottom: "24px" }}
+        >
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
@@ -344,11 +360,11 @@ const Class = () => {
           <p className="ant-upload-hint"></p>
         </Dragger>
 
-        <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
-          Save changes
+        <Button type="primary" htmlType="submit" className="save-button" block>
+          Save Changes
         </Button>
       </Form>
-    </>
+    </div>
   );
 };
 

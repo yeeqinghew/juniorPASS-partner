@@ -1,0 +1,194 @@
+.class-edit-container {
+  padding: 32px;
+  background: #ffffff;
+  min-height: 100vh;
+  max-width: 1200px;
+}
+
+.class-edit-header {
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.class-edit-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: #E88B8F !important;
+  margin: 0 !important;
+}
+
+.class-edit-form {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.class-edit-form .ant-form-item-label > label {
+  font-weight: 600;
+  font-size: 15px;
+  color: #262626;
+}
+
+.class-edit-form .ant-input,
+.class-edit-form .ant-input-number,
+.class-edit-form .ant-select-selector,
+.class-edit-form .ant-input-textarea {
+  border-radius: 8px !important;
+  border: 1.5px solid #e8e8e8 !important;
+  transition: all 0.3s ease !important;
+}
+
+.class-edit-form .ant-input:hover,
+.class-edit-form .ant-input-number:hover,
+.class-edit-form .ant-select-selector:hover,
+.class-edit-form .ant-input-textarea:hover {
+  border-color: #E88B8F !important;
+}
+
+.class-edit-form .ant-input:focus,
+.class-edit-form .ant-input-number:focus,
+.class-edit-form .ant-select-focused .ant-select-selector,
+.class-edit-form .ant-input-textarea:focus {
+  border-color: #E88B8F !important;
+  box-shadow: 0 0 0 2px rgba(232, 139, 143, 0.1) !important;
+}
+
+.outlet-section {
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: #fafafa;
+}
+
+.outlet-section-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #262626;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.schedule-section {
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: white;
+}
+
+.add-outlet-button,
+.add-schedule-button {
+  height: 40px !important;
+  border-radius: 8px !important;
+  border: 2px dashed #E88B8F !important;
+  color: #E88B8F !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.add-outlet-button:hover,
+.add-schedule-button:hover {
+  background: #fef5f5 !important;
+  border-color: #d67276 !important;
+  color: #d67276 !important;
+}
+
+.remove-outlet-button {
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.image-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #f0f0f0;
+}
+
+.image-item img {
+  border-radius: 8px;
+}
+
+.image-delete-button {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.upload-dragger {
+  border-radius: 12px !important;
+  border: 2px dashed #d9d9d9 !important;
+  background: #fafafa !important;
+  transition: all 0.3s ease !important;
+}
+
+.upload-dragger:hover {
+  border-color: #E88B8F !important;
+  background: #fef5f5 !important;
+}
+
+.upload-dragger .ant-upload-drag-icon {
+  color: #E88B8F !important;
+}
+
+.save-button {
+  height: 48px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  background: #E88B8F !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.save-button:hover {
+  background: #d67276 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 139, 143, 0.3) !important;
+}
+
+/* Section headers */
+.form-section-header {
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+  margin: 24px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .class-edit-container {
+    padding: 16px;
+  }
+
+  .class-edit-form {
+    padding: 20px;
+  }
+
+  .class-edit-title {
+    font-size: 22px !important;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}

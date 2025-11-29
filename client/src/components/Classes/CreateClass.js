@@ -26,6 +26,7 @@ import _ from "lodash";
 import getBaseURL from "../../utils/config";
 import { DataContext } from "../../hooks/DataContext";
 import ScheduleItem from "../../utils/ScheduleItem";
+import "./ClassEdit.css";
 
 const { Title } = Typography;
 const { Dragger } = Upload;
@@ -216,31 +217,38 @@ const CreateClass = () => {
   };
 
   return (
-    <>
-      <Space
-        direction="horizontal"
-        style={{
-          alignItems: "center",
-        }}
-      >
-        <LeftOutlined
-          onClick={() => {
-            return navigate(-1);
-          }}
-        />
-        <Title level={3}>Create Class</Title>
-      </Space>
+    <div className="class-edit-container">
+      <div className="class-edit-header">
+        <Space align="center">
+          <LeftOutlined
+            onClick={() => navigate(-1)}
+            style={{
+              fontSize: "20px",
+              cursor: "pointer",
+              color: "#E88B8F",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => (e.target.style.transform = "translateX(-4px)")}
+            onMouseLeave={(e) => (e.target.style.transform = "translateX(0)")}
+          />
+          <Title level={2} className="class-edit-title">
+            Create New Class
+          </Title>
+        </Space>
+      </div>
 
       <Form
         name="create-class"
-        style={{
-          maxWidth: "100%",
-        }}
+        className="class-edit-form"
         form={createClassForm}
         onFinish={handleCreateClass}
+        layout="vertical"
       >
+        <div className="form-section-header">Basic Information</div>
+        
         <Form.Item
           name="title"
+          label="Class Title"
           rules={[
             {
               required: true,
@@ -248,10 +256,11 @@ const CreateClass = () => {
             },
           ]}
         >
-          <Input placeholder="Class Title" size={"large"} required />
+          <Input placeholder="Enter class title" size="large" />
         </Form.Item>
         <Form.Item
           name="package_types"
+          label="Package Types"
           rules={[
             {
               required: true,
@@ -260,9 +269,10 @@ const CreateClass = () => {
           ]}
         >
           <Select
-            placeholder="Select package type"
+            placeholder="Select package types"
             onChange={handleSelectPackage}
             mode="multiple"
+            size="large"
           >
             {packageTypes &&
               packageTypes.map((packageType) => (
@@ -280,6 +290,7 @@ const CreateClass = () => {
           ?.includes("short-term") && (
           <Form.Item
             name="short_term_start_date"
+            label="Short-term Start Date"
             rules={[
               {
                 required: true,
@@ -287,7 +298,11 @@ const CreateClass = () => {
               },
             ]}
           >
-            <DatePicker placeholder="Select short-term start date" />
+            <DatePicker 
+              placeholder="Select short-term start date" 
+              size="large"
+              style={{ width: "100%" }}
+            />
           </Form.Item>
         )}
         {createClassForm
@@ -295,6 +310,7 @@ const CreateClass = () => {
           ?.includes("long-term") && (
           <Form.Item
             name="long_term_start_date"
+            label="Long-term Start Date"
             rules={[
               {
                 required: true,
@@ -302,45 +318,38 @@ const CreateClass = () => {
               },
             ]}
           >
-            <DatePicker placeholder="Select long-term start date" />
+            <DatePicker 
+              placeholder="Select long-term start date" 
+              size="large"
+              style={{ width: "100%" }}
+            />
           </Form.Item>
         )}
         <Form.Item
-          name="credit"
-          rules={[
-            {
-              required: true,
-              message: "Please input your credit",
-            },
-          ]}
-        >
-          <InputNumber
-            style={{ width: "100%" }}
-            prefix={<Avatar src={require("../../images/credit.png")}></Avatar>}
-          />
-        </Form.Item>
-        <Form.Item
           name="description"
+          label="Class Description"
           rules={[
             {
               required: true,
-              message: "Please input your description",
+              message: "Please input a description",
             },
           ]}
         >
           <TextArea
             showCount
             maxLength={5000}
-            placeholder="Class Description"
+            placeholder="Describe your class..."
             style={{ height: 120, resize: "none" }}
           />
         </Form.Item>
+        
         <Form.Item
-          name={"age_groups"}
+          name="age_groups"
+          label="Age Groups"
           rules={[
             {
               required: true,
-              message: "Please select your age groups",
+              message: "Please select age groups",
             },
           ]}
         >
@@ -348,6 +357,7 @@ const CreateClass = () => {
             mode="multiple"
             placeholder="Select age groups"
             onChange={handleSelectAgeGroups}
+            size="large"
           >
             {ageGroups &&
               ageGroups.map((age) => (
@@ -360,38 +370,36 @@ const CreateClass = () => {
           </Select>
         </Form.Item>
 
+        <div className="form-section-header">Outlets & Schedules</div>
+        
         <Form.List name="outlets">
           {(outletFields, { add: addOutlet, remove: removeOutlet }) => (
             <>
               <Button
                 type="dashed"
                 icon={<PlusCircleOutlined />}
+                className="add-outlet-button"
                 style={{ marginBottom: "16px" }}
-                onClick={() => addOutlet({ schedules: [{}] })} // Ensure schedules exist in each new outlet
+                onClick={() => addOutlet({ schedules: [{}] })}
+                block
               >
-                Add outlet
+                Add Outlet
               </Button>
 
               {outletFields.map((outletField, outletIndex) => (
-                <div
-                  key={outletField.key}
-                  style={{
-                    border: "1px solid #ccc",
-                    borderRadius: "5px",
-                    padding: "12px",
-                    marginBottom: "12px",
-                  }}
-                >
+                <div key={outletField.key} className="outlet-section">
+                  <div className="outlet-section-title">
+                    Outlet {outletIndex + 1}
+                  </div>
                   <Col flex="1 0 25%">
-                    {/* Outlet Selection */}
                     <Form.Item
                       name={[outletField.name, "outlet_id"]}
-                      label="Outlet"
+                      label="Select Outlet Location"
                       rules={[
                         { required: true, message: "Please select an outlet" },
                       ]}
                     >
-                      <Select placeholder="Select an outlet">
+                      <Select placeholder="Select an outlet" size="large">
                         {outlets.map((outletOption) => {
                           const parsedAddress = JSON.parse(
                             outletOption.address
@@ -414,13 +422,7 @@ const CreateClass = () => {
                         scheduleFields,
                         { add: addSchedule, remove: removeSchedule }
                       ) => (
-                        <div
-                          style={{
-                            border: "1px dotted #cccccc",
-                            borderRadius: "5px",
-                            padding: "12px",
-                          }}
-                        >
+                        <div className="schedule-section">
                           {scheduleFields.map((scheduleField) => (
                             <Row
                               key={scheduleField.key}
@@ -443,10 +445,11 @@ const CreateClass = () => {
                               type="dashed"
                               onClick={() => addSchedule()}
                               icon={<PlusCircleOutlined />}
+                              className="add-schedule-button"
+                              block
                             >
-                              Add schedule
+                              Add Schedule
                             </Button>
-                            {/* <Form.ErrorList errors={errors} /> */}
                           </Form.Item>
                         </div>
                       )}
@@ -456,7 +459,9 @@ const CreateClass = () => {
                       type="dashed"
                       danger
                       onClick={() => removeOutlet(outletField.name)}
+                      className="remove-outlet-button"
                       style={{ marginTop: "10px" }}
+                      block
                     >
                       Remove Outlet
                     </Button>
@@ -467,26 +472,31 @@ const CreateClass = () => {
           )}
         </Form.List>
 
-        <Dragger {...props} style={{ marginBottom: "24px" }}>
+        <div className="form-section-header">Class Images</div>
+        
+        <Dragger {...props} className="upload-dragger" style={{ marginBottom: "24px" }}>
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
           <p className="ant-upload-text">
-            Click or drag file to this area to upload
+            Click or drag files to upload
           </p>
-          <p className="ant-upload-hint"></p>
+          <p className="ant-upload-hint">
+            Upload up to 5 images for your class
+          </p>
         </Dragger>
+        
         <Button
           type="primary"
-          size="large"
-          block
           htmlType="submit"
+          className="save-button"
           loading={false}
+          block
         >
           Create Class
         </Button>
       </Form>
-    </>
+    </div>
   );
 };
 
