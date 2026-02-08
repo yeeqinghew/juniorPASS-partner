@@ -9,7 +9,9 @@ import PartnerHome from "../components/Home";
 import UserContext from "../components/UserContext";
 import AuthenticatedRoute from "./AuthenticatedRoute";
 import NotFound from "../utils/404";
-import ResetPassword from "../components/ResetPassword";
+// import ResetPassword from "../components/ResetPassword";
+import ForgotPassword from "../components/ResetPassword/ForgotPassword";
+import ResetPassword from "../components/ResetPassword/ResetPassword";
 import CreateClass from "../components/Classes/CreateClass";
 import useAuth from "../hooks/useAuth";
 import Class from "../components/Classes/Class";
@@ -48,6 +50,7 @@ const Routers = () => {
               )
             }
           />
+          <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password" element={<ResetPassword />} />
           <Route
             element={

@@ -7,9 +7,10 @@ import {
 } from "@ant-design/icons";
 import { Button, Form, Input, Typography, Image } from "antd";
 import toast, { Toaster } from "react-hot-toast";
+import { Link } from "react-router-dom";
 import getBaseURL from "../../utils/config";
 
-const { Title, Link } = Typography;
+const { Title } = Typography;
 
 const PartnerLogin = ({ setAuth }) => {
   const baseURL = getBaseURL();
@@ -135,9 +136,7 @@ const PartnerLogin = ({ setAuth }) => {
                 textAlign: "center",
               }}
             >
-              <Link href="reset-password" style={{}}>
-                Forgot password
-              </Link>
+              <Link to="/forgot-password">Forgot password</Link>
             </div>
           </Form>
         </div>
