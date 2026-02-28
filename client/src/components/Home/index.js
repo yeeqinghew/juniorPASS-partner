@@ -5,11 +5,9 @@ import {
   Row,
   Col,
   Card,
-  Statistic,
   Button,
   List,
   Space,
-  Empty,
 } from "antd";
 import {
   BookOutlined,
@@ -21,7 +19,6 @@ import {
   BarChartOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
-  RiseOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../UserContext";
@@ -60,7 +57,7 @@ const PartnerHome = () => {
       if (classesResponse.ok) {
         const classesData = await classesResponse.json();
         const activeClasses = classesData.filter(
-          (c) => c.status === "active"
+          (c) => c.status === "active",
         ).length;
 
         setStats((prev) => ({
@@ -87,7 +84,7 @@ const PartnerHome = () => {
       if (user?.partner_id) {
         const outletsResponse = await fetch(
           `${baseURL}/partners/${user.partner_id}/outlets`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
 
         if (outletsResponse.ok) {
@@ -108,16 +105,16 @@ const PartnerHome = () => {
 
   const quickActions = [
     {
-      icon: <PlusOutlined />,
-      text: "Create New Class",
-      action: () => navigate("/create-class"),
-      color: "#E88B8F",
-    },
-    {
       icon: <BookOutlined />,
       text: "View All Classes",
       action: () => navigate("/classes"),
-      color: "#A8C9D9",
+      color: "#98BDD2",
+    },
+    {
+      icon: <ShopOutlined />,
+      text: "Manage Outlets",
+      action: () => navigate("/profile"),
+      color: "#f3a5c7",
     },
     {
       icon: <EditOutlined />,
@@ -133,86 +130,85 @@ const PartnerHome = () => {
     },
   ];
 
+  const statsConfig = [
+    {
+      icon: <BookOutlined />,
+      value: stats.totalClasses,
+      label: "Total Classes",
+      colorClass: "pink",
+    },
+    {
+      icon: <CheckCircleOutlined />,
+      value: stats.activeClasses,
+      label: "Active Classes",
+      colorClass: "blue",
+    },
+    {
+      icon: <ShopOutlined />,
+      value: stats.totalOutlets,
+      label: "Total Outlets",
+      colorClass: "green",
+    },
+    {
+      icon: <TeamOutlined />,
+      value: stats.totalStudents,
+      label: "Total Enrollments",
+      colorClass: "orange",
+    },
+  ];
+
   return (
     <div className="dashboard-container">
-      {/* Welcome Banner */}
+      {/* Welcome Section */}
       <div className="welcome-banner">
-        <Title level={2} className="welcome-title">
-          Welcome back, {user?.partner_name || "Partner"}! 👋
-        </Title>
-        <Paragraph className="welcome-text">
-          Here's what's happening with your classes today
-        </Paragraph>
+        <div className="welcome-content">
+          <Title level={2} className="welcome-title">
+            Welcome back, {user?.partner_name || "Partner"}! 👋
+          </Title>
+          <Paragraph className="welcome-text">
+            Here's what's happening with your classes today
+          </Paragraph>
+        </div>
+        <div className="welcome-actions">
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="welcome-btn-primary"
+            onClick={() => navigate("/create-class")}
+          >
+            Create Class
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
-      <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="stats-card stats-card-pink" bordered={false}>
-            <div style={{ textAlign: "center" }}>
-              <BookOutlined className="stats-icon" />
-              <Title level={2} className="stats-number">
-                {stats.totalClasses}
-              </Title>
-              <Text className="stats-label">Total Classes</Text>
-              <div className="stats-change">
-                <RiseOutlined /> All time
+      <Row gutter={[16, 16]} className="stats-row">
+        {statsConfig.map((stat, index) => (
+          <Col xs={12} sm={12} lg={6} key={index}>
+            <Card className="stat-card" bordered={false}>
+              <div className={`stat-icon-wrapper ${stat.colorClass}`}>
+                {stat.icon}
               </div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="stats-card stats-card-blue" bordered={false}>
-            <div style={{ textAlign: "center" }}>
-              <CheckCircleOutlined className="stats-icon" />
-              <Title level={2} className="stats-number">
-                {stats.activeClasses}
-              </Title>
-              <Text className="stats-label">Active Classes</Text>
-              <div className="stats-change">Currently running</div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="stats-card stats-card-green" bordered={false}>
-            <div style={{ textAlign: "center" }}>
-              <ShopOutlined className="stats-icon" />
-              <Title level={2} className="stats-number">
-                {stats.totalOutlets}
-              </Title>
-              <Text className="stats-label">Total Outlets</Text>
-              <div className="stats-change">Locations</div>
-            </div>
-          </Card>
-        </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="stats-card stats-card-orange" bordered={false}>
-            <div style={{ textAlign: "center" }}>
-              <TeamOutlined className="stats-icon" />
-              <Title level={2} className="stats-number">
-                {stats.totalStudents}
-              </Title>
-              <Text className="stats-label">Total Enrollments</Text>
-              <div className="stats-change">Coming soon</div>
-            </div>
-          </Card>
-        </Col>
+              <div className="stat-content">
+                <div className="stat-value">{stat.value}</div>
+                <div className="stat-label">{stat.label}</div>
+              </div>
+            </Card>
+          </Col>
+        ))}
       </Row>
 
       {/* Quick Actions */}
       <Card
         title={
           <Space>
-            <CalendarOutlined style={{ color: "#E88B8F" }} />
+            <CalendarOutlined />
             <span>Quick Actions</span>
           </Space>
         }
         className="quick-actions-card"
       >
-        <Row gutter={[16, 16]}>
+        <Row gutter={[12, 12]}>
           {quickActions.map((action, index) => (
             <Col xs={12} sm={6} key={index}>
               <Button
@@ -233,13 +229,13 @@ const PartnerHome = () => {
         </Row>
       </Card>
 
-      <Row gutter={[24, 24]}>
+      <Row gutter={[16, 16]}>
         {/* Recent Activity */}
         <Col xs={24} lg={12}>
           <Card
             title={
               <Space>
-                <ClockCircleOutlined style={{ color: "#E88B8F" }} />
+                <ClockCircleOutlined />
                 <span>Recent Activity</span>
               </Space>
             }
@@ -284,7 +280,7 @@ const PartnerHome = () => {
           <Card
             title={
               <Space>
-                <CalendarOutlined style={{ color: "#E88B8F" }} />
+                <CalendarOutlined />
                 <span>Class Schedule</span>
               </Space>
             }
