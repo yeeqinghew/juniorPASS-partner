@@ -1,3 +1,9 @@
+/* JuniorPASS Partner Portal - Main App Styles */
+
+@import './styles/variables.css';
+@import './styles/common.css';
+
+/* Base App Styles */
 .App {
   text-align: center;
 }
@@ -32,7 +38,23 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Global Font */
+body {
+  font-family: var(--jp-font-family);
+}
+
+/* Ant Design Overrides using Design System Variables */
+.ant-btn-primary {
+  background: var(--jp-gradient-primary) !important;
+  border: none !important;
+}
+
+.ant-btn-primary:hover {
+  background: var(--jp-gradient-primary-reverse) !important;
 }

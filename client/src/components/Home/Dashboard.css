@@ -220,6 +220,22 @@
   transition: transform 0.3s ease;
 }
 
+.quick-action-icon.icon-primary {
+  color: #98BDD2;
+}
+
+.quick-action-icon.icon-secondary {
+  color: #f3a5c7;
+}
+
+.quick-action-icon.icon-success {
+  color: #52c41a;
+}
+
+.quick-action-icon.icon-warning {
+  color: #fa8c16;
+}
+
 .quick-action-button:hover .quick-action-icon {
   transform: scale(1.1);
 }

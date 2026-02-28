@@ -13,6 +13,7 @@ import ResetPassword from "../components/ResetPassword";
 import CreateClass from "../components/Classes/CreateClass";
 import useAuth from "../hooks/useAuth";
 import Class from "../components/Classes/Class";
+import EditClass from "../components/Classes/EditClass";
 import Profile from "../components/Profile";
 import { DataProvider } from "../hooks/DataContext";
 
@@ -74,6 +75,7 @@ const Routers = () => {
                 element={<PartnerClasses setAuth={setAuth} />}
               />
               <Route path="class/:listing_id" element={<Class />} />
+              <Route path="class/:listing_id/edit" element={<EditClass />} />
               <Route path="create-class" element={<CreateClass />} />
             </Route>
           </Route>

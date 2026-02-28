@@ -1,31 +1,44 @@
 import { Typography, Button } from "antd";
-import { CheckCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import ClassCard from "./ClassCard";
+import LoadingContainer from "../../utils/LoadingContainer";
 
 const { Text, Title } = Typography;
 
-const ActiveClasses = ({ listing, setListing }) => {
+const ActiveClasses = ({ listing, setListing, loading }) => {
   const navigate = useNavigate();
-  const activeListings = listing?.filter((list) => list.active);
 
-  if (!activeListings || activeListings.length === 0) {
+  if (loading) {
+    return <LoadingContainer />;
+  }
+
+  if (!listing || listing.length === 0) {
     return (
       <div className="empty-classes">
-        <CheckCircleOutlined className="empty-classes-icon" />
+        <div className="empty-classes-icon">✅</div>
         <Title level={3} className="empty-classes-title">
           No active classes
         </Title>
         <Text className="empty-classes-text">
-          Activate your classes to make them visible to students
+          Create a new class or activate an existing one to make it visible to
+          parents
         </Text>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/create-class")}
+          className="empty-classes-button"
+        >
+          Create New Class
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="classes-grid">
-      {activeListings.map((list) => (
+      {listing.map((list) => (
         <ClassCard
           key={list.listing_id}
           listing={list}

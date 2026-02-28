@@ -1,23 +1,23 @@
-import { Typography, Button } from "antd";
-import { CloseCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { Typography } from "antd";
 import ClassCard from "./ClassCard";
+import LoadingContainer from "../../utils/LoadingContainer";
 
 const { Text, Title } = Typography;
 
-const InactiveClasses = ({ listing, setListing }) => {
-  const navigate = useNavigate();
-  const inactiveListings = listing?.filter((list) => !list.active);
+const InactiveClasses = ({ listing, setListing, loading }) => {
+  if (loading) {
+    return <LoadingContainer />;
+  }
 
-  if (!inactiveListings || inactiveListings.length === 0) {
+  if (!listing || listing.length === 0) {
     return (
       <div className="empty-classes">
-        <CloseCircleOutlined className="empty-classes-icon" />
+        <div className="empty-classes-icon">📦</div>
         <Title level={3} className="empty-classes-title">
           No inactive classes
         </Title>
         <Text className="empty-classes-text">
-          All your classes are currently active
+          All your classes are currently active and visible to parents
         </Text>
       </div>
     );
@@ -25,7 +25,7 @@ const InactiveClasses = ({ listing, setListing }) => {
 
   return (
     <div className="classes-grid">
-      {inactiveListings.map((list) => (
+      {listing.map((list) => (
         <ClassCard
           key={list.listing_id}
           listing={list}

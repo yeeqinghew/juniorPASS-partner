@@ -1,0 +1,125 @@
+/* JuniorPASS Partner Portal - Design System Variables */
+
+:root {
+  /* ===== COLORS ===== */
+  
+  /* Primary Colors */
+  --jp-primary: #98BDD2;
+  --jp-primary-dark: #6aa4c3;
+  --jp-primary-light: #b8d9e8;
+  --jp-primary-hover: #7fb5d0;
+  
+  /* Accent Colors */
+  --jp-accent-pink: #f3a5c7;
+  --jp-accent-green: #52c41a;
+  --jp-accent-orange: #fa8c16;
+  --jp-accent-red: #ff4d4f;
+  
+  /* Text Colors */
+  --jp-text-dark: #1a1a2e;
+  --jp-text-primary: #333;
+  --jp-text-muted: #666;
+  --jp-text-light: #8c8c8c;
+  --jp-text-white: #fff;
+  
+  /* Background Colors */
+  --jp-bg-white: #fff;
+  --jp-bg-cream: #FCFBF8;
+  --jp-bg-light-blue: #f8fcff;
+  --jp-bg-gray: #f5f5f5;
+  --jp-bg-dark: #1a1a2e;
+  
+  /* Border Colors */
+  --jp-border-light: #f0f0f0;
+  --jp-border-medium: #d9d9d9;
+  --jp-border-dark: #bfbfbf;
+  
+  /* Status Colors */
+  --jp-status-success: #52c41a;
+  --jp-status-warning: #faad14;
+  --jp-status-error: #ff4d4f;
+  --jp-status-info: #1890ff;
+  
+  /* ===== SHADOWS ===== */
+  --jp-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --jp-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --jp-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --jp-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --jp-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.16);
+  --jp-shadow-primary: 0 4px 12px rgba(152, 189, 210, 0.3);
+  --jp-shadow-primary-hover: 0 6px 16px rgba(152, 189, 210, 0.4);
+  
+  /* ===== BORDER RADIUS ===== */
+  --jp-radius-xs: 4px;
+  --jp-radius-sm: 8px;
+  --jp-radius-md: 12px;
+  --jp-radius-lg: 16px;
+  --jp-radius-xl: 20px;
+  --jp-radius-2xl: 24px;
+  --jp-radius-full: 9999px;
+  
+  /* ===== SPACING ===== */
+  --jp-space-xs: 4px;
+  --jp-space-sm: 8px;
+  --jp-space-md: 12px;
+  --jp-space-lg: 16px;
+  --jp-space-xl: 20px;
+  --jp-space-2xl: 24px;
+  --jp-space-3xl: 32px;
+  --jp-space-4xl: 40px;
+  
+  /* ===== TYPOGRAPHY ===== */
+  --jp-font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Font Sizes */
+  --jp-font-xs: 12px;
+  --jp-font-sm: 13px;
+  --jp-font-base: 14px;
+  --jp-font-md: 15px;
+  --jp-font-lg: 16px;
+  --jp-font-xl: 18px;
+  --jp-font-2xl: 20px;
+  --jp-font-3xl: 24px;
+  --jp-font-4xl: 28px;
+  --jp-font-5xl: 32px;
+  
+  /* Font Weights */
+  --jp-font-normal: 400;
+  --jp-font-medium: 500;
+  --jp-font-semibold: 600;
+  --jp-font-bold: 700;
+  
+  /* Line Heights */
+  --jp-line-tight: 1.2;
+  --jp-line-normal: 1.5;
+  --jp-line-relaxed: 1.75;
+  
+  /* ===== TRANSITIONS ===== */
+  --jp-transition-fast: 0.15s ease;
+  --jp-transition-normal: 0.3s ease;
+  --jp-transition-slow: 0.5s ease;
+  
+  /* ===== Z-INDEX ===== */
+  --jp-z-dropdown: 1000;
+  --jp-z-sticky: 1020;
+  --jp-z-fixed: 1030;
+  --jp-z-modal-backdrop: 1040;
+  --jp-z-modal: 1050;
+  --jp-z-popover: 1060;
+  --jp-z-tooltip: 1070;
+  
+  /* ===== COMPONENT SIZES ===== */
+  --jp-btn-height-sm: 32px;
+  --jp-btn-height-md: 40px;
+  --jp-btn-height-lg: 44px;
+  --jp-btn-height-xl: 48px;
+  
+  --jp-input-height-sm: 32px;
+  --jp-input-height-md: 40px;
+  --jp-input-height-lg: 44px;
+  
+  /* ===== GRADIENTS ===== */
+  --jp-gradient-primary: linear-gradient(135deg, var(--jp-primary), var(--jp-primary-dark));
+  --jp-gradient-primary-reverse: linear-gradient(135deg, var(--jp-primary-dark), var(--jp-primary));
+  --jp-gradient-light: linear-gradient(135deg, #f8fcff 0%, #FCFBF8 100%);
+}

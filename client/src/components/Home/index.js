@@ -108,25 +108,25 @@ const PartnerHome = () => {
       icon: <BookOutlined />,
       text: "View All Classes",
       action: () => navigate("/classes"),
-      color: "#98BDD2",
+      colorClass: "primary",
     },
     {
       icon: <ShopOutlined />,
       text: "Manage Outlets",
       action: () => navigate("/profile"),
-      color: "#f3a5c7",
+      colorClass: "secondary",
     },
     {
       icon: <EditOutlined />,
       text: "Edit Profile",
       action: () => navigate("/profile"),
-      color: "#52c41a",
+      colorClass: "success",
     },
     {
       icon: <BarChartOutlined />,
       text: "View Analytics",
       action: () => {},
-      color: "#fa8c16",
+      colorClass: "warning",
     },
   ];
 
@@ -216,10 +216,7 @@ const PartnerHome = () => {
                 onClick={action.action}
                 block
               >
-                <div
-                  className="quick-action-icon"
-                  style={{ color: action.color }}
-                >
+                <div className={`quick-action-icon icon-${action.colorClass}`}>
                   {action.icon}
                 </div>
                 <div className="quick-action-text">{action.text}</div>
@@ -248,7 +245,7 @@ const PartnerHome = () => {
                   <div className="activity-item">
                     <Space align="start">
                       <BookOutlined className="activity-icon" />
-                      <div style={{ flex: 1 }}>
+                      <div className="flex-1">
                         <div className="activity-title">{item.title}</div>
                         <div className="activity-description">
                           {item.description}
@@ -264,7 +261,7 @@ const PartnerHome = () => {
                 <ClockCircleOutlined className="empty-state-icon" />
                 <div>
                   <Text strong>No recent activity</Text>
-                  <div style={{ marginTop: 8 }}>
+                  <div className="mt-8">
                     <Text type="secondary">
                       Start by creating your first class
                     </Text>

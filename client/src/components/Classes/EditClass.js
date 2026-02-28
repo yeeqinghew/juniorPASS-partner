@@ -2,6 +2,8 @@ import {
   InboxOutlined,
   PlusCircleOutlined,
   LeftOutlined,
+  SaveOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -14,31 +16,40 @@ import {
   Col,
   Space,
   DatePicker,
+  Image,
+  message,
+  Spin,
 } from "antd";
 import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import TextArea from "antd/es/input/TextArea";
 import UserContext from "../UserContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import _ from "lodash";
 import getBaseURL from "../../utils/config";
 import { DataContext } from "../../hooks/DataContext";
 import ScheduleItem from "../../utils/ScheduleItem";
+import dayjs from "dayjs";
 import "./ClassEdit.css";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
-const CreateClass = () => {
+const EditClass = () => {
   const baseURL = getBaseURL();
+  const { listing_id } = useParams();
   const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const { packageTypes, ageGroups } = useContext(DataContext);
-  const [createClassForm] = Form.useForm();
+  const [editClassForm] = Form.useForm();
   const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
   const { user } = useContext(UserContext);
   const token = user && user?.token;
   const navigate = useNavigate();
   const [outlets, setOutlets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [listing, setListing] = useState(null);
 
   // Fetch outlets for the current partner
   const fetchOutlets = async () => {
@@ -55,7 +66,7 @@ const CreateClass = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setOutlets(data); // Set the outlets state
+        setOutlets(data);
       } else {
         throw new Error("Failed to fetch outlets");
       }
@@ -64,172 +75,309 @@ const CreateClass = () => {
     }
   };
 
+  // Fetch class details including outlets and schedules
+  const fetchClassDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${baseURL}/listings/${listing_id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const parseRes = await response.json();
+      setListing(parseRes);
+
+      // Parse existing images
+      let imgs = parseRes.images;
+      if (typeof imgs === "string") {
+        try {
+          imgs = JSON.parse(imgs);
+        } catch (e) {
+          imgs = [];
+        }
+      }
+      setExistingImages(imgs || []);
+
+      // Parse existing outlets and schedules from schedule_info
+      let outletsData = [];
+      if (parseRes.schedule_info && parseRes.schedule_info.length > 0) {
+        // Group schedules by outlet_id
+        const outletMap = {};
+        parseRes.schedule_info.forEach((schedule) => {
+          const outletId = schedule.outlet_id || schedule.listing_outlet_id;
+          if (!outletMap[outletId]) {
+            outletMap[outletId] = {
+              outlet_id: outletId,
+              schedules: [],
+            };
+          }
+          outletMap[outletId].schedules.push({
+            day: schedule.day,
+            timeslot: schedule.timeslot,
+            frequency: schedule.frequency,
+            slots: schedule.slots,
+            credit: schedule.credit,
+          });
+        });
+        outletsData = Object.values(outletMap);
+      }
+
+      // Set form values
+      editClassForm.setFieldsValue({
+        title: parseRes.listing_title,
+        description: parseRes.description,
+        package_types: parseRes.package_types,
+        age_groups: parseRes.age_groups,
+        short_term_start_date: parseRes.short_term_start_date
+          ? dayjs(parseRes.short_term_start_date)
+          : null,
+        long_term_start_date: parseRes.long_term_start_date
+          ? dayjs(parseRes.long_term_start_date)
+          : null,
+        outlets: outletsData,
+      });
+
+      setSelectedPackageTypes(parseRes.package_types || []);
+    } catch (error) {
+      console.error("Error fetching class details:", error);
+      message.error("Failed to load class details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user?.partner_id) {
-      fetchOutlets(); // Fetch outlets when the user is available and has a partner_id
+      fetchOutlets();
     }
   }, [user?.partner_id]);
+
+  useEffect(() => {
+    if (token) {
+      fetchClassDetails();
+    }
+  }, [listing_id, token]);
 
   const props = {
     name: "image",
     multiple: true,
     maxCount: 5,
-    required: true,
     showUploadList: {
       showPreviewIcon: true,
       showRemoveIcon: true,
     },
     beforeUpload(info) {
-      // setImage(info);
       setImages((prevImages) => [...prevImages, info]);
       return false;
     },
-    onDrop(info) {
-      console.log("Dropped files", info.dataTransfer.files);
-    },
     onRemove(info) {
-      // setImage(null);
       setImages((prevImages) =>
         prevImages.filter((img) => img.uid !== info.uid),
       );
     },
-    progress: {
-      strokeColor: {
-        "0%": "#108ee9",
-        "100%": "#87d068",
-      },
-      size: 3,
-      format: (percent) => percent && `${parseFloat(percent.toFixed(2))}%`,
-    },
   };
 
   const handleSelectAgeGroups = (values) => {
-    createClassForm.setFieldValue("age_groups", values);
+    editClassForm.setFieldValue("age_groups", values);
   };
 
   const handleSelectPackage = (values) => {
     setSelectedPackageTypes(values);
-    createClassForm.setFieldValue("package_types", values);
+    editClassForm.setFieldValue("package_types", values);
   };
 
-  const handleCreateClass = async (values) => {
+  const handleRemoveExistingImage = (index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditClass = async (values) => {
     try {
-      // 1. Create the listing first
-      const createListingResponse = await fetch(`${baseURL}/listings`, {
-        method: "POST",
+      setSaving(true);
+
+      // Format dates for backend
+      const shortTermDate = values.short_term_start_date
+        ? values.short_term_start_date.format("YYYY-MM-DD")
+        : null;
+      const longTermDate = values.long_term_start_date
+        ? values.long_term_start_date.format("YYYY-MM-DD")
+        : null;
+
+      // 1. Update the listing basic info
+      const updateResponse = await fetch(`${baseURL}/listings/${listing_id}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ...values,
-          partner_id: user.partner_id,
-          images: [], // temporarily empty, will be updated later
-          short_term_start_date: values.short_term_start_date || null,
-          long_term_start_date: values.long_term_start_date || null,
+          title_name: values.title,
+          description: values.description,
+          package_types: values.package_types,
+          age_groups: values.age_groups,
+          short_term_start_date: shortTermDate,
+          long_term_start_date: longTermDate,
         }),
       });
 
-      const createListingResult = await createListingResponse.json();
-      if (createListingResponse.status !== 201) {
-        throw new Error(
-          createListingResult.error || "Failed to create listing",
-        );
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        throw new Error(errorData.error || "Failed to update listing");
       }
 
-      const listingId = createListingResult.data.listing_id;
-
-      // 2. upload images to S3
-      const uploadedImageURLs = [];
-      for (let img of images) {
-        try {
-          const response = await fetch(
-            `${baseURL}/misc/s3url?folder=partners/${user?.partner_id}/${listingId}`,
-          );
-          const { uploadURL } = await response.json();
-
-          // post the image directly to S3 bucket
-          const s3upload = await fetch(uploadURL, {
-            method: "PUT",
-            headers: {
-              "Content-Type": img.type,
-            },
-            body: img,
-          });
-
-          if (s3upload.status !== 200) {
-            throw new Error("Failed to upload image");
-          }
-
-          const imageURL = uploadURL.split("?")[0];
-          uploadedImageURLs.push(imageURL);
-        } catch (error) {
-          console.error("Image upload failed:", error);
-
-          // 3. (Rollback): delete the listing if any image upload fails
-          await fetch(`${baseURL}/listings/${listingId}`, {
-            method: "DELETE",
+      // 2. Update schedules if outlets are provided
+      if (values.outlets && values.outlets.length > 0) {
+        const schedulesResponse = await fetch(
+          `${baseURL}/listings/${listing_id}/schedules`,
+          {
+            method: "PATCH",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-          });
+            body: JSON.stringify({
+              outlets: values.outlets.map((outlet) => ({
+                outlet_id: outlet.outlet_id,
+                schedules:
+                  outlet.schedules?.map((schedule) => ({
+                    day: schedule.day,
+                    timeslot: schedule.timeslot,
+                    frequency: schedule.frequency,
+                    slots: schedule.slots || 10,
+                    credit: schedule.credit || 1,
+                  })) || [],
+              })),
+            }),
+          },
+        );
 
-          throw new Error("Image upload failed. Listing has been rolled back.");
+        if (!schedulesResponse.ok) {
+          const errorData = await schedulesResponse.json();
+          console.error("Schedule update error:", errorData);
+          // Don't throw - listing was updated, just warn about schedules
+          message.warning(
+            "Listing updated but schedules may not have been saved",
+          );
         }
       }
 
-      // 4. Update the lsiting with the uploaded image URLs
-      const updateListingResponse = await fetch(
-        `${baseURL}/listings/${listingId}`,
-        {
+      // 3. Upload new images if any
+      const uploadedImageURLs = Array.isArray(existingImages)
+        ? [...existingImages]
+        : [];
+
+      if (images.length > 0) {
+        for (let img of images) {
+          try {
+            const response = await fetch(
+              `${baseURL}/misc/s3url?folder=partners/${user?.partner_id}/${listing_id}`,
+            );
+            const { uploadURL } = await response.json();
+
+            const s3upload = await fetch(uploadURL, {
+              method: "PUT",
+              headers: {
+                "Content-Type": img.type,
+              },
+              body: img,
+            });
+
+            if (s3upload.status === 200) {
+              const imageURL = uploadURL.split("?")[0];
+              uploadedImageURLs.push(imageURL);
+            }
+          } catch (error) {
+            console.warn("Image upload error:", error.message);
+          }
+        }
+      }
+
+      // 4. Update images if changed
+      if (
+        uploadedImageURLs.length !== existingImages.length ||
+        images.length > 0
+      ) {
+        await fetch(`${baseURL}/listings/${listing_id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            images: JSON.stringify(uploadedImageURLs),
+            images: uploadedImageURLs,
           }),
-        },
-      );
-
-      const updateListingResult = await updateListingResponse.json();
-      if (updateListingResponse.status === 200) {
-        createClassForm.resetFields();
-        toast.success(
-          updateListingResult.message || "Listing created successfully",
-        );
-        navigate("/classes");
-      } else {
-        throw new Error(
-          updateListingResult.error || "Failed to update listing with images",
-        );
+        });
       }
+
+      toast.success("Class updated successfully!");
+      navigate(`/class/${listing_id}`);
     } catch (error) {
       console.error(error.message);
-      toast.error(
-        error.message || "ERROR in creating class. Please try again later.",
-      );
+      toast.error(error.message || "Failed to update class");
+    } finally {
+      setSaving(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "100px 0" }}>
+        <Spin size="large" />
+        <div style={{ marginTop: 16 }}>Loading class details...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="class-edit-container">
-      <div className="class-edit-header">
-        <Space align="center">
-          <LeftOutlined onClick={() => navigate(-1)} className="back-icon" />
-          <Title level={2} className="class-edit-title">
-            Create New Class
+      {/* Header */}
+      <div className="welcome-banner">
+        <div className="welcome-content">
+          <Space align="center" style={{ marginBottom: 8 }}>
+            <Button
+              type="text"
+              icon={<LeftOutlined />}
+              onClick={() => navigate(`/class/${listing_id}`)}
+              style={{ padding: 0 }}
+            />
+            <Text type="secondary">Back to class details</Text>
+          </Space>
+          <Title
+            level={2}
+            className="welcome-title"
+            style={{ marginBottom: 0 }}
+          >
+            Edit Class
           </Title>
-        </Space>
+          <Text className="welcome-text">
+            Update your class information, schedules, and images
+          </Text>
+        </div>
+        <div className="welcome-actions">
+          <Button
+            onClick={() => navigate(`/class/${listing_id}`)}
+            className="welcome-btn-secondary"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            onClick={() => editClassForm.submit()}
+            loading={saving}
+            className="welcome-btn-primary"
+          >
+            Save Changes
+          </Button>
+        </div>
       </div>
 
       <Form
-        name="create-class"
+        name="edit-class"
         className="class-edit-form"
-        form={createClassForm}
-        onFinish={handleCreateClass}
+        form={editClassForm}
+        onFinish={handleEditClass}
         layout="vertical"
       >
         <div className="form-section-header">Basic Information</div>
@@ -246,6 +394,7 @@ const CreateClass = () => {
         >
           <Input placeholder="Enter class title" size="large" />
         </Form.Item>
+
         <Form.Item
           name="package_types"
           label="Package Types"
@@ -273,9 +422,8 @@ const CreateClass = () => {
               ))}
           </Select>
         </Form.Item>
-        {createClassForm
-          .getFieldValue("package_types")
-          ?.includes("short-term") && (
+
+        {selectedPackageTypes?.includes("short-term") && (
           <Form.Item
             name="short_term_start_date"
             label="Short-term Start Date"
@@ -289,13 +437,12 @@ const CreateClass = () => {
             <DatePicker
               placeholder="Select short-term start date"
               size="large"
-              className="w-full"
+              style={{ width: "100%" }}
             />
           </Form.Item>
         )}
-        {createClassForm
-          .getFieldValue("package_types")
-          ?.includes("long-term") && (
+
+        {selectedPackageTypes?.includes("long-term") && (
           <Form.Item
             name="long_term_start_date"
             label="Long-term Start Date"
@@ -309,10 +456,11 @@ const CreateClass = () => {
             <DatePicker
               placeholder="Select long-term start date"
               size="large"
-              className="w-full"
+              style={{ width: "100%" }}
             />
           </Form.Item>
         )}
+
         <Form.Item
           name="description"
           label="Class Description"
@@ -327,7 +475,7 @@ const CreateClass = () => {
             showCount
             maxLength={5000}
             placeholder="Describe your class..."
-            className="textarea-description"
+            style={{ height: 120, resize: "none" }}
           />
         </Form.Item>
 
@@ -366,7 +514,8 @@ const CreateClass = () => {
               <Button
                 type="dashed"
                 icon={<PlusCircleOutlined />}
-                className="add-outlet-button mb-16"
+                className="add-outlet-button"
+                style={{ marginBottom: "16px" }}
                 onClick={() => addOutlet({ schedules: [{}] })}
                 block
               >
@@ -390,7 +539,7 @@ const CreateClass = () => {
                         {outlets.map((outletOption) => {
                           const parsedAddress = JSON.parse(
                             outletOption.address,
-                          ); // Convert string to object
+                          );
                           return (
                             <Select.Option
                               key={outletOption.outlet_id}
@@ -446,7 +595,8 @@ const CreateClass = () => {
                       type="dashed"
                       danger
                       onClick={() => removeOutlet(outletField.name)}
-                      className="remove-outlet-button mt-10"
+                      className="remove-outlet-button"
+                      style={{ marginTop: "10px" }}
                       block
                     >
                       Remove Outlet
@@ -460,7 +610,36 @@ const CreateClass = () => {
 
         <div className="form-section-header">Class Images</div>
 
-        <Dragger {...props} className="upload-dragger mb-24">
+        {/* Existing Images */}
+        {existingImages.length > 0 && (
+          <div className="image-grid" style={{ marginBottom: 16 }}>
+            {existingImages.map((image, index) => (
+              <div key={index} className="image-item">
+                <Image
+                  src={image}
+                  width={120}
+                  height={120}
+                  alt={`Class image ${index + 1}`}
+                  style={{ objectFit: "cover", borderRadius: 8 }}
+                />
+                <Button
+                  danger
+                  className="image-delete-button"
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  shape="circle"
+                  onClick={() => handleRemoveExistingImage(index)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Dragger
+          {...props}
+          className="upload-dragger"
+          style={{ marginBottom: "24px" }}
+        >
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
@@ -474,14 +653,14 @@ const CreateClass = () => {
           type="primary"
           htmlType="submit"
           className="save-button"
-          loading={false}
+          loading={saving}
           block
         >
-          Create Class
+          <SaveOutlined /> Save Changes
         </Button>
       </Form>
     </div>
   );
 };
 
-export default CreateClass;
+export default EditClass;
