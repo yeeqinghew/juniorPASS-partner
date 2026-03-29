@@ -24,14 +24,6 @@ const AllClasses = ({ listing, setListing, loading }) => {
           Start by creating your first class to attract students and grow your
           business
         </Text>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/create-class")}
-          className="empty-classes-button"
-        >
-          Create Your First Class
-        </Button>
       </div>
     );
   }
