@@ -15,8 +15,6 @@ import {
   ShopOutlined,
   CalendarOutlined,
   PlusOutlined,
-  EditOutlined,
-  BarChartOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
@@ -32,12 +30,7 @@ const PartnerHome = () => {
   const navigate = useNavigate();
   const baseURL = getBaseURL();
   const token = localStorage.getItem("token");
-  const [stats, setStats] = useState({
-    totalClasses: 0,
-    activeClasses: 0,
-    totalStudents: 0,
-    totalOutlets: 0,
-  });
+  const [stats, setStats] = useState({});
   const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,91 +42,33 @@ const PartnerHome = () => {
     try {
       setLoading(true);
 
-      // Fetch classes
-      const classesResponse = await fetch(`${baseURL}/classes`, {
-        headers: { Authorization: `Bearer ${token}` },
+      // Dashboard overview stats
+      const response = await fetch(`${baseURL}/partners/dashboard/overview`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      if (classesResponse.ok) {
-        const classesData = await classesResponse.json();
-        const activeClasses = classesData.filter(
-          (c) => c.status === "active",
-        ).length;
-
-        setStats((prev) => ({
-          ...prev,
-          totalClasses: classesData.length,
-          activeClasses: activeClasses,
-        }));
-
-        // Generate recent activities from classes
-        const activities = classesData.slice(0, 5).map((cls) => ({
-          id: cls.class_id,
-          type: "class",
-          title: cls.class_name,
-          description: `${
-            cls.status === "active" ? "Active" : "Inactive"
-          } class`,
-          time: new Date(cls.created_at || Date.now()).toLocaleDateString(),
-        }));
-
-        setRecentActivities(activities);
-      }
-
-      // Fetch outlets
-      if (user?.partner_id) {
-        const outletsResponse = await fetch(
-          `${baseURL}/partners/${user.partner_id}/outlets`,
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-
-        if (outletsResponse.ok) {
-          const outletsData = await outletsResponse.json();
-          setStats((prev) => ({
-            ...prev,
-            totalOutlets: outletsData.length,
-          }));
-        }
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Dashboard Overview Data:", data);
+        setStats(data);
       }
 
       setLoading(false);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const quickActions = [
-    {
-      icon: <BookOutlined />,
-      text: "View All Classes",
-      action: () => navigate("/classes"),
-      colorClass: "primary",
-    },
-    {
-      icon: <ShopOutlined />,
-      text: "Manage Outlets",
-      action: () => navigate("/profile"),
-      colorClass: "secondary",
-    },
-    {
-      icon: <EditOutlined />,
-      text: "Edit Profile",
-      action: () => navigate("/profile"),
-      colorClass: "success",
-    },
-    {
-      icon: <BarChartOutlined />,
-      text: "View Analytics",
-      action: () => {},
-      colorClass: "warning",
-    },
-  ];
 
   const statsConfig = [
     {
       icon: <BookOutlined />,
-      value: stats.totalClasses,
+      value: stats.listings,
       label: "Total Classes",
       colorClass: "pink",
     },
@@ -145,8 +80,8 @@ const PartnerHome = () => {
     },
     {
       icon: <ShopOutlined />,
-      value: stats.totalOutlets,
-      label: "Total Outlets",
+      value: stats.credit,
+      label: "Total Credits",
       colorClass: "green",
     },
     {
@@ -197,34 +132,6 @@ const PartnerHome = () => {
           </Col>
         ))}
       </Row>
-
-      {/* Quick Actions */}
-      <Card
-        title={
-          <Space>
-            <CalendarOutlined />
-            <span>Quick Actions</span>
-          </Space>
-        }
-        className="quick-actions-card"
-      >
-        <Row gutter={[12, 12]}>
-          {quickActions.map((action, index) => (
-            <Col xs={12} sm={6} key={index}>
-              <Button
-                className="quick-action-button"
-                onClick={action.action}
-                block
-              >
-                <div className={`quick-action-icon icon-${action.colorClass}`}>
-                  {action.icon}
-                </div>
-                <div className="quick-action-text">{action.text}</div>
-              </Button>
-            </Col>
-          ))}
-        </Row>
-      </Card>
 
       <Row gutter={[16, 16]}>
         {/* Recent Activity */}

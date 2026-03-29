@@ -219,7 +219,7 @@
 }
 
 /* Form Labels */
-.ant-form-item-label > label {
+.ant-form-item-label>label {
   font-weight: 600 !important;
   color: var(--text-dark) !important;
 }
@@ -273,6 +273,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -283,9 +284,17 @@
   animation: fadeInUp 0.4s ease-out;
 }
 
-.profile-card:nth-child(1) { animation-delay: 0s; }
-.profile-card:nth-child(2) { animation-delay: 0.1s; }
-.profile-card:nth-child(3) { animation-delay: 0.2s; }
+.profile-card:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.profile-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.profile-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
 
 .outlet-card {
   animation: fadeInUp 0.4s ease-out;

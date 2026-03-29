@@ -12,7 +12,6 @@ import {
   Tooltip,
   Card,
   Typography,
-  Divider,
   Space,
   Tag,
   Badge,
@@ -84,6 +83,7 @@ const Profile = () => {
             },
           },
         );
+
         if (!outletsResponse.ok) {
           throw new Error(
             `Failed to fetch outlets data: ${outletsResponse.statusText}`,
@@ -99,15 +99,15 @@ const Profile = () => {
         // reset the form and stop loading
         profileForm.setFieldsValue({
           outlets: outletsData.map((outlet) => ({
-            address: JSON.stringify(outlet.address),
+            address: outlet?.address?.ADDRESS,
             nearest_mrt: outlet.nearest_mrt,
           })),
         });
-
-        setLoading(false);
       } catch (error) {
         message.error("Error fetching profile data");
         setLoading(false); // Hide loading state even on error
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -151,20 +151,6 @@ const Profile = () => {
       reader.readAsDataURL(file);
     }
     return false; // Prevent the default upload behavior
-  };
-
-  // Helper function to parse and display address
-  const getDisplayAddress = (addressValue) => {
-    if (!addressValue) return null;
-    try {
-      const parsedAddress =
-        typeof addressValue === "string"
-          ? JSON.parse(addressValue)
-          : addressValue;
-      return parsedAddress.ADDRESS || null;
-    } catch (e) {
-      return null;
-    }
   };
 
   if (loading) {
@@ -442,7 +428,7 @@ const Profile = () => {
                       "address",
                     ]);
 
-                    let displayAddress = "Address not set";
+                    let displayAddress = "";
                     if (addressValue) {
                       try {
                         const parsedAddress =
@@ -499,7 +485,7 @@ const Profile = () => {
                                 className="input-with-icon"
                                 options={(addressData || []).map((d) => ({
                                   value: JSON.stringify(d),
-                                  label: d.ADDRESS,
+                                  label: d?.ADDRESS,
                                 }))}
                               />
                             </Form.Item>

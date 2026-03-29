@@ -168,8 +168,8 @@ const ResetPassword = () => {
           <div className="reset-help">
             <Text className="help-text">
               Need help? Contact us at
-              <a href="mailto:support@juniorpass.sg" className="help-link">
-                support@juniorpass.sg
+              <a href="mailto:admin@juniorpass.sg" className="help-link">
+                admin@juniorpass.sg
               </a>
             </Text>
           </div>
