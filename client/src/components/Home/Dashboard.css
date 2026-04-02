@@ -1,0 +1,345 @@
+/* =============================================
+   PARTNER DASHBOARD STYLES
+============================================= */
+
+.partner-dashboard {
+  padding: 32px 24px;
+  min-height: 100vh;
+}
+
+/* ─── HEADER ──────────────────────────────────── */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.dashboard-header h2 {
+  margin-bottom: 4px;
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  color: #1a2744;
+}
+
+.dashboard-header p {
+  margin: 0;
+  color: #5a6480;
+}
+
+/* ─── LOADING STATE ───────────────────────────── */
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+/* ─── ANALYTICS CARDS ─────────────────────────── */
+.analytics-row {
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  position: relative;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.08) !important;
+  border: 1px solid #eaecf4 !important;
+  overflow: hidden;
+  transition: all 0.3s ease !important;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(26, 39, 68, 0.12) !important;
+}
+
+.stat-card .ant-card-body {
+  padding: 24px !important;
+}
+
+.stat-icon-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.15;
+}
+
+.stat-icon {
+  font-size: 32px;
+}
+
+.stat-card-revenue .stat-icon-wrapper {
+  background: #0ecb81;
+  color: #0ecb81;
+}
+
+.stat-card-bookings .stat-icon-wrapper {
+  background: #1890ff;
+  color: #1890ff;
+}
+
+.stat-card-attendance .stat-icon-wrapper {
+  background: #f7b731;
+  color: #f7b731;
+}
+
+.stat-card-rating .stat-icon-wrapper {
+  background: #ff6b4a;
+  color: #ff6b4a;
+}
+
+.stat-card .ant-statistic-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8892a4;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card .ant-statistic-content {
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.stat-change {
+  margin-top: 12px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-change-positive {
+  color: #0ecb81;
+  font-weight: 600;
+}
+
+.stat-change-negative {
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+.stat-change-neutral {
+  color: #8892a4;
+}
+
+/* ─── CALENDAR CARD ───────────────────────────── */
+.calendar-card {
+  border-radius: 16px !important;
+  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.08) !important;
+  border: 1px solid #eaecf4 !important;
+}
+
+.calendar-card .ant-card-head {
+  border-bottom: 1px solid #eaecf4;
+  padding: 20px 24px;
+}
+
+.calendar-card .ant-card-head-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #1a2744;
+}
+
+.calendar-card .ant-picker-calendar {
+  padding: 12px;
+}
+
+.calendar-events {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.calendar-events li {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── ACTIVITY CARD ───────────────────────────── */
+.activity-card {
+  border-radius: 16px !important;
+  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.08) !important;
+  border: 1px solid #eaecf4 !important;
+  height: 100%;
+}
+
+.activity-card .ant-card-head {
+  border-bottom: 1px solid #eaecf4;
+  padding: 20px 24px;
+}
+
+.activity-card .ant-card-head-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #1a2744;
+}
+
+.activity-card .ant-card-body {
+  padding: 0 !important;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.booking-item {
+  padding: 16px 24px !important;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease;
+}
+
+.booking-item:hover {
+  background: #f9fafd;
+}
+
+.booking-item:last-child {
+  border-bottom: none;
+}
+
+/* ─── QUICK ACTIONS CARD ──────────────────────── */
+.quick-actions-card {
+  border-radius: 16px !important;
+  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.08) !important;
+  border: 1px solid #eaecf4 !important;
+}
+
+.quick-actions-card .ant-card-head {
+  border-bottom: 1px solid #eaecf4;
+  padding: 20px 24px;
+}
+
+.quick-actions-card .ant-card-head-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #1a2744;
+}
+
+.quick-actions-card .ant-btn {
+  height: 48px;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.quick-actions-card .ant-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 39, 68, 0.12);
+}
+
+/* ─── RESPONSIVE: MOBILE ──────────────────────── */
+@media screen and (max-width: 767.9px) {
+  .partner-dashboard {
+    padding: 16px 12px;
+  }
+
+  .dashboard-header {
+    margin-bottom: 20px;
+  }
+
+  .dashboard-header h2 {
+    font-size: 24px;
+  }
+
+  .dashboard-header button {
+    width: 100%;
+  }
+
+  .analytics-row {
+    margin-bottom: 20px;
+  }
+
+  .stat-card .ant-card-body {
+    padding: 16px !important;
+  }
+
+  .stat-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    top: 16px;
+    right: 16px;
+  }
+
+  .stat-icon {
+    font-size: 24px;
+  }
+
+  .stat-card .ant-statistic-content {
+    font-size: 24px;
+  }
+
+  .stat-card .ant-statistic-title {
+    font-size: 11px;
+  }
+
+  .calendar-card .ant-card-body,
+  .activity-card .ant-card-body,
+  .quick-actions-card .ant-card-body {
+    padding: 12px !important;
+  }
+
+  .calendar-card .ant-picker-calendar {
+    padding: 8px;
+  }
+
+  .activity-card .ant-card-body {
+    padding: 0 !important;
+    max-height: 300px;
+  }
+
+  .booking-item {
+    padding: 12px 16px !important;
+  }
+
+  .quick-actions-card .ant-btn {
+    height: 44px;
+    font-size: 13px;
+  }
+}
+
+/* ─── RESPONSIVE: TABLET PORTRAIT ─────────────── */
+@media screen and (min-width: 768px) and (max-width: 1023.9px) {
+  .partner-dashboard {
+    padding: 24px 16px;
+  }
+
+  .dashboard-header {
+    margin-bottom: 24px;
+  }
+
+  .stat-card .ant-card-body {
+    padding: 20px !important;
+  }
+}
+
+/* ─── RESPONSIVE: TABLET LANDSCAPE+ ───────────── */
+@media screen and (min-width: 1024px) {
+  .partner-dashboard {
+    padding: 32px 24px;
+  }
+}
+
+/* ─── DESKTOP LARGE ───────────────────────────── */
+@media screen and (min-width: 1336px) {
+  .partner-dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}

@@ -10,21 +10,33 @@ import {
   Row,
   Col,
   Tooltip,
+  Card,
+  Typography,
+  Divider,
+  Space,
+  Spin,
 } from "antd";
 import {
   InfoCircleOutlined,
   PlusOutlined,
   UploadOutlined,
+  UserOutlined,
+  ShopOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  GlobalOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import getBaseURL from "../../utils/config";
-import Spinner from "../../utils/Spinner";
 import UserContext from "../UserContext";
 import useAddressSearch from "../../hooks/useAddressSearch";
 import _ from "lodash";
 import useMRTStations from "../../hooks/useMrtStations";
+import "./Profile.css";
 
 const { Option } = Select;
 const { TextArea } = Input;
+const { Title, Text } = Typography;
 
 const Profile = () => {
   const { user } = useContext(UserContext);
@@ -32,7 +44,8 @@ const Profile = () => {
   const { mrtStations, renderTags } = useMRTStations();
   const baseURL = getBaseURL();
   const token = localStorage.getItem("token");
-  const [loading, setLoading] = useState(true); // Loading state for data fetch
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [profileForm] = Form.useForm();
   const [userProfile, setUserProfile] = useState({});
 
@@ -100,6 +113,7 @@ const Profile = () => {
   }, []);
 
   const handleFormSubmit = async (values) => {
+    setSaving(true);
     try {
       const response = await fetch(`${baseURL}/partners/${user.partner_id}`, {
         method: "PUT",
@@ -107,19 +121,22 @@ const Profile = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values), // Ensure JSON payload
+        body: JSON.stringify(values),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         message.success("Profile updated successfully!");
+        setUserProfile((prev) => ({ ...prev, ...values }));
       } else {
         throw new Error("Failed to update profile");
       }
     } catch (err) {
       console.error("Error in handleFormSubmit:", err);
       message.error("Error updating profile");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -139,209 +156,317 @@ const Profile = () => {
   };
 
   if (loading) {
-    return <Spinner />; // Show loading state until data is fetched
+    return (
+      <div className="profile-loading">
+        <Spin size="large" tip="Loading profile..." />
+      </div>
+    );
   }
 
   return (
-    <Form
-      form={profileForm}
-      name="edit-profile"
-      initialValues={userProfile}
-      onFinish={handleFormSubmit}
-      layout="vertical"
-      style={{ maxWidth: 600 }}
-    >
-      <Form.Item
-        label="Name"
-        name="partner_name"
-        rules={[{ required: true, message: "Please enter your name" }]}
+    <div className="profile-page">
+      {/* Header */}
+      <div className="profile-header">
+        <Title level={2}>Partner Profile</Title>
+        <Text type="secondary">Manage your business information and settings</Text>
+      </div>
+
+      <Form
+        form={profileForm}
+        name="edit-profile"
+        initialValues={userProfile}
+        onFinish={handleFormSubmit}
+        layout="vertical"
       >
-        <Input placeholder="Enter your name" />
-      </Form.Item>
-
-      <Form.Item label="Email" name="email">
-        <Input disabled />
-      </Form.Item>
-
-      {/* TODO: Load existing picture and allow user to change display picture */}
-      <Form.Item label="Display Picture">
-        <Upload
-          accept="image/*"
-          showUploadList={false}
-          beforeUpload={handleImageChange}
-        >
-          <Button icon={<UploadOutlined />}>Upload New Picture</Button>
-        </Upload>
-        {userProfile.displayPicture?.preview || userProfile.picture ? (
-          <Avatar
-            size={64}
-            src={userProfile.displayPicture?.preview || userProfile.picture}
-            alt="Display Picture"
-            style={{ marginTop: 8 }}
-          />
-        ) : (
-          <Avatar
-            size={64}
-            icon={<UploadOutlined />}
-            style={{ marginTop: 8 }}
-          />
-        )}
-      </Form.Item>
-
-      <Form.Item
-        label="Description"
-        name="description"
-        rules={[{ required: true, message: "Please enter your name" }]}
-      >
-        <TextArea value={userProfile?.description} rows={8} />
-      </Form.Item>
-
-      {/* TODO: to change to multiselect and existing value */}
-      <Form.Item
-        label="Category"
-        name="categories"
-        rules={[{ required: true, message: "Please select a category" }]}
-      >
-        <Select placeholder="Select category">
-          <Option value="Music">Music</Option>
-          <Option value="Sports">Sports</Option>
-          <Option value="Other">Other</Option>
-        </Select>
-      </Form.Item>
-
-      <Form.Item
-        label="Website"
-        name="website"
-        rules={[{ required: true, message: "Please enter your website URL" }]}
-      >
-        <Input placeholder="Enter website URL" />
-      </Form.Item>
-
-      <Form.Item
-        label="Address (HQ)"
-        name={"address"}
-        fieldId={"address"}
-        rules={[
-          {
-            required: true,
-            message: "Please input your address",
-          },
-        ]}
-      >
-        <Select
-          showSearch
-          placeholder={"Address"}
-          filterOption={false}
-          onSearch={handleAddressSearch}
-          notFoundContent={null}
-          options={(addressData || []).map((d) => ({
-            value: JSON.stringify(d),
-            label: d.ADDRESS,
-          }))}
-        />
-      </Form.Item>
-
-      <Form.Item
-        label="Contact Number"
-        name="contact_number"
-        rules={[
-          { required: true, message: "Please enter your contact number" },
-        ]}
-      >
-        <Input placeholder="Enter contact number" />
-      </Form.Item>
-
-      <Form.Item
-        label={
-          <span>
-            Outlets&nbsp;
-            <Tooltip title="Please contact admin for the removal of outlets.">
-              <InfoCircleOutlined />
-            </Tooltip>
-          </span>
-        }
-      >
-        <Form.List name={"outlets"}>
-          {(fields, { add }) => (
-            <>
-              {fields.map((field) => (
-                <Row key={field.key} gutter={24}>
-                  <Col span={10}>
-                    <Form.Item
-                      name={[field.name, "address"]}
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input your address",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder={"Address"}
-                        filterOption={false}
-                        onSearch={handleAddressSearch}
-                        notFoundContent={null}
-                        options={(addressData || []).map((d) => ({
-                          value: JSON.stringify(d),
-                          label: d.ADDRESS,
-                        }))}
-                        value={
-                          profileForm.getFieldValue([
-                            "outlets",
-                            field.name,
-                            "address",
-                          ])?.ADDRESS
-                        }
-                      />
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={10}>
-                    <Form.Item
-                      name={[field.name, "nearest_mrt"]}
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input the nearest MRT/LRT",
-                        },
-                      ]}
-                    >
-                      <Select showSearch placeholder={"Nearest MRT/LRT"}>
-                        {!_.isEmpty(mrtStations) &&
-                          Object.keys(mrtStations).map((key, index) => (
-                            <Option key={index} value={key} label={key}>
-                              {renderTags(mrtStations[key])}
-                              {key}
-                            </Option>
-                          ))}
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                </Row>
-              ))}
-
-              <Form.Item>
-                <Button
-                  type="dashed"
-                  onClick={() => add()}
-                  block
-                  icon={<PlusOutlined />}
+        <Row gutter={[24, 24]}>
+          {/* Left Column */}
+          <Col xs={24} lg={8}>
+            {/* Profile Picture Card */}
+            <Card className="profile-card profile-picture-card">
+              <div className="profile-avatar-section">
+                <Avatar
+                  size={120}
+                  src={userProfile.displayPicture?.preview || userProfile.picture}
+                  icon={<UserOutlined />}
+                  className="profile-avatar"
+                />
+                <Upload
+                  accept="image/*"
+                  showUploadList={false}
+                  beforeUpload={handleImageChange}
                 >
-                  Add Outlet
-                </Button>
-              </Form.Item>
-            </>
-          )}
-        </Form.List>
-      </Form.Item>
+                  <Button
+                    icon={<UploadOutlined />}
+                    type="default"
+                    className="upload-button"
+                  >
+                    Change Picture
+                  </Button>
+                </Upload>
+                <div className="profile-quick-info">
+                  <Title level={4}>{userProfile.partner_name}</Title>
+                  <Text type="secondary">{userProfile.email}</Text>
+                </div>
+              </div>
+            </Card>
 
-      <Form.Item>
-        <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
-          Save Changes
-        </Button>
-      </Form.Item>
-    </Form>
+            {/* Quick Stats Card */}
+            <Card className="profile-card stats-card">
+              <Title level={5}>Quick Stats</Title>
+              <Divider />
+              <Space direction="vertical" style={{ width: "100%" }} size="middle">
+                <div className="stat-item">
+                  <Text type="secondary">Total Classes</Text>
+                  <Text strong className="stat-value">
+                    {userProfile.total_classes || 0}
+                  </Text>
+                </div>
+                <div className="stat-item">
+                  <Text type="secondary">Total Bookings</Text>
+                  <Text strong className="stat-value">
+                    {userProfile.total_bookings || 0}
+                  </Text>
+                </div>
+                <div className="stat-item">
+                  <Text type="secondary">Member Since</Text>
+                  <Text strong className="stat-value">
+                    {userProfile.created_at
+                      ? new Date(userProfile.created_at).toLocaleDateString()
+                      : "N/A"}
+                  </Text>
+                </div>
+              </Space>
+            </Card>
+          </Col>
+
+          {/* Right Column */}
+          <Col xs={24} lg={16}>
+            {/* Basic Information Card */}
+            <Card className="profile-card" title={<><UserOutlined /> Basic Information</>}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Partner Name"
+                    name="partner_name"
+                    rules={[{ required: true, message: "Please enter your name" }]}
+                  >
+                    <Input
+                      prefix={<UserOutlined className="input-prefix-icon" />}
+                      placeholder="Enter your name"
+                      size="large"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="Email" name="email">
+                    <Input
+                      prefix={<MailOutlined className="input-prefix-icon" />}
+                      disabled
+                      size="large"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item
+                label="Description"
+                name="description"
+                rules={[{ required: true, message: "Please enter a description" }]}
+              >
+                <TextArea
+                  rows={4}
+                  placeholder="Tell us about your business..."
+                  size="large"
+                />
+              </Form.Item>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Category"
+                    name="categories"
+                    rules={[{ required: true, message: "Please select a category" }]}
+                  >
+                    <Select placeholder="Select category" size="large">
+                      <Option value="Music">Music</Option>
+                      <Option value="Sports">Sports</Option>
+                      <Option value="Arts">Arts</Option>
+                      <Option value="Academic">Academic</Option>
+                      <Option value="Other">Other</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Website"
+                    name="website"
+                    rules={[
+                      { required: true, message: "Please enter your website URL" },
+                    ]}
+                  >
+                    <Input
+                      prefix={<GlobalOutlined className="input-prefix-icon" />}
+                      placeholder="https://example.com"
+                      size="large"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* Contact Information Card */}
+            <Card
+              className="profile-card"
+              title={<><PhoneOutlined /> Contact Information</>}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Contact Number"
+                    name="contact_number"
+                    rules={[
+                      { required: true, message: "Please enter your contact number" },
+                    ]}
+                  >
+                    <Input
+                      prefix={<PhoneOutlined className="input-prefix-icon" />}
+                      placeholder="+65 1234 5678"
+                      size="large"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Address (HQ)"
+                    name="address"
+                    rules={[
+                      { required: true, message: "Please input your address" },
+                    ]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Search address..."
+                      filterOption={false}
+                      onSearch={handleAddressSearch}
+                      notFoundContent={null}
+                      size="large"
+                      options={(addressData || []).map((d) => ({
+                        value: JSON.stringify(d),
+                        label: d.ADDRESS,
+                      }))}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* Outlets Card */}
+            <Card
+              className="profile-card"
+              title={
+                <span>
+                  <ShopOutlined /> Outlets&nbsp;
+                  <Tooltip title="Please contact admin for the removal of outlets.">
+                    <InfoCircleOutlined />
+                  </Tooltip>
+                </span>
+              }
+            >
+              <Form.List name="outlets">
+                {(fields, { add }) => (
+                  <>
+                    {fields.map((field) => (
+                      <div key={field.key} className="outlet-item">
+                        <Row gutter={16}>
+                          <Col span={11}>
+                            <Form.Item
+                              name={[field.name, "address"]}
+                              label="Outlet Address"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input your address",
+                                },
+                              ]}
+                            >
+                              <Select
+                                showSearch
+                                placeholder="Search address..."
+                                filterOption={false}
+                                onSearch={handleAddressSearch}
+                                notFoundContent={null}
+                                size="large"
+                                options={(addressData || []).map((d) => ({
+                                  value: JSON.stringify(d),
+                                  label: d.ADDRESS,
+                                }))}
+                              />
+                            </Form.Item>
+                          </Col>
+                          <Col span={11}>
+                            <Form.Item
+                              name={[field.name, "nearest_mrt"]}
+                              label="Nearest MRT/LRT"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input the nearest MRT/LRT",
+                                },
+                              ]}
+                            >
+                              <Select
+                                showSearch
+                                placeholder="Select nearest MRT/LRT"
+                                size="large"
+                              >
+                                {!_.isEmpty(mrtStations) &&
+                                  Object.keys(mrtStations).map((key, index) => (
+                                    <Option key={index} value={key} label={key}>
+                                      {renderTags(mrtStations[key])}
+                                      {key}
+                                    </Option>
+                                  ))}
+                              </Select>
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      </div>
+                    ))}
+
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        block
+                        icon={<PlusOutlined />}
+                        size="large"
+                        className="add-outlet-button"
+                      >
+                        Add New Outlet
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
+            </Card>
+
+            {/* Save Button */}
+            <div className="profile-actions">
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                icon={<SaveOutlined />}
+                loading={saving}
+                className="save-button"
+              >
+                {saving ? "Saving Changes..." : "Save Changes"}
+              </Button>
+            </div>
+          </Col>
+        </Row>
+      </Form>
+    </div>
   );
 };
 

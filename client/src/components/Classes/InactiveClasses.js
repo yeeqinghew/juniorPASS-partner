@@ -1,24 +1,28 @@
+import { Empty } from "antd";
 import ClassCard from "./ClassCard";
 
-const InactiveClasses = ({ listing, setListing }) => {
-  const inactiveListings = listing?.filter((list) => !list.active);
+const InactiveClasses = ({ listing, setListing, viewMode = "grid" }) => {
+  if (!listing || listing.length === 0) {
+    return (
+      <div className="classes-empty">
+        <Empty
+          description="No inactive classes found"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridAutoRows: "1fr",
-        gridTemplateColumns: "1fr 1fr 1fr",
-      }}
-    >
-      {inactiveListings &&
-        inactiveListings.map((list) => (
-          <ClassCard
-            key={list.listing_id}
-            listing={list}
-            setListing={setListing}
-          />
-        ))}
+    <div className={viewMode === "grid" ? "classes-grid" : "classes-list"}>
+      {listing.map((list) => (
+        <ClassCard
+          key={list.listing_id}
+          listing={list}
+          setListing={setListing}
+          viewMode={viewMode}
+        />
+      ))}
     </div>
   );
 };
