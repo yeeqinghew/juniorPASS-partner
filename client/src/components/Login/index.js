@@ -4,11 +4,12 @@ import {
   MailOutlined,
   EyeTwoTone,
   EyeInvisibleOutlined,
-  LoginOutlined,
+  ArrowRightOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
-import { Button, Form, Input, Typography, Checkbox, Card } from "antd";
-import toast from "react-hot-toast";
+import { Button, Form, Input, Checkbox, Card, Typography } from "antd";
 import { Link } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 import getBaseURL from "../../utils/config";
 import "./Login.css";
 
@@ -26,191 +27,166 @@ const PartnerLogin = ({ setAuth }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
+        body: JSON.stringify(values),
       });
 
       const parseRes = await response.json();
-
       if (parseRes.token) {
         localStorage.setItem("token", parseRes.token);
-
-        // Save remember me preference
-        if (values.remember) {
-          localStorage.setItem("rememberMe", "true");
-          localStorage.setItem("userEmail", values.email);
-        } else {
-          localStorage.removeItem("rememberMe");
-          localStorage.removeItem("userEmail");
-        }
-
         setAuth(true);
-        toast.success("Welcome back!");
+        toast.success("Welcome back! Login successful.");
       } else {
         setAuth(false);
-        toast.error(parseRes.message || "Invalid credentials");
+        toast.error(parseRes.message || "Invalid email or password");
       }
     } catch (err) {
       setAuth(false);
       console.error(err.message);
-      toast.error("Login failed. Please try again.");
+      toast.error("Connection error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Get saved email if remember me was checked
-  const savedEmail = localStorage.getItem("rememberMe")
-    ? localStorage.getItem("userEmail")
-    : "";
-
   return (
-    <div className="login-page">
+    <section className="login-page">
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "#363636",
+            color: "#fff",
+            borderRadius: "10px",
+            padding: "16px",
+          },
+          success: {
+            iconTheme: {
+              primary: "#52c41a",
+              secondary: "#fff",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ff4d4f",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
+
       <div className="login-container">
-        {/* Left Side - Branding */}
-        <div className="login-branding">
-          <div className="branding-content">
-            <div className="logo-section">
-              <img
-                src={require("../../images/logopngResize.png")}
-                alt="JuniorPASS"
-                className="brand-logo"
-              />
-            </div>
-            <Title level={2} className="brand-title">
+        <Card className="login-card" bordered={false}>
+          {/* Header Section */}
+          <div className="login-header">
+            <img
+              src={require("../../images/logopngResize.png")}
+              alt="JuniorPASS Logo"
+              className="login-logo"
+            />
+            <div className="partner-badge">
+              <TeamOutlined />
               Partner Portal
+            </div>
+            <Title level={2} className="login-title">
+              Welcome Back
             </Title>
-            <Text className="brand-subtitle">
-              Manage your classes, track bookings, and grow your business
+            <Text className="login-subtitle">
+              Sign in to manage your classes and bookings
             </Text>
-
-            <div className="feature-list">
-              <div className="feature-item">
-                <div className="feature-icon">📊</div>
-                <div className="feature-text">
-                  <Text strong>Analytics Dashboard</Text>
-                  <Text type="secondary">Track your performance</Text>
-                </div>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">📅</div>
-                <div className="feature-text">
-                  <Text strong>Easy Scheduling</Text>
-                  <Text type="secondary">Manage classes effortlessly</Text>
-                </div>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">💰</div>
-                <div className="feature-text">
-                  <Text strong>Revenue Tracking</Text>
-                  <Text type="secondary">Monitor your earnings</Text>
-                </div>
-              </div>
-            </div>
           </div>
-        </div>
 
-        {/* Right Side - Login Form */}
-        <div className="login-form-section">
-          <Card className="login-card" bordered={false}>
-            <div className="form-header">
-              <Title level={3}>Welcome Back</Title>
-              <Text type="secondary">
-                Sign in to access your partner dashboard
-              </Text>
-            </div>
-
-            <Form
-              name="partner_login"
-              initialValues={{
-                remember: true,
-                email: savedEmail,
-              }}
-              onFinish={handleLogin}
-              layout="vertical"
-              size="large"
+          {/* Login Form */}
+          <Form
+            name="partner_login"
+            className="partner-login-form"
+            initialValues={{
+              remember: true,
+            }}
+            onFinish={handleLogin}
+            layout="vertical"
+            requiredMark={false}
+          >
+            <Form.Item
+              name="email"
+              label={<Text strong>Email Address</Text>}
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter your email address",
+                },
+                {
+                  type: "email",
+                  message: "Please enter a valid email address",
+                },
+              ]}
             >
-              <Form.Item
-                name="email"
-                label="Email Address"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your email",
-                  },
-                  {
-                    type: "email",
-                    message: "Please enter a valid email",
-                  },
-                ]}
-              >
-                <Input
-                  prefix={<MailOutlined className="input-icon" />}
-                  placeholder="partner@example.com"
-                  autoComplete="email"
-                />
-              </Form.Item>
+              <Input
+                prefix={<MailOutlined className="input-icon" />}
+                placeholder="Enter your email"
+                type="email"
+                size="large"
+                autoComplete="email"
+              />
+            </Form.Item>
 
-              <Form.Item
-                name="password"
-                label="Password"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter your password",
-                  },
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined className="input-icon" />}
-                  placeholder="Enter your password"
-                  iconRender={(visible) =>
-                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-                  }
-                  autoComplete="current-password"
-                />
-              </Form.Item>
+            <Form.Item
+              name="password"
+              label={<Text strong>Password</Text>}
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter your password",
+                },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className="input-icon" />}
+                placeholder="Enter your password"
+                size="large"
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                autoComplete="current-password"
+              />
+            </Form.Item>
 
-              <Form.Item>
-                <div className="form-extras">
-                  <Form.Item name="remember" valuePropName="checked" noStyle>
-                    <Checkbox>Remember me</Checkbox>
-                  </Form.Item>
-                  <Link to="/reset-password" className="forgot-link">
-                    Forgot password?
-                  </Link>
-                </div>
-              </Form.Item>
-
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  block
-                  icon={<LoginOutlined />}
-                  loading={loading}
-                  size="large"
-                  className="login-button"
-                >
-                  {loading ? "Signing in..." : "Sign In"}
-                </Button>
-              </Form.Item>
-            </Form>
-
-            <div className="form-footer">
-              <Text type="secondary">
-                Don't have an account?{" "}
-                <a href="mailto:admin@juniorpass.sg" className="signup-link">
-                  Contact us
-                </a>
-              </Text>
+            <div className="form-options">
+              <div className="remember-checkbox">
+                <Form.Item name="remember" valuePropName="checked" noStyle>
+                  <Checkbox>Remember me</Checkbox>
+                </Form.Item>
+              </div>
+              <Link to="/reset-password" className="forgot-password-link">
+                Forgot password?
+              </Link>
             </div>
-          </Card>
-        </div>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="login-button"
+                loading={loading}
+                icon={<ArrowRightOutlined />}
+              >
+                {loading ? "Signing in..." : "Sign In"}
+              </Button>
+            </Form.Item>
+          </Form>
+
+          {/* Help Section */}
+          <div className="login-help">
+            <Text className="help-text">
+              Need help? Contact us at
+              <a href="mailto:admin@juniorpass.sg" className="help-link">
+                admin@juniorpass.sg
+              </a>
+            </Text>
+          </div>
+        </Card>
       </div>
-    </div>
+    </section>
   );
 };
 

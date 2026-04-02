@@ -4,13 +4,16 @@ import {
   HomeOutlined,
   LogoutOutlined,
   UserOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, Image, Divider, Avatar } from "antd";
+import { Layout, Menu, Image, Avatar, Typography, Badge } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import UserContext from "../components/UserContext";
+import "./PartnerLayout.css";
 
 const { Header, Sider, Content } = Layout;
+const { Text } = Typography;
 
 const PartnerHomeLayout = ({ setAuth }) => {
   const { user } = useContext(UserContext);
@@ -35,54 +38,33 @@ const PartnerHomeLayout = ({ setAuth }) => {
   }, [location, current]);
 
   return (
-    <Layout
-      style={{
-        minHeight: "100vh",
-      }}
-    >
-      <Sider
-        style={{
-          overflow: "auto",
-          height: "100vh",
-          width: "200px",
-          position: "fixed",
-          left: 0,
-          top: 0,
-          bottom: 0,
-        }}
-      >
-        <div
-          style={{
-            margin: 24,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+    <Layout className="partner-layout">
+      <Sider className="partner-sidebar" width={240}>
+        <div className="sidebar-logo-container">
           <Image
             src={require("../images/logopngResize.png")}
             preview={false}
-            width={100}
+            width={120}
+            className="sidebar-logo"
           />
         </div>
-        <Divider />
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            margin: "24px",
-          }}
-        >
+        <div className="sidebar-avatar-container">
           <Avatar
-            size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }}
-            src={<Image preview={false} src={user?.picture} />}
+            size={80}
+            src={user?.picture}
+            icon={<UserOutlined />}
+            className="sidebar-avatar"
           />
+          <Text className="sidebar-user-name">
+            {user?.partner_name || "Partner"}
+          </Text>
+          <Text className="sidebar-user-email">{user?.email || ""}</Text>
         </div>
 
         <Menu
           mode="inline"
-          defaultSelectedKeys={[current]}
+          selectedKeys={[current]}
           onClick={handleSelectSideMenu}
           items={[
             {
@@ -102,52 +84,41 @@ const PartnerHomeLayout = ({ setAuth }) => {
             },
           ]}
         />
+
+        <div className="sidebar-footer">
+          <Text className="sidebar-footer-text">© 2025 juniorPASS</Text>
+        </div>
       </Sider>
-      <Layout
-        style={{
-          marginLeft: 200,
-        }}
-      >
-        <Header
-          style={{
-            padding: 0,
-          }}
-        >
-          <Menu
-            mode="horizontal"
-            style={{ flex: 1, minWidth: 0, display: "block" }}
-          >
-            <Menu.Item key="logout" style={{ float: "right" }}>
+      <Layout>
+        <Header className="partner-header">
+          <div style={{ flex: 1 }} />
+          <Menu mode="horizontal" className="header-menu" selectable={false}>
+            <Menu.Item
+              key="notification"
+              onClick={() => {
+                toast("Notifications feature coming soon!", {
+                  icon: "🔔",
+                });
+              }}
+            >
+              <Badge count={0} showZero={false}>
+                <BellOutlined className="notification-icon" />
+              </Badge>
+            </Menu.Item>
+            <Menu.Item key="logout">
               <LogoutOutlined
+                className="logout-button"
                 onClick={() => {
                   localStorage.clear();
                   setAuth(false);
-                  toast.success("Logout successfully");
+                  toast.success("Logged out successfully");
                   navigate("/login");
                 }}
               />
             </Menu.Item>
-            <Menu.Item
-              key="notification"
-              style={{ float: "right" }}
-              onClick={() => {
-                // TODO: Popover antd to show a list of notifcations
-              }}
-            >
-              {/* TODO: <Badge> */}
-              <i className="fa fa-bell-o"></i>
-            </Menu.Item>
           </Menu>
         </Header>
-        <Content
-          style={{
-            margin: "24px 16px 0",
-            overflow: "initial",
-            padding: 24,
-            background: "white",
-            borderRadius: "25px",
-          }}
-        >
+        <Content className="partner-content">
           <Outlet />
         </Content>
       </Layout>

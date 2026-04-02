@@ -33,6 +33,8 @@ const useFormInitialization = (form, list) => {
             day: schedule.day,
             timeslot: schedule.timeslot,
             frequency: schedule.frequency,
+            slots: schedule.slots,
+            credit: schedule.credit,
           };
 
           if (outletIndex === -1) {

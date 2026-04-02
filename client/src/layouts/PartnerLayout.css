@@ -1,0 +1,266 @@
+/* Partner Portal Layout - Matching JuniorPASS Design */
+
+/* CSS Variables */
+:root {
+  --primary-color: #98BDD2;
+  --primary-dark: #6aa4c3;
+  --primary-light: #b8d9e8;
+  --accent-pink: #f3a5c7;
+  --accent-pink-dark: #e88bb1;
+  --text-dark: #1a1a2e;
+  --text-muted: #666;
+  --text-light: #8c8c8c;
+  --border-light: #f0f0f0;
+  --bg-white: #fff;
+  --bg-cream: #FCFBF8;
+  --bg-light-blue: #f8fcff;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Main Layout - With outer padding */
+.partner-layout {
+  min-height: 100vh;
+  padding: 16px;
+  background: var(--bg-cream);
+}
+
+/* Sidebar Styling - Rounded with margin from edge */
+.partner-sidebar {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  height: calc(100vh - 32px) !important;
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  bottom: 16px;
+  background: var(--bg-white) !important;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  border-radius: 16px;
+}
+
+.sidebar-logo-container {
+  margin: 24px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sidebar-logo {
+  transition: transform 0.3s ease;
+}
+
+.sidebar-logo:hover {
+  transform: scale(1.05);
+}
+
+.sidebar-avatar-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 20px 20px 20px;
+  padding: 20px;
+  background: var(--bg-cream);
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+}
+
+.sidebar-avatar {
+  border: 3px solid var(--primary-color) !important;
+  box-shadow: var(--shadow-md) !important;
+  margin-bottom: 12px !important;
+}
+
+.sidebar-user-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-dark);
+  text-align: center;
+  margin-top: 8px;
+}
+
+.sidebar-user-email {
+  font-size: 13px;
+  color: var(--text-light);
+  text-align: center;
+}
+
+/* Sidebar Menu */
+.partner-sidebar .ant-menu {
+  background: transparent !important;
+  border-right: none !important;
+  padding-bottom: 80px;
+}
+
+.partner-sidebar .ant-menu-item {
+  margin: 8px 16px !important;
+  border-radius: 10px !important;
+  height: 48px !important;
+  line-height: 48px !important;
+  font-weight: 500;
+  transition: all 0.3s ease !important;
+}
+
+.partner-sidebar .ant-menu-item:hover {
+  background: var(--bg-light-blue) !important;
+  color: var(--primary-color) !important;
+}
+
+.partner-sidebar .ant-menu-item-selected {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+  color: white !important;
+}
+
+.partner-sidebar .ant-menu-item-selected .anticon {
+  color: white !important;
+}
+
+.partner-sidebar .ant-menu-item .anticon {
+  font-size: 18px;
+  color: var(--text-light);
+  transition: color 0.3s ease;
+}
+
+.partner-sidebar .ant-menu-item:hover .anticon {
+  color: var(--primary-color) !important;
+}
+
+.partner-sidebar .ant-menu-item-selected .anticon {
+  color: white !important;
+}
+
+/* Header Styling - Rounded top corners */
+.partner-header {
+  padding: 0 32px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  height: 64px !important;
+  line-height: 64px !important;
+  border-radius: 16px 16px 0 0;
+  margin: 0 !important;
+}
+
+.header-menu {
+  background: transparent !important;
+  border-bottom: none !important;
+  line-height: 64px;
+}
+
+.header-menu .ant-menu-item {
+  border-bottom: none !important;
+  height: 64px;
+  line-height: 64px;
+  padding: 0 20px;
+  transition: all 0.3s ease;
+}
+
+.header-menu .ant-menu-item:hover {
+  background: var(--bg-light-blue) !important;
+  color: var(--primary-color) !important;
+}
+
+.header-menu .ant-menu-item .anticon {
+  font-size: 20px;
+  color: var(--text-light);
+  transition: color 0.3s ease;
+}
+
+.header-menu .ant-menu-item:hover .anticon {
+  color: var(--primary-color);
+}
+
+.logout-button {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  transform: scale(1.1);
+}
+
+.notification-icon {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: all 0.3s ease;
+}
+
+.notification-icon:hover {
+  color: var(--primary-color);
+  transform: scale(1.1);
+}
+
+/* Content Area - Rounded bottom corners */
+.partner-content {
+  margin: 0 !important;
+  padding: 24px 32px !important;
+  background: var(--bg-white) !important;
+  min-height: calc(100vh - 64px - 32px);
+  overflow: initial;
+  border-radius: 0 0 16px 16px;
+}
+
+/* Sidebar Footer - Inside sidebar */
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: 16px 20px;
+  text-align: center;
+  background: var(--bg-white);
+  border-top: 1px solid var(--border-light);
+  border-radius: 0 0 16px 16px;
+  z-index: 101;
+}
+
+.sidebar-footer-text {
+  font-size: 12px;
+  color: #bfbfbf;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .partner-layout {
+    padding: 8px;
+  }
+
+  .partner-sidebar {
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    height: calc(100vh - 16px) !important;
+    position: fixed !important;
+    z-index: 1000;
+    border-radius: 12px;
+  }
+
+  .partner-header {
+    padding: 0 16px !important;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .partner-content {
+    padding: 16px !important;
+    min-height: calc(100vh - 64px - 16px);
+    border-radius: 0 0 12px 12px;
+  }
+
+  .sidebar-logo-container {
+    margin: 16px;
+  }
+
+  .sidebar-avatar-container {
+    margin: 16px;
+    padding: 16px;
+  }
+
+  .sidebar-footer {
+    border-radius: 0 0 12px 12px;
+  }
+}

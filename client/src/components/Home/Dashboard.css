@@ -1,269 +1,400 @@
-/* =============================================
-   PARTNER DASHBOARD STYLES
-============================================= */
+/* Partner Dashboard Styles - Matching JuniorPASS Main Website */
 
-.partner-dashboard {
-  padding: 32px 24px;
+/* CSS Variables for consistency */
+:root {
+  --primary-color: #98BDD2;
+  --primary-dark: #6aa4c3;
+  --primary-light: #b8d9e8;
+  --accent-pink: #f3a5c7;
+  --accent-pink-dark: #e88bb1;
+  --accent-gold: #d4af37;
+  --text-dark: #1a1a2e;
+  --text-secondary: #555;
+  --text-muted: #666;
+  --text-light: #777;
+  --text-disabled: #999;
+  --border-light: #f0f0f0;
+  --bg-white: #fff;
+  --bg-cream: #FCFBF8;
+  --bg-light-blue: #f8fcff;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  padding: 24px;
+  background: var(--bg-cream);
   min-height: 100vh;
 }
 
-/* ─── HEADER ──────────────────────────────────── */
-.dashboard-header {
+/* Welcome Section */
+.welcome-banner {
+  background: var(--bg-white);
+  border-radius: var(--radius-xl);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 32px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.dashboard-header h2 {
-  margin-bottom: 4px;
-  font-family: 'Sora', sans-serif;
-  font-weight: 800;
-  color: #1a2744;
-}
-
-.dashboard-header p {
-  margin: 0;
-  color: #5a6480;
-}
-
-/* ─── LOADING STATE ───────────────────────────── */
-.dashboard-loading {
-  display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 60vh;
+  gap: 24px;
 }
 
-/* ─── ANALYTICS CARDS ─────────────────────────── */
-.analytics-row {
-  margin-bottom: 32px;
+.welcome-content {
+  flex: 1;
+}
+
+.welcome-title {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  color: var(--text-dark) !important;
+  margin: 0 0 6px 0 !important;
+  line-height: 1.3 !important;
+}
+
+.welcome-text {
+  font-size: 15px;
+  color: var(--text-muted) !important;
+  margin: 0 !important;
+}
+
+.welcome-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.welcome-btn-primary {
+  height: 44px !important;
+  padding: 0 24px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-md) !important;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(152, 189, 210, 0.3) !important;
+}
+
+.welcome-btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(152, 189, 210, 0.4) !important;
+}
+
+/* Statistics Cards */
+.stats-row {
+  margin-bottom: 24px;
 }
 
 .stat-card {
-  position: relative;
-  border-radius: 16px !important;
-  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.08) !important;
-  border: 1px solid #eaecf4 !important;
-  overflow: hidden;
+  background: var(--bg-white);
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-sm) !important;
   transition: all 0.3s ease !important;
+  height: 100%;
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(26, 39, 68, 0.12) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 .stat-card .ant-card-body {
-  padding: 24px !important;
+  padding: 20px !important;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .stat-icon-wrapper {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.15;
+  font-size: 24px;
+  flex-shrink: 0;
 }
 
-.stat-icon {
-  font-size: 32px;
+.stat-icon-wrapper.pink {
+  background: linear-gradient(135deg, rgba(243, 165, 199, 0.15) 0%, rgba(232, 139, 177, 0.15) 100%);
+  color: var(--accent-pink);
 }
 
-.stat-card-revenue .stat-icon-wrapper {
-  background: #0ecb81;
-  color: #0ecb81;
+.stat-icon-wrapper.blue {
+  background: linear-gradient(135deg, rgba(152, 189, 210, 0.15) 0%, rgba(106, 164, 195, 0.15) 100%);
+  color: var(--primary-color);
 }
 
-.stat-card-bookings .stat-icon-wrapper {
-  background: #1890ff;
-  color: #1890ff;
+.stat-icon-wrapper.green {
+  background: linear-gradient(135deg, rgba(82, 196, 26, 0.1) 0%, rgba(56, 158, 13, 0.1) 100%);
+  color: #52c41a;
 }
 
-.stat-card-attendance .stat-icon-wrapper {
-  background: #f7b731;
-  color: #f7b731;
+.stat-icon-wrapper.orange {
+  background: linear-gradient(135deg, rgba(250, 140, 22, 0.1) 0%, rgba(212, 107, 8, 0.1) 100%);
+  color: #fa8c16;
 }
 
-.stat-card-rating .stat-icon-wrapper {
-  background: #ff6b4a;
-  color: #ff6b4a;
+.stat-content {
+  flex: 1;
+  min-width: 0;
 }
 
-.stat-card .ant-statistic-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #8892a4;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-card .ant-statistic-content {
-  font-size: 32px;
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-dark);
   line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .stat-change {
-  margin-top: 12px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-change-positive {
-  color: #0ecb81;
-  font-weight: 600;
-}
-
-.stat-change-negative {
-  color: #ff4d4f;
-  font-weight: 600;
-}
-
-.stat-change-neutral {
-  color: #8892a4;
-}
-
-/* ─── CALENDAR CARD ───────────────────────────── */
-.calendar-card {
-  border-radius: 16px !important;
-  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.08) !important;
-  border: 1px solid #eaecf4 !important;
-}
-
-.calendar-card .ant-card-head {
-  border-bottom: 1px solid #eaecf4;
-  padding: 20px 24px;
-}
-
-.calendar-card .ant-card-head-title {
-  font-family: 'Sora', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: #1a2744;
-}
-
-.calendar-card .ant-picker-calendar {
-  padding: 12px;
-}
-
-.calendar-events {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.calendar-events li {
   font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--text-disabled);
+  margin-top: 4px;
 }
 
-/* ─── ACTIVITY CARD ───────────────────────────── */
-.activity-card {
-  border-radius: 16px !important;
-  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.08) !important;
-  border: 1px solid #eaecf4 !important;
-  height: 100%;
-}
-
-.activity-card .ant-card-head {
-  border-bottom: 1px solid #eaecf4;
-  padding: 20px 24px;
-}
-
-.activity-card .ant-card-head-title {
-  font-family: 'Sora', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: #1a2744;
-}
-
-.activity-card .ant-card-body {
-  padding: 0 !important;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.booking-item {
-  padding: 16px 24px !important;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background 0.2s ease;
-}
-
-.booking-item:hover {
-  background: #f9fafd;
-}
-
-.booking-item:last-child {
-  border-bottom: none;
-}
-
-/* ─── QUICK ACTIONS CARD ──────────────────────── */
+/* Quick Actions Card */
 .quick-actions-card {
-  border-radius: 16px !important;
-  box-shadow: 0 2px 12px rgba(26, 39, 68, 0.08) !important;
-  border: 1px solid #eaecf4 !important;
+  background: var(--bg-white) !important;
+  border-radius: var(--radius-xl) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-sm) !important;
+  margin-bottom: 24px;
 }
 
 .quick-actions-card .ant-card-head {
-  border-bottom: 1px solid #eaecf4;
-  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 16px 24px !important;
+  min-height: auto !important;
 }
 
 .quick-actions-card .ant-card-head-title {
-  font-family: 'Sora', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: #1a2744;
-}
-
-.quick-actions-card .ant-btn {
-  height: 48px;
-  border-radius: 10px;
+  font-size: 16px;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
+  color: var(--text-dark);
+  padding: 0 !important;
 }
 
-.quick-actions-card .ant-btn:hover {
+.quick-actions-card .ant-card-body {
+  padding: 24px !important;
+}
+
+.quick-action-button {
+  height: auto !important;
+  padding: 20px 16px !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-light) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  background: var(--bg-white) !important;
+  gap: 10px !important;
+}
+
+.quick-action-button:hover {
+  border-color: var(--primary-color) !important;
+  background: var(--bg-light-blue) !important;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(26, 39, 68, 0.12);
+  box-shadow: var(--shadow-sm) !important;
 }
 
-/* ─── RESPONSIVE: MOBILE ──────────────────────── */
-@media screen and (max-width: 767.9px) {
-  .partner-dashboard {
-    padding: 16px 12px;
+.quick-action-icon {
+  font-size: 24px;
+  transition: transform 0.3s ease;
+}
+
+.quick-action-icon.icon-primary {
+  color: #98BDD2;
+}
+
+.quick-action-icon.icon-secondary {
+  color: #f3a5c7;
+}
+
+.quick-action-icon.icon-success {
+  color: #52c41a;
+}
+
+.quick-action-icon.icon-warning {
+  color: #fa8c16;
+}
+
+.quick-action-button:hover .quick-action-icon {
+  transform: scale(1.1);
+}
+
+.quick-action-text {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Content Cards (Recent Activity, Calendar) */
+.recent-card,
+.calendar-card {
+  background: var(--bg-white) !important;
+  border-radius: var(--radius-xl) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-sm) !important;
+  height: 100%;
+}
+
+.recent-card .ant-card-head,
+.calendar-card .ant-card-head {
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 16px 24px !important;
+  min-height: auto !important;
+}
+
+.recent-card .ant-card-head-title,
+.calendar-card .ant-card-head-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+  padding: 0 !important;
+}
+
+.recent-card .ant-card-body,
+.calendar-card .ant-card-body {
+  padding: 16px !important;
+}
+
+/* Activity Items */
+.activity-item {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  background: var(--bg-cream);
+  border: 1px solid transparent;
+}
+
+.activity-item:hover {
+  background: var(--bg-light-blue);
+  border-color: var(--primary-light);
+}
+
+.activity-item:last-child {
+  margin-bottom: 0;
+}
+
+.activity-icon {
+  font-size: 20px;
+  color: var(--primary-color);
+  margin-right: 12px;
+}
+
+.activity-title {
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 2px;
+  font-size: 14px;
+}
+
+.activity-description {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.activity-time {
+  color: var(--text-disabled);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Calendar Styling */
+.calendar-card .ant-picker-calendar {
+  background: transparent;
+}
+
+.calendar-card .ant-picker-calendar-header {
+  padding: 8px 12px;
+}
+
+.calendar-card .ant-picker-cell-selected .ant-picker-cell-inner {
+  background: var(--primary-color) !important;
+}
+
+.calendar-card .ant-picker-cell-today .ant-picker-cell-inner::before {
+  border-color: var(--primary-color) !important;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  color: var(--primary-light);
+  margin-bottom: 16px;
+}
+
+/* Card Header Icons */
+.quick-actions-card .anticon,
+.recent-card .anticon,
+.calendar-card .anticon {
+  color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 991px) {
+  .dashboard-container {
+    padding: 20px;
   }
 
-  .dashboard-header {
-    margin-bottom: 20px;
+  .welcome-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
   }
 
-  .dashboard-header h2 {
-    font-size: 24px;
-  }
-
-  .dashboard-header button {
+  .welcome-actions {
     width: 100%;
   }
 
-  .analytics-row {
-    margin-bottom: 20px;
+  .welcome-btn-primary {
+    flex: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .dashboard-container {
+    padding: 16px;
+  }
+
+  .welcome-banner {
+    padding: 20px;
+    border-radius: var(--radius-lg);
+  }
+
+  .welcome-title {
+    font-size: 22px !important;
+  }
+
+  .welcome-text {
+    font-size: 14px;
   }
 
   .stat-card .ant-card-body {
@@ -273,73 +404,81 @@
   .stat-icon-wrapper {
     width: 44px;
     height: 44px;
-    top: 16px;
-    right: 16px;
+    font-size: 20px;
   }
 
-  .stat-icon {
+  .stat-value {
     font-size: 24px;
   }
 
-  .stat-card .ant-statistic-content {
-    font-size: 24px;
+  .stat-label {
+    font-size: 12px;
   }
 
-  .stat-card .ant-statistic-title {
-    font-size: 11px;
+  .quick-action-button {
+    padding: 16px 12px !important;
   }
 
-  .calendar-card .ant-card-body,
-  .activity-card .ant-card-body,
-  .quick-actions-card .ant-card-body {
-    padding: 12px !important;
+  .quick-action-icon {
+    font-size: 22px;
   }
 
-  .calendar-card .ant-picker-calendar {
-    padding: 8px;
+  .quick-action-text {
+    font-size: 12px;
   }
 
-  .activity-card .ant-card-body {
-    padding: 0 !important;
-    max-height: 300px;
+  .quick-actions-card .ant-card-body,
+  .recent-card .ant-card-body,
+  .calendar-card .ant-card-body {
+    padding: 16px !important;
   }
 
-  .booking-item {
-    padding: 12px 16px !important;
+  .activity-item {
+    padding: 12px;
   }
 
-  .quick-actions-card .ant-btn {
-    height: 44px;
+  .activity-icon {
+    font-size: 18px;
+    margin-right: 10px;
+  }
+
+  .activity-title {
     font-size: 13px;
   }
-}
 
-/* ─── RESPONSIVE: TABLET PORTRAIT ─────────────── */
-@media screen and (min-width: 768px) and (max-width: 1023.9px) {
-  .partner-dashboard {
-    padding: 24px 16px;
-  }
-
-  .dashboard-header {
-    margin-bottom: 24px;
-  }
-
-  .stat-card .ant-card-body {
-    padding: 20px !important;
+  .activity-description {
+    font-size: 12px;
   }
 }
 
-/* ─── RESPONSIVE: TABLET LANDSCAPE+ ───────────── */
-@media screen and (min-width: 1024px) {
-  .partner-dashboard {
-    padding: 32px 24px;
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* ─── DESKTOP LARGE ───────────────────────────── */
-@media screen and (min-width: 1336px) {
-  .partner-dashboard {
-    max-width: 1400px;
-    margin: 0 auto;
-  }
+.welcome-banner {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.stat-card {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.quick-actions-card {
+  animation: fadeInUp 0.4s ease-out 0.1s both;
+}
+
+.recent-card {
+  animation: fadeInUp 0.4s ease-out 0.15s both;
+}
+
+.calendar-card {
+  animation: fadeInUp 0.4s ease-out 0.2s both;
 }

@@ -1,16 +1,8 @@
-import { Badge, Button, Dropdown, Menu, Tag, Typography } from "antd";
-import {
-  EditOutlined,
-  SettingOutlined,
-  EnvironmentOutlined,
-  ClockCircleOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { Card, Carousel, Dropdown, Tag } from "antd";
+import { InboxOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import getBaseURL from "../../utils/config";
-
-const { Text } = Typography;
 
 const ClassCard = ({ listing, setListing, viewMode = "grid" }) => {
   const navigate = useNavigate();
@@ -20,179 +12,154 @@ const ClassCard = ({ listing, setListing, viewMode = "grid" }) => {
     navigate(`/class/${listing?.listing_id}`);
   };
 
-  const handleArchive = async (listingToUpdate) => {
+  const handleArchive = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
     try {
-      const newStatus = !listingToUpdate?.active;
+      const newStatus = !listing?.active;
 
       const response = await fetch(
-        `${baseURL}/listings/${listingToUpdate.listing_id}/status`,
+        `${baseURL}/listings/${listing.listing_id}/status`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ active: newStatus }),
-        }
+        },
       );
 
       if (response.ok) {
         // Update listing state locally
-        if (setListing) {
-          setListing((prevListings) =>
-            prevListings.map((item) =>
-              item.listing_id === listingToUpdate.listing_id
-                ? { ...item, active: newStatus }
-                : item
-            )
-          );
-        }
+        setListing((prevListings) =>
+          prevListings.map((item) =>
+            item.listing_id === listing.listing_id
+              ? { ...item, active: newStatus }
+              : item,
+          ),
+        );
 
         toast.success(
           newStatus
-            ? "Listing activated. It will now appear on the homepage."
-            : "Listing archived. It will be removed from the homepage."
+            ? "Class activated successfully!"
+            : "Class archived successfully!",
         );
       } else {
-        toast.error("Failed to update listing status");
+        toast.error("Failed to update class status");
       }
     } catch (error) {
       console.error("Error updating listing status:", error);
-      toast.error("An error occurred while updating the listing.");
+      toast.error("An error occurred. Please try again later.");
     }
   };
 
-  const menu = (
-    <Menu>
-      <Menu.Item key="edit" icon={<EditOutlined />} onClick={handleClickClass}>
-        Edit Details
-      </Menu.Item>
-      <Menu.Item
-        key="archive"
-        icon={<SettingOutlined />}
-        onClick={() => handleArchive(listing)}
-      >
-        {listing.active ? "Deactivate" : "Activate"}
-      </Menu.Item>
-    </Menu>
-  );
+  // Right-click context menu items
+  const contextMenuItems = [
+    {
+      key: "view",
+      label: "View Details",
+      onClick: handleClickClass,
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "archive",
+      label: listing.active ? "Archive Class" : "Activate Class",
+      icon: listing.active ? <InboxOutlined /> : <CheckCircleOutlined />,
+      onClick: handleArchive,
+      danger: listing.active,
+    },
+  ];
 
-  const coverImage =
-    listing?.images && listing.images.length > 0
-      ? listing.images[0]
-      : "https://via.placeholder.com/400x200?text=No+Image";
+  // Parse images
+  const getImages = () => {
+    let images = listing?.images;
+    if (typeof images === "string") {
+      try {
+        images = JSON.parse(images);
+      } catch (e) {
+        images = [];
+      }
+    }
+    if (!Array.isArray(images)) {
+      images = [];
+    }
+    return images;
+  };
 
-  if (viewMode === "list") {
-    return (
-      <div className="class-card-list" onClick={handleClickClass}>
-        <img src={coverImage} alt={listing.title} className="class-card-image" />
-        <div className="class-card-content">
-          <div className="class-card-header">
-            <h3 className="class-card-title">{listing.title}</h3>
-            <Badge
-              className={
-                listing.active ? "status-badge-active" : "status-badge-inactive"
-              }
-              count={listing.active ? "Active" : "Inactive"}
-            />
-          </div>
+  const images = getImages();
 
-          <div className="class-card-meta">
-            <div className="class-meta-item">
-              <EnvironmentOutlined />
-              <Text>{listing.location || "Online"}</Text>
-            </div>
-            <div className="class-meta-item">
-              <ClockCircleOutlined />
-              <Text>{listing.duration || "60 min"}</Text>
-            </div>
-            <div className="class-meta-item">
-              <UserOutlined />
-              <Text>
-                {listing.participants || 0} / {listing.max_participants || 20}
-              </Text>
-            </div>
-            {listing.category && (
-              <Tag color="blue">{listing.category}</Tag>
-            )}
-          </div>
-
-          <div className="class-card-footer">
-            <div className="class-card-price">
-              ${listing.price || 0}
-              <span className="class-card-price-label"> / session</span>
-            </div>
-            <Dropdown
-              overlay={menu}
-              trigger={["click"]}
-              placement="bottomRight"
-            >
-              <Button
-                type="text"
-                icon={<SettingOutlined />}
-                onClick={(e) => e.stopPropagation()}
-              >
-                Actions
-              </Button>
-            </Dropdown>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Grid view
   return (
-    <div className="class-card-grid" onClick={handleClickClass}>
-      <img src={coverImage} alt={listing.title} className="class-card-image" />
-      <div className="class-card-content">
-        <div className="class-card-header">
-          <h3 className="class-card-title">{listing.title}</h3>
-          <Badge
-            className={
-              listing.active ? "status-badge-active" : "status-badge-inactive"
-            }
-            count={listing.active ? "Active" : "Inactive"}
-          />
+    <Dropdown menu={{ items: contextMenuItems }} trigger={["contextMenu"]}>
+      <Card
+        hoverable
+        className="class-card"
+        onClick={handleClickClass}
+        cover={
+          <div style={{ position: "relative" }}>
+            <div
+              className={`class-status-badge ${
+                listing.active ? "class-status-active" : "class-status-inactive"
+              }`}
+            >
+              {listing.active ? "● Active" : "● Inactive"}
+            </div>
+            <Carousel autoplay autoplaySpeed={3000}>
+              {images.length > 0 ? (
+                images.map((imgUrl, index) => (
+                  <div key={index}>
+                    <img
+                      alt={`${listing.listing_title}-${index}`}
+                      src={imgUrl}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "200px",
+                    background:
+                      "linear-gradient(135deg, #f8fcff 0%, #FCFBF8 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#bfbfbf",
+                    flexDirection: "column",
+                    gap: 8,
+                  }}
+                >
+                  <InboxOutlined style={{ fontSize: 32 }} />
+                  <span>No Image</span>
+                </div>
+              )}
+            </Carousel>
+          </div>
+        }
+      >
+        <Meta
+          title={listing.listing_title}
+          description={
+            listing.description
+              ? listing.description.substring(0, 80) +
+                (listing.description.length > 80 ? "..." : "")
+              : "No description available"
+          }
+        />
+        <div className="class-info-tags">
+          {listing.schedule_info?.length > 0 && (
+            <Tag color="blue">{listing.schedule_info.length} Schedule(s)</Tag>
+          )}
         </div>
-
-        {listing.category && (
-          <Tag color="blue" style={{ marginBottom: 12 }}>
-            {listing.category}
-          </Tag>
-        )}
-
-        <div className="class-card-meta">
-          <div className="class-meta-item">
-            <EnvironmentOutlined />
-            <Text>{listing.location || "Online"}</Text>
-          </div>
-          <div className="class-meta-item">
-            <ClockCircleOutlined />
-            <Text>{listing.duration || "60 min"}</Text>
-          </div>
-          <div className="class-meta-item">
-            <UserOutlined />
-            <Text>
-              {listing.participants || 0} / {listing.max_participants || 20}
-            </Text>
-          </div>
-        </div>
-
-        <div className="class-card-footer">
-          <div className="class-card-price">
-            ${listing.price || 0}
-            <span className="class-card-price-label"> / session</span>
-          </div>
-          <Dropdown overlay={menu} trigger={["click"]} placement="bottomRight">
-            <Button
-              type="text"
-              icon={<SettingOutlined />}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </Dropdown>
-        </div>
-      </div>
-    </div>
+      </Card>
+    </Dropdown>
   );
 };
 

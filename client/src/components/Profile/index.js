@@ -66,7 +66,7 @@ const Profile = () => {
 
         if (!partnerResponse.ok) {
           throw new Error(
-            `Failed to fetch profile data: ${partnerResponse.statusText}`
+            `Failed to fetch profile data: ${partnerResponse.statusText}`,
           );
         }
 
@@ -80,11 +80,12 @@ const Profile = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
+
         if (!outletsResponse.ok) {
           throw new Error(
-            `Failed to fetch outlets data: ${outletsResponse.statusText}`
+            `Failed to fetch outlets data: ${outletsResponse.statusText}`,
           );
         }
 
@@ -97,15 +98,15 @@ const Profile = () => {
         // reset the form and stop loading
         profileForm.setFieldsValue({
           outlets: outletsData.map((outlet) => ({
-            address: JSON.stringify(outlet.address),
+            address: outlet?.address?.ADDRESS,
             nearest_mrt: outlet.nearest_mrt,
           })),
         });
-
-        setLoading(false);
       } catch (error) {
         message.error("Error fetching profile data");
         setLoading(false); // Hide loading state even on error
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -416,7 +417,7 @@ const Profile = () => {
                             >
                               <Select
                                 showSearch
-                                placeholder="Select nearest MRT/LRT"
+                                placeholder="Select nearest station"
                                 size="large"
                               >
                                 {!_.isEmpty(mrtStations) &&
