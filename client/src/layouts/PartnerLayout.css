@@ -133,7 +133,6 @@
 
 /* Header Styling - Rounded top corners */
 .partner-header {
-  padding: 0 32px !important;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -197,7 +196,7 @@
 /* Content Area - Rounded bottom corners */
 .partner-content {
   margin: 0 !important;
-  padding: 24px 32px !important;
+  padding: 24px 50px !important;
   background: var(--bg-white) !important;
   min-height: calc(100vh - 64px - 32px);
   overflow: initial;

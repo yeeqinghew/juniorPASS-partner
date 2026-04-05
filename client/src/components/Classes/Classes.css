@@ -24,7 +24,6 @@
 
 /* Container */
 .classes-container {
-  padding: 0;
   background: transparent;
   min-height: auto;
 }
@@ -193,12 +192,12 @@
 }
 
 /* Card type tabs override */
-.classes-tabs.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+.classes-tabs.ant-tabs-card>.ant-tabs-nav .ant-tabs-tab {
   border: none !important;
   background: transparent !important;
 }
 
-.classes-tabs.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
+.classes-tabs.ant-tabs-card>.ant-tabs-nav .ant-tabs-tab-active {
   border-bottom: none !important;
   background: transparent !important;
 }
@@ -445,6 +444,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -455,9 +455,26 @@
   animation: fadeInUp 0.4s ease-out;
 }
 
-.class-card:nth-child(1) { animation-delay: 0s; }
-.class-card:nth-child(2) { animation-delay: 0.05s; }
-.class-card:nth-child(3) { animation-delay: 0.1s; }
-.class-card:nth-child(4) { animation-delay: 0.15s; }
-.class-card:nth-child(5) { animation-delay: 0.2s; }
-.class-card:nth-child(6) { animation-delay: 0.25s; }
+.class-card:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.class-card:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.class-card:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.class-card:nth-child(4) {
+  animation-delay: 0.15s;
+}
+
+.class-card:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+.class-card:nth-child(6) {
+  animation-delay: 0.25s;
+}

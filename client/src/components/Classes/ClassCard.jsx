@@ -3,6 +3,7 @@ import { InboxOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import getBaseURL from "../../utils/config";
+import Meta from "antd/es/card/Meta";
 
 const ClassCard = ({ listing, setListing, viewMode = "grid" }) => {
   const navigate = useNavigate();

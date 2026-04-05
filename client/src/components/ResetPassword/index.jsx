@@ -10,6 +10,7 @@ import { Button, Form, Input, Card, Typography } from "antd";
 import { Link } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import getBaseURL from "../../utils/config";
+import logo from "../../images/logopngResize.png";
 import "./ResetPassword.css";
 
 const { Title, Text } = Typography;
@@ -79,7 +80,7 @@ const ResetPassword = () => {
           {/* Header Section */}
           <div className="reset-header">
             <img
-              src={require("../../images/logopngResize.png")}
+              src={logo}
               alt="JuniorPASS Logo"
               className="reset-logo"
             />

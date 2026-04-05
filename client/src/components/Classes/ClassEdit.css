@@ -24,13 +24,11 @@
 
 /* Container */
 .class-detail-container {
-  padding: 0;
   background: transparent;
   min-height: auto;
 }
 
 .class-edit-container {
-  padding: 0;
   background: transparent;
 }
 

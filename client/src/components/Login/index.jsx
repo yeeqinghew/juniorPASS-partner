@@ -11,6 +11,7 @@ import { Button, Form, Input, Checkbox, Card, Typography } from "antd";
 import { Link } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import getBaseURL from "../../utils/config";
+import logo from "../../images/logopngResize.png";
 import "./Login.css";
 
 const { Title, Text } = Typography;
@@ -80,7 +81,7 @@ const PartnerLogin = ({ setAuth }) => {
           {/* Header Section */}
           <div className="login-header">
             <img
-              src={require("../../images/logopngResize.png")}
+              src={logo}
               alt="JuniorPASS Logo"
               className="login-logo"
             />

@@ -1,12 +1,10 @@
-import { Empty } from "antd";
+import { Typography } from "antd";
 import ClassCard from "./ClassCard";
 import LoadingContainer from "../../utils/LoadingContainer";
 
 const { Text, Title } = Typography;
 
 const AllClasses = ({ listing, setListing, loading }) => {
-  const navigate = useNavigate();
-
   if (loading) {
     return <LoadingContainer />;
   }
@@ -26,31 +24,17 @@ const AllClasses = ({ listing, setListing, loading }) => {
     );
   }
 
-  const AllClasses = ({ listing, setListing, viewMode = "grid" }) => {
-    if (!listing || listing.length === 0) {
-      return (
-        <div className="classes-empty">
-          <Empty
-            description="No classes found"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <div className={viewMode === "grid" ? "classes-grid" : "classes-list"}>
-        {listing.map((list) => (
-          <ClassCard
-            key={list.listing_id}
-            listing={list}
-            setListing={setListing}
-            viewMode={viewMode}
-          />
-        ))}
-      </div>
-    );
-  };
+  return (
+    <div className="classes-grid">
+      {listing.map((list) => (
+        <ClassCard
+          key={list.listing_id}
+          listing={list}
+          setListing={setListing}
+        />
+      ))}
+    </div>
+  );
 };
 
 export default AllClasses;

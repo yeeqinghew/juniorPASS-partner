@@ -276,8 +276,8 @@ const Class = () => {
                 <Col span={12}>
                   <Text type="secondary">Created:</Text>
                   <div>
-                    {listing?.created_on
-                      ? new Date(listing.created_on).toLocaleDateString()
+                    {listing?.created_at
+                      ? new Date(listing.created_at).toLocaleDateString()
                       : "N/A"}
                   </div>
                 </Col>
