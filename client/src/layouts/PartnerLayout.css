@@ -30,7 +30,7 @@
   overflow-x: hidden !important;
   overflow-y: auto !important;
   height: calc(100vh - 32px) !important;
-  position: fixed;
+  position: sticky !important;
   left: 16px;
   top: 16px;
   bottom: 16px;
@@ -147,6 +147,7 @@
   background: transparent !important;
   border-bottom: none !important;
   line-height: 64px;
+  position: sticky !important;
 }
 
 .header-menu .ant-menu-item {

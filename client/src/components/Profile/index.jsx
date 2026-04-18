@@ -30,6 +30,7 @@ import useAddressSearch from "../../hooks/useAddressSearch";
 import _ from "lodash";
 import useMRTStations from "../../hooks/useMrtStations";
 import "./Profile.css";
+import LoadingContainer from "../../utils/LoadingContainer";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -126,9 +127,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="profile-loading">
-        <Spin size="large" tip="Loading profile..." />
-      </div>
+      <LoadingContainer />
     );
   }
 

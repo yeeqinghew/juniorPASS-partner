@@ -6,9 +6,13 @@ import "./LoadingContainer.css";
  * @param {string} size - Spin size: 'small', 'default', 'large'
  * @param {string} tip - Optional loading text
  */
-const LoadingContainer = ({ size = "large", tip = "" }) => {
+const LoadingContainer = ({ size = "large", tip = "", fullPage = false }) => {
+  const className = fullPage
+    ? "loading-container-fullpage"
+    : "loading-container";
+
   return (
-    <div className="loading-container">
+    <div className={className}>
       <Spin size={size} tip={tip} />
     </div>
   );

@@ -28,9 +28,7 @@
 
 /* Dashboard Container */
 .dashboard-container {
-  padding: 24px;
-  background: var(--bg-cream);
-  min-height: 100vh;
+min-height: 100vh;
 }
 
 /* Welcome Section */
@@ -457,6 +455,7 @@
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
