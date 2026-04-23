@@ -88,24 +88,45 @@
 }
 
 /* Avatar Section */
-.profile-avatar-section {
-  text-align: center;
-  padding: 24px;
-  background: var(--bg-light-blue);
-  border-radius: var(--radius-lg);
-  margin-bottom: 16px;
-  border: 1px solid var(--primary-light);
+.ac-avatar {
+  border: 3px solid var(--border-color) !important;
 }
 
-.profile-avatar-wrapper {
+.ac-avatar-wrap {
   position: relative;
-  display: inline-block;
-  margin-bottom: 16px;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 14px;
 }
 
-.profile-avatar {
-  border: 4px solid var(--bg-white) !important;
-  box-shadow: var(--shadow-md) !important;
+.ac-camera-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  border: 2.5px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  padding: 0;
+  line-height: 1;
+}
+
+.ac-camera-btn:hover {
+  transform: scale(1.1);
+}
+
+.ac-camera-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Outlet Cards */

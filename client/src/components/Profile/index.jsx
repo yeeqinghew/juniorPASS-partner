@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import {
   Form,
   Input,
@@ -23,6 +23,7 @@ import {
   ShopOutlined,
   PhoneOutlined,
   SaveOutlined,
+  CameraOutlined,
 } from "@ant-design/icons";
 import getBaseURL from "../../utils/config";
 import UserContext from "../UserContext";
@@ -31,6 +32,7 @@ import _ from "lodash";
 import useMRTStations from "../../hooks/useMrtStations";
 import "./Profile.css";
 import LoadingContainer from "../../utils/LoadingContainer";
+import toast from "react-hot-toast";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -47,6 +49,8 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [profileForm] = Form.useForm();
   const [userProfile, setUserProfile] = useState({});
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     async function retrieveUser() {
@@ -113,22 +117,60 @@ const Profile = () => {
     }
   };
 
-  const handleImageChange = (file) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setUserProfile((prev) => ({
-        ...prev,
-        displayPicture: reader.result,
-      }));
-    };
-    if (file) reader.readAsDataURL(file);
-    return false;
+  const handleFileChange = async(e) => { 
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Only image files allowed"); return; }
+    if (file.size / 1024 / 1024 > 5) { toast.error("Image must be under 5MB");   return; }
+    try {
+      setUploadLoading(true);
+      const token = localStorage.getItem("token");
+      const sigRes = await fetch(`${baseURL}/media/upload/partner-dp`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      const sigData = await sigRes.json();
+      if(!sigRes.ok) throw new Error(sigData.message || "Failed to get upload signature");
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key",   sigData.apiKey);
+      formData.append("timestamp", sigData.allowedParams.timestamp);
+      formData.append("signature", sigData.signature);
+      formData.append("folder",    sigData.allowedParams.folder);
+      formData.append("public_id", sigData.allowedParams.public_id);
+      formData.append("overwrite", sigData.allowedParams.overwrite);
+
+      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error?.message || "Upload failed");
+
+      const updateRes = await fetch(`${baseURL}/partners/${user.partner_id}`, {
+        method: "PATCH",
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ picture: uploadData.secure_url }),
+      });
+      if (!updateRes.ok) throw new Error("Failed to update profile picture");
+
+      toast.success("Profile picture updated!");
+    } catch (error) {
+      toast.error("Failed to upload image");
+    } finally {
+      setUploadLoading(false);
+      e.target.value = ""; // Reset file input
+    }
   };
 
   if (loading) {
-    return (
-      <LoadingContainer />
-    );
+    return <LoadingContainer />;
   }
 
   return (
@@ -147,26 +189,32 @@ const Profile = () => {
             {/* LEFT */}
             <Col xs={24} lg={8}>
               <Card className="profile-card">
-                <div className="profile-avatar-section">
-                  <div className="profile-avatar-wrapper">
+                  <div className="ac-avatar-wrap">
                     <Avatar
-                      size={110}
-                      src={userProfile.displayPicture || userProfile.picture}
+                      size={88}
+                      className="ac-avatar"
+                      src={userProfile?.picture}
                       icon={<UserOutlined />}
-                      className="profile-avatar"
                     />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={handleFileChange}
+                    />
+                    <button
+                      className="ac-camera-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadLoading}
+                      title="Change photo"
+                    >
+                      <CameraOutlined />
+                    </button>
                   </div>
-
-                  <Upload
-                    showUploadList={false}
-                    beforeUpload={handleImageChange}
-                  >
-                    <Button icon={<UploadOutlined />}>Change Picture</Button>
-                  </Upload>
 
                   <h3 style={{ marginTop: 12 }}>{userProfile.partner_name}</h3>
                   <p>{userProfile.email}</p>
-                </div>
               </Card>
 
               <Card className="profile-card">
