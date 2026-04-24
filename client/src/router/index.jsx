@@ -66,6 +66,7 @@ const Routers = () => {
               <AuthenticatedRoute
                 isAuthenticated={isAuthenticated}
                 loading={loading}
+                user={user}
               />
             }
           >

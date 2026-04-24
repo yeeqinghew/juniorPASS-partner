@@ -45,8 +45,8 @@ const PartnerLogin = ({ setAuth }) => {
         if (parseRes.is_profile_complete === false) {
           setAuth(true);
           toast.success("Login successful! Please complete your profile.");
-          // Redirect to profile setup
-          navigate("/complete-profile", { replace: true });
+          // Redirect to profile page to complete setup
+          navigate("/profile", { replace: true });
           return;
         }
 
