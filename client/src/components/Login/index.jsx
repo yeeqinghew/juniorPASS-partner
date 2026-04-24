@@ -35,18 +35,16 @@ const PartnerLogin = ({ setAuth }) => {
         // Check for password change requirement
         if (parseRes.requires_password_change) {
           setAuth(true);
-          toast.success("Login successful! Please change your password.");
-          // Redirect to password change page
           navigate("/change-password", { replace: true });
+          toast.success("Login successful! Please change your password.");
           return;
         }
 
         // Check for profile completion requirement
         if (parseRes.is_profile_complete === false) {
           setAuth(true);
-          toast.success("Login successful! Please complete your profile.");
-          // Redirect to profile page to complete setup
           navigate("/profile", { replace: true });
+          toast.success("Login successful! Please complete your profile.");
           return;
         }
 
@@ -68,31 +66,6 @@ const PartnerLogin = ({ setAuth }) => {
 
   return (
     <section className="login-page">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: "#363636",
-            color: "#fff",
-            borderRadius: "10px",
-            padding: "16px",
-          },
-          success: {
-            iconTheme: {
-              primary: "#52c41a",
-              secondary: "#fff",
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: "#ff4d4f",
-              secondary: "#fff",
-            },
-          },
-        }}
-      />
-
       <div className="login-container">
         <Card className="login-card" bordered={false}>
           {/* Header Section */}
