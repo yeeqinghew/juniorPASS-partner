@@ -140,7 +140,6 @@ export const API_ENDPOINTS = {
   GET_ALL_CATEGORIES: "/misc/getAllCategories",
   GET_ALL_AGE_GROUPS: "/misc/getAllAgeGroups",
   GET_ALL_PACKAGES: "/misc/getAllPackages",
-  GET_S3_UPLOAD_URL: "/misc/s3url",
 };
 
 export default getBaseURL;

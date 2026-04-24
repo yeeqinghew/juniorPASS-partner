@@ -131,30 +131,44 @@ const CreateClass = () => {
 
       const listingId = createListingResult.data.listing_id;
 
-      // 2. upload images to S3
+      // 2. Upload images to Cloudinary
       const uploadedImageURLs = [];
       for (let img of images) {
         try {
+          // Get Cloudinary signature from backend
           const response = await fetchWithAuth(
-            `${API_ENDPOINTS.GET_S3_UPLOAD_URL}?folder=partners/${user?.partner_id}/${listingId}`
+            API_ENDPOINTS.UPLOAD_LISTING_IMAGE,
+            {
+              method: "POST",
+            }
           );
-          const { uploadURL } = await response.json();
+          const sigData = await response.json();
+          if (!response.ok) throw new Error(sigData.message || "Failed to get upload signature");
 
-          // post the image directly to S3 bucket
-          const s3upload = await fetch(uploadURL, {
-            method: "PUT",
-            headers: {
-              "Content-Type": img.type,
-            },
-            body: img,
-          });
+          // Upload to Cloudinary
+          const formData = new FormData();
+          formData.append("file", img);
+          formData.append("api_key", sigData.apiKey);
+          formData.append("timestamp", sigData.allowedParams.timestamp);
+          formData.append("signature", sigData.signature);
+          formData.append("folder", sigData.allowedParams.folder);
+          formData.append("public_id", sigData.allowedParams.public_id);
+          formData.append("overwrite", sigData.allowedParams.overwrite);
 
-          if (s3upload.status !== 200) {
-            throw new Error("Failed to upload image");
+          const uploadRes = await fetch(
+            `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+          const uploadData = await uploadRes.json();
+
+          if (!uploadRes.ok) {
+            throw new Error(uploadData.error?.message || "Failed to upload image");
           }
 
-          const imageURL = uploadURL.split("?")[0];
-          uploadedImageURLs.push(imageURL);
+          uploadedImageURLs.push(uploadData.secure_url);
         } catch (error) {
           console.error("Image upload failed:", error);
 
@@ -167,13 +181,13 @@ const CreateClass = () => {
         }
       }
 
-      // 4. Update the lsiting with the uploaded image URLs
+      // 4. Update the listing with the uploaded image URLs
       const updateListingResponse = await fetchWithAuth(
         API_ENDPOINTS.UPDATE_LISTING(listingId),
         {
           method: "PATCH",
           body: JSON.stringify({
-            images: JSON.stringify(uploadedImageURLs),
+            images: uploadedImageURLs,
           }),
         }
       );

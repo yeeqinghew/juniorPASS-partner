@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Form, Input, Checkbox, Card, Typography } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import logo from "../../images/logopngResize.png";
 import "./Login.css";
