@@ -8,7 +8,7 @@ import {
   TeamOutlined,
 } from "@ant-design/icons";
 import { Button, Form, Input, Checkbox, Card, Typography } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import getBaseURL from "../../utils/config";
 import logo from "../../images/logopngResize.png";
@@ -18,6 +18,7 @@ const { Title, Text } = Typography;
 
 const PartnerLogin = ({ setAuth }) => {
   const baseURL = getBaseURL();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (values) => {
@@ -34,6 +35,26 @@ const PartnerLogin = ({ setAuth }) => {
       const parseRes = await response.json();
       if (parseRes.token) {
         localStorage.setItem("token", parseRes.token);
+
+        // Check for password change requirement
+        if (parseRes.requires_password_change) {
+          setAuth(true);
+          toast.success("Login successful! Please change your password.");
+          // Redirect to password change page
+          navigate("/change-password", { replace: true });
+          return;
+        }
+
+        // Check for profile completion requirement
+        if (parseRes.is_profile_complete === false) {
+          setAuth(true);
+          toast.success("Login successful! Please complete your profile.");
+          // Redirect to profile setup
+          navigate("/complete-profile", { replace: true });
+          return;
+        }
+
+        // Normal login - all setup complete
         setAuth(true);
         toast.success("Welcome back! Login successful.");
       } else {

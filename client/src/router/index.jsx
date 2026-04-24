@@ -14,6 +14,7 @@ import useAuth from "../hooks/useAuth";
 import Class from "../components/Classes/Class";
 import EditClass from "../components/Classes/EditClass";
 import Profile from "../components/Profile";
+import ForcePasswordChange from "../components/ForcePasswordChange";
 import { DataProvider } from "../hooks/DataContext";
 
 const Routers = () => {
@@ -49,6 +50,17 @@ const Routers = () => {
             }
           />
           <Route path="reset-password" element={<ResetPassword />} />
+          {/* Password Change - Requires authentication but accessible before profile completion */}
+          <Route
+            path="change-password"
+            element={
+              isAuthenticated ? (
+                <ForcePasswordChange setAuth={setAuth} />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
           <Route
             element={
               <AuthenticatedRoute
