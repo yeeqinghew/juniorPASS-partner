@@ -33,14 +33,13 @@ import {
   message,
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import UserContext from "../UserContext";
 import "./ClassEdit.css";
 
 const { Title, Text, Paragraph } = Typography;
 
 const Class = () => {
-  const baseURL = getBaseURL();
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
   const token = user && user?.token;
@@ -54,15 +53,8 @@ const Class = () => {
   const fetchRegisteredStudents = async () => {
     try {
       setLoadingStudents(true);
-      const response = await fetch(
-        `${baseURL}/bookings/listing/${listing_id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      const response = await fetchWithAuth(
+        API_ENDPOINTS.GET_BOOKINGS_FOR_LISTING(listing_id)
       );
 
       if (response.ok) {
@@ -82,12 +74,8 @@ const Class = () => {
   useEffect(() => {
     async function fetchClassDetails() {
       try {
-        const response = await fetch(`${baseURL}/listings/${listing_id}`, {
+        const response = await fetchWithAuth(API_ENDPOINTS.GET_LISTING(listing_id), {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
         });
         const parseRes = await response.json();
         setListing(parseRes);

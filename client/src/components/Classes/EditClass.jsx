@@ -26,7 +26,7 @@ import TextArea from "antd/es/input/TextArea";
 import UserContext from "../UserContext";
 import { useNavigate, useParams } from "react-router-dom";
 import _ from "lodash";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { DataContext } from "../../hooks/DataContext";
 import ScheduleItem from "../../utils/ScheduleItem";
 import dayjs from "dayjs";
@@ -36,7 +36,6 @@ const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
 const EditClass = () => {
-  const baseURL = getBaseURL();
   const { listing_id } = useParams();
   const [images, setImages] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
@@ -54,14 +53,8 @@ const EditClass = () => {
   // Fetch outlets for the current partner
   const fetchOutlets = async () => {
     try {
-      const response = await fetch(
-        `${baseURL}/partners/${user.partner_id}/outlets`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      const response = await fetchWithAuth(
+        API_ENDPOINTS.GET_OUTLETS(user.partner_id)
       );
 
       if (response.ok) {
@@ -79,12 +72,8 @@ const EditClass = () => {
   const fetchClassDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${baseURL}/listings/${listing_id}`, {
+      const response = await fetchWithAuth(API_ENDPOINTS.GET_LISTING(listing_id), {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
       });
       const parseRes = await response.json();
       setListing(parseRes);
@@ -205,21 +194,20 @@ const EditClass = () => {
         : null;
 
       // 1. Update the listing basic info
-      const updateResponse = await fetch(`${baseURL}/listings/${listing_id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title_name: values.title,
-          description: values.description,
-          package_types: values.package_types,
-          age_groups: values.age_groups,
-          short_term_start_date: shortTermDate,
-          long_term_start_date: longTermDate,
-        }),
-      });
+      const updateResponse = await fetchWithAuth(
+        API_ENDPOINTS.UPDATE_LISTING(listing_id),
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            title_name: values.title,
+            description: values.description,
+            package_types: values.package_types,
+            age_groups: values.age_groups,
+            short_term_start_date: shortTermDate,
+            long_term_start_date: longTermDate,
+          }),
+        }
+      );
 
       if (!updateResponse.ok) {
         const errorData = await updateResponse.json();
@@ -228,14 +216,10 @@ const EditClass = () => {
 
       // 2. Update schedules if outlets are provided
       if (values.outlets && values.outlets.length > 0) {
-        const schedulesResponse = await fetch(
-          `${baseURL}/listings/${listing_id}/schedules`,
+        const schedulesResponse = await fetchWithAuth(
+          API_ENDPOINTS.UPDATE_LISTING_SCHEDULES(listing_id),
           {
             method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
             body: JSON.stringify({
               outlets: values.outlets.map((outlet) => ({
                 outlet_id: outlet.outlet_id,
@@ -249,7 +233,7 @@ const EditClass = () => {
                   })) || [],
               })),
             }),
-          },
+          }
         );
 
         if (!schedulesResponse.ok) {
@@ -270,8 +254,8 @@ const EditClass = () => {
       if (images.length > 0) {
         for (let img of images) {
           try {
-            const response = await fetch(
-              `${baseURL}/misc/s3url?folder=partners/${user?.partner_id}/${listing_id}`,
+            const response = await fetchWithAuth(
+              `${API_ENDPOINTS.GET_S3_UPLOAD_URL}?folder=partners/${user?.partner_id}/${listing_id}`
             );
             const { uploadURL } = await response.json();
 
@@ -298,12 +282,8 @@ const EditClass = () => {
         uploadedImageURLs.length !== existingImages.length ||
         images.length > 0
       ) {
-        await fetch(`${baseURL}/listings/${listing_id}`, {
+        await fetchWithAuth(API_ENDPOINTS.UPDATE_LISTING(listing_id), {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
           body: JSON.stringify({
             images: uploadedImageURLs,
           }),

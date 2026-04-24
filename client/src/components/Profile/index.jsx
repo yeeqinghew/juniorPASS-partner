@@ -25,7 +25,7 @@ import {
   SaveOutlined,
   CameraOutlined,
 } from "@ant-design/icons";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import UserContext from "../UserContext";
 import useAddressSearch from "../../hooks/useAddressSearch";
 import _ from "lodash";
@@ -42,7 +42,6 @@ const Profile = () => {
   const { addressData, handleAddressSearch } = useAddressSearch();
   const { mrtStations, renderTags } = useMRTStations();
 
-  const baseURL = getBaseURL();
   const token = localStorage.getItem("token");
 
   const [loading, setLoading] = useState(true);
@@ -59,18 +58,13 @@ const Profile = () => {
       setLoading(true);
 
       try {
-        const partnerRes = await fetch(`${baseURL}/partners/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const partnerRes = await fetchWithAuth(API_ENDPOINTS.GET_PARTNER);
 
         const partnerData = await partnerRes.json();
         setUserProfile(partnerData);
 
-        const outletRes = await fetch(
-          `${baseURL}/partners/${user.partner_id}/outlets`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
+        const outletRes = await fetchWithAuth(
+          API_ENDPOINTS.GET_OUTLETS(user.partner_id)
         );
 
         let outlets = await outletRes.json();
@@ -97,14 +91,13 @@ const Profile = () => {
   const handleSubmit = async (values) => {
     setSaving(true);
     try {
-      const res = await fetch(`${baseURL}/partners/${user.partner_id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+      const res = await fetchWithAuth(
+        API_ENDPOINTS.UPDATE_PARTNER(user.partner_id),
+        {
+          method: "PUT",
+          body: JSON.stringify(values),
+        }
+      );
 
       if (!res.ok) throw new Error();
 
@@ -117,7 +110,7 @@ const Profile = () => {
     }
   };
 
-  const handleFileChange = async(e) => { 
+  const handleFileChange = async(e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) { toast.error("Only image files allowed"); return; }
@@ -125,11 +118,8 @@ const Profile = () => {
     try {
       setUploadLoading(true);
       const token = localStorage.getItem("token");
-      const sigRes = await fetch(`${baseURL}/media/upload/partner-dp`, {
+      const sigRes = await fetchWithAuth(API_ENDPOINTS.UPLOAD_PARTNER_DP, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
       });
       const sigData = await sigRes.json();
       if(!sigRes.ok) throw new Error(sigData.message || "Failed to get upload signature");
@@ -150,14 +140,13 @@ const Profile = () => {
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData.error?.message || "Upload failed");
 
-      const updateRes = await fetch(`${baseURL}/partners/${user.partner_id}`, {
-        method: "PATCH",
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ picture: uploadData.secure_url }),
-      });
+      const updateRes = await fetchWithAuth(
+        API_ENDPOINTS.UPDATE_PARTNER(user.partner_id),
+        {
+          method: "PATCH",
+          body: JSON.stringify({ picture: uploadData.secure_url }),
+        }
+      );
       if (!updateRes.ok) throw new Error("Failed to update profile picture");
 
       toast.success("Profile picture updated!");

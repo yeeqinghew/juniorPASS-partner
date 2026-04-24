@@ -10,25 +10,21 @@ import {
 import { Button, Form, Input, Checkbox, Card, Typography } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import logo from "../../images/logopngResize.png";
 import "./Login.css";
 
 const { Title, Text } = Typography;
 
 const PartnerLogin = ({ setAuth }) => {
-  const baseURL = getBaseURL();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (values) => {
     setLoading(true);
     try {
-      const response = await fetch(`${baseURL}/partners/login`, {
+      const response = await fetchWithAuth(API_ENDPOINTS.LOGIN, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(values),
       });
 

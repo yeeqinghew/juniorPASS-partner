@@ -16,14 +16,13 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import "./ForcePasswordChange.css";
 
 const { Title, Text, Paragraph } = Typography;
 const { Step } = Steps;
 
 const ForcePasswordChange = ({ setAuth }) => {
-  const baseURL = getBaseURL();
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -31,14 +30,8 @@ const ForcePasswordChange = ({ setAuth }) => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${baseURL}/partners/change-password`, {
+      const response = await fetchWithAuth(API_ENDPOINTS.CHANGE_PASSWORD, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
           currentPassword: values.currentPassword,
           newPassword: values.newPassword,

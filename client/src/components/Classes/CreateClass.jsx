@@ -21,7 +21,7 @@ import TextArea from "antd/es/input/TextArea";
 import UserContext from "../UserContext";
 import { useNavigate } from "react-router-dom";
 import _ from "lodash";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { DataContext } from "../../hooks/DataContext";
 import ScheduleItem from "../../utils/ScheduleItem";
 import "./ClassEdit.css";
@@ -30,7 +30,6 @@ const { Title } = Typography;
 const { Dragger } = Upload;
 
 const CreateClass = () => {
-  const baseURL = getBaseURL();
   const [images, setImages] = useState([]);
   const { packageTypes, ageGroups } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
@@ -43,14 +42,8 @@ const CreateClass = () => {
   // Fetch outlets for the current partner
   const fetchOutlets = async () => {
     try {
-      const response = await fetch(
-        `${baseURL}/partners/${user.partner_id}/outlets`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      const response = await fetchWithAuth(
+        API_ENDPOINTS.GET_OUTLETS(user.partner_id)
       );
 
       if (response.ok) {
@@ -115,20 +108,19 @@ const CreateClass = () => {
   const handleCreateClass = async (values) => {
     try {
       // 1. Create the listing first
-      const createListingResponse = await fetch(`${baseURL}/listings`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...values,
-          partner_id: user.partner_id,
-          images: [], // temporarily empty, will be updated later
-          short_term_start_date: values.short_term_start_date || null,
-          long_term_start_date: values.long_term_start_date || null,
-        }),
-      });
+      const createListingResponse = await fetchWithAuth(
+        API_ENDPOINTS.CREATE_LISTING,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            ...values,
+            partner_id: user.partner_id,
+            images: [], // temporarily empty, will be updated later
+            short_term_start_date: values.short_term_start_date || null,
+            long_term_start_date: values.long_term_start_date || null,
+          }),
+        }
+      );
 
       const createListingResult = await createListingResponse.json();
       if (createListingResponse.status !== 201) {
@@ -143,8 +135,8 @@ const CreateClass = () => {
       const uploadedImageURLs = [];
       for (let img of images) {
         try {
-          const response = await fetch(
-            `${baseURL}/misc/s3url?folder=partners/${user?.partner_id}/${listingId}`,
+          const response = await fetchWithAuth(
+            `${API_ENDPOINTS.GET_S3_UPLOAD_URL}?folder=partners/${user?.partner_id}/${listingId}`
           );
           const { uploadURL } = await response.json();
 
@@ -167,12 +159,8 @@ const CreateClass = () => {
           console.error("Image upload failed:", error);
 
           // 3. (Rollback): delete the listing if any image upload fails
-          await fetch(`${baseURL}/listings/${listingId}`, {
+          await fetchWithAuth(API_ENDPOINTS.DELETE_LISTING(listingId), {
             method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
           });
 
           throw new Error("Image upload failed. Listing has been rolled back.");
@@ -180,18 +168,14 @@ const CreateClass = () => {
       }
 
       // 4. Update the lsiting with the uploaded image URLs
-      const updateListingResponse = await fetch(
-        `${baseURL}/listings/${listingId}`,
+      const updateListingResponse = await fetchWithAuth(
+        API_ENDPOINTS.UPDATE_LISTING(listingId),
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
           body: JSON.stringify({
             images: JSON.stringify(uploadedImageURLs),
           }),
-        },
+        }
       );
 
       const updateListingResult = await updateListingResponse.json();

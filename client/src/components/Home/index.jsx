@@ -20,7 +20,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../UserContext";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import "./Dashboard.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -28,7 +28,6 @@ const { Title, Text, Paragraph } = Typography;
 const PartnerHome = () => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
-  const baseURL = getBaseURL();
   const token = localStorage.getItem("token");
   const [stats, setStats] = useState({});
   const [recentActivities, setRecentActivities] = useState([]);
@@ -43,12 +42,7 @@ const PartnerHome = () => {
       setLoading(true);
 
       // Dashboard overview stats
-      const response = await fetch(`${baseURL}/partners/dashboard/overview`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetchWithAuth(API_ENDPOINTS.DASHBOARD_OVERVIEW);
 
       if (response.ok) {
         const data = await response.json();
