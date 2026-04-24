@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
+import { fetchWithAuth, API_ENDPOINTS } from "../utils/api";
 
 const DataContext = createContext();
 

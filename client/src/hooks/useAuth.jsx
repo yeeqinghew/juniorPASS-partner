@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
+import { fetchWithAuth, API_ENDPOINTS } from "../utils/api";
 
 const useAuth = () => {
   const [user, setUser] = useState();
