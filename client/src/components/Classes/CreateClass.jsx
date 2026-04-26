@@ -140,6 +140,10 @@ const CreateClass = () => {
             API_ENDPOINTS.UPLOAD_LISTING_IMAGE,
             {
               method: "POST",
+              body: JSON.stringify({
+                listingId: listingId,
+                partnerId: user.partner_id,
+              }),
             }
           );
           const sigData = await response.json();

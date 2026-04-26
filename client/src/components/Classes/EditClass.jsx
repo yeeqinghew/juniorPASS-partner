@@ -259,6 +259,10 @@ const EditClass = () => {
               API_ENDPOINTS.UPLOAD_LISTING_IMAGE,
               {
                 method: "POST",
+                body: JSON.stringify({
+                  listingId: listing_id,
+                  partnerId: user.partner_id,
+                }),
               }
             );
             const sigData = await response.json();
