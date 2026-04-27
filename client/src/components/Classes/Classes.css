@@ -1,26 +1,7 @@
-/* My Classes Page - JuniorPASS Design System */
-
-/* CSS Variables */
-:root {
-  --primary-color: #98BDD2;
-  --primary-dark: #6aa4c3;
-  --primary-light: #b8d9e8;
-  --accent-pink: #f3a5c7;
-  --text-dark: #1a1a2e;
-  --text-muted: #666;
-  --text-light: #8c8c8c;
-  --border-light: #f0f0f0;
-  --bg-white: #fff;
-  --bg-cream: #FCFBF8;
-  --bg-light-blue: #f8fcff;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-}
+/* ============================================
+   MY CLASSES PAGE STYLES
+   Using centralized variables from variables.css
+   ============================================ */
 
 /* Container */
 .classes-container {
@@ -28,19 +9,19 @@
   min-height: auto;
 }
 
-/* Welcome Banner - Matching Dashboard Style */
+/* Welcome Banner */
 .welcome-banner {
   background: var(--bg-white);
   border-radius: var(--radius-xl);
-  padding: 28px 32px;
-  margin-bottom: 24px;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px;
-  animation: fadeInUp 0.4s ease-out;
+  gap: var(--spacing-lg);
+  animation: fadeInUp var(--animation-duration-base) ease-out;
 }
 
 .welcome-content {
@@ -48,433 +29,103 @@
 }
 
 .welcome-title {
-  font-size: 26px !important;
-  font-weight: 700 !important;
+  font-size: var(--font-size-4xl) !important;
+  font-weight: var(--font-weight-bold) !important;
   color: var(--text-dark) !important;
-  margin: 0 0 6px 0 !important;
-  line-height: 1.3 !important;
+  margin: 0 !important;
+  line-height: var(--line-height-snug) !important;
 }
 
 .welcome-text {
-  font-size: 15px;
+  font-size: var(--font-size-md);
   color: var(--text-muted) !important;
-  margin: 0 !important;
+  margin: var(--spacing-xs) 0 0 0 !important;
 }
 
 .welcome-actions {
   display: flex;
-  gap: 12px;
-}
-
-.welcome-btn-primary {
-  height: 44px !important;
-  padding: 0 24px !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  border-radius: var(--radius-md) !important;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
-  border: none !important;
-  box-shadow: 0 4px 12px rgba(152, 189, 210, 0.3) !important;
-  transition: all 0.3s ease !important;
-}
-
-.welcome-btn-primary:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 16px rgba(152, 189, 210, 0.4) !important;
-}
-
-/* Stats Summary */
-.classes-stats {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  flex: 1;
-  background: var(--bg-white);
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
-  border: 1px solid var(--border-light);
-  display: flex;
+  gap: var(--spacing-sm);
   align-items: center;
-  gap: 16px;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  border-color: var(--primary-light);
-  box-shadow: var(--shadow-sm);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
-.stat-icon.total {
-  background: linear-gradient(135deg, rgba(152, 189, 210, 0.2), rgba(152, 189, 210, 0.1));
-  color: var(--primary-dark);
-}
-
-.stat-icon.active {
-  background: linear-gradient(135deg, rgba(82, 196, 26, 0.2), rgba(82, 196, 26, 0.1));
-  color: #52c41a;
-}
-
-.stat-icon.inactive {
-  background: linear-gradient(135deg, rgba(140, 140, 140, 0.2), rgba(140, 140, 140, 0.1));
-  color: #8c8c8c;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-dark);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-/* Tabs - Matching Dashboard Card Style */
-.classes-tabs {
-  margin-bottom: 0;
-}
-
-.classes-tabs .ant-tabs-nav {
-  margin-bottom: 20px !important;
-}
-
-.classes-tabs .ant-tabs-nav::before {
-  border-bottom: 1px solid var(--border-light) !important;
-}
-
-.classes-tabs .ant-tabs-tab {
-  padding: 12px 20px !important;
-  font-weight: 500 !important;
-  font-size: 14px !important;
-  transition: all 0.3s ease !important;
-  margin: 0 !important;
-  color: var(--text-muted) !important;
-}
-
-.classes-tabs .ant-tabs-tab:hover {
-  color: var(--primary-color) !important;
-}
-
-.classes-tabs .ant-tabs-tab-active {
-  background: transparent !important;
-}
-
-.classes-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: var(--primary-color) !important;
-  font-weight: 600 !important;
-}
-
-.classes-tabs .ant-tabs-ink-bar {
-  background: var(--primary-color) !important;
-  height: 3px !important;
-  border-radius: 2px !important;
-}
-
-/* Card type tabs override */
-.classes-tabs.ant-tabs-card>.ant-tabs-nav .ant-tabs-tab {
-  border: none !important;
-  background: transparent !important;
-}
-
-.classes-tabs.ant-tabs-card>.ant-tabs-nav .ant-tabs-tab-active {
-  border-bottom: none !important;
-  background: transparent !important;
 }
 
 /* Classes Grid */
 .classes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 4px 0;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 /* Class Card */
 .class-card {
-  border-radius: var(--radius-lg) !important;
-  border: 1px solid var(--border-light) !important;
-  overflow: hidden !important;
-  transition: all 0.3s ease !important;
-  box-shadow: var(--shadow-sm) !important;
-  background: var(--bg-white) !important;
+  background: var(--bg-white);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: var(--transition-base);
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .class-card:hover {
-  border-color: var(--primary-light) !important;
-  box-shadow: var(--shadow-lg) !important;
   transform: translateY(-4px);
-}
-
-.class-card .ant-card-cover {
-  position: relative;
-  overflow: hidden;
-}
-
-.class-card .ant-card-cover img {
-  transition: transform 0.4s ease;
-}
-
-.class-card:hover .ant-card-cover img {
-  transform: scale(1.05);
-}
-
-.class-card .ant-card-body {
-  padding: 20px !important;
-}
-
-.class-card .ant-card-meta-title {
-  font-size: 17px !important;
-  font-weight: 600 !important;
-  color: var(--text-dark) !important;
-  margin-bottom: 8px !important;
-  line-height: 1.4 !important;
-}
-
-.class-card .ant-card-meta-description {
-  color: var(--text-muted) !important;
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-}
-
-/* Card without actions - cleaner look */
-.class-card .ant-card-body {
-  padding: 16px 20px !important;
-}
-
-/* Status Badge */
-.class-status-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 1;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 12px;
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(4px);
-}
-
-.class-status-active {
-  background: rgba(82, 196, 26, 0.95);
-  color: white;
-}
-
-.class-status-inactive {
-  background: rgba(140, 140, 140, 0.95);
-  color: white;
-}
-
-/* Info Tags */
-.class-info-tags {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-
-.class-info-tag {
-  padding: 4px 12px;
-  background: var(--bg-light-blue);
-  border-radius: 16px;
-  font-size: 12px;
-  color: var(--primary-dark);
-  font-weight: 500;
-  border: 1px solid var(--primary-light);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
 }
 
 /* Empty State */
-.empty-classes {
+.empty-state {
   text-align: center;
-  padding: 80px 40px;
+  padding: var(--spacing-3xl) var(--spacing-lg);
   background: var(--bg-white);
   border-radius: var(--radius-xl);
-  border: 2px dashed var(--border-light);
+  border: 1px solid var(--border-light);
 }
 
-.empty-classes-icon {
-  font-size: 80px;
-  margin-bottom: 24px;
-  opacity: 0.6;
-}
+/* ============================================
+   RESPONSIVE DESIGN - 4 BREAKPOINTS
+   ============================================ */
 
-.empty-classes-title {
-  font-size: 22px !important;
-  font-weight: 600 !important;
-  color: var(--text-dark) !important;
-  margin-bottom: 12px !important;
-}
-
-.empty-classes-text {
-  color: var(--text-muted);
-  font-size: 15px;
-  margin-bottom: 28px;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.empty-classes-button {
-  height: 48px !important;
-  padding: 0 32px !important;
-  border-radius: var(--radius-md) !important;
-  font-weight: 600 !important;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
-  border: none !important;
-  color: white !important;
-  box-shadow: 0 4px 12px rgba(152, 189, 210, 0.3) !important;
-}
-
-.empty-classes-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(152, 189, 210, 0.4) !important;
-}
-
-/* Carousel styling */
-.class-card .ant-carousel .slick-dots {
-  bottom: 12px;
-}
-
-.class-card .ant-carousel .slick-dots li button {
-  background: rgba(255, 255, 255, 0.5) !important;
-  width: 8px !important;
-  height: 8px !important;
-  border-radius: 50% !important;
-}
-
-.class-card .ant-carousel .slick-dots li.slick-active button {
-  background: var(--primary-color) !important;
-  width: 24px !important;
-  border-radius: 4px !important;
-}
-
-/* Search and Filter Bar */
-.classes-toolbar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.classes-search {
-  flex: 1;
-  min-width: 250px;
-}
-
-.classes-search .ant-input-affix-wrapper {
-  border-radius: var(--radius-md) !important;
-  border: 2px solid var(--border-light) !important;
-  padding: 10px 16px !important;
-  transition: all 0.3s ease !important;
-}
-
-.classes-search .ant-input-affix-wrapper:hover,
-.classes-search .ant-input-affix-wrapper:focus-within {
-  border-color: var(--primary-color) !important;
-  box-shadow: 0 0 0 3px rgba(152, 189, 210, 0.15) !important;
-}
-
-.classes-search .ant-input-prefix {
-  color: var(--text-light);
-  margin-right: 8px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .classes-header {
+/* MOBILE (< 768px) */
+@media screen and (max-width: 767.9px) {
+  .welcome-banner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    padding: var(--spacing-lg);
+    gap: var(--spacing-md);
   }
 
-  .classes-title {
-    font-size: 24px !important;
-  }
-
-  .create-class-button {
-    width: 100%;
-  }
-
-  .classes-stats {
-    flex-direction: column;
-  }
-
-  .stat-card {
-    padding: 16px 20px;
+  .welcome-title {
+    font-size: var(--font-size-3xl) !important;
   }
 
   .classes-grid {
     grid-template-columns: 1fr;
-  }
-
-  .classes-tabs .ant-tabs-tab {
-    padding: 10px 16px !important;
-    font-size: 13px !important;
-  }
-
-  .empty-classes {
-    padding: 60px 24px;
+    gap: var(--spacing-md);
   }
 }
 
-/* Animation */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
+/* TABLET PORTRAIT (768px - 1023.9px) */
+@media screen and (min-width: 768px) and (max-width: 1023.9px) {
+  .classes-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.class-card {
-  animation: fadeInUp 0.4s ease-out;
+/* TABLET LANDSCAPE (1024px - 1335.9px) */
+@media screen and (min-width: 1024px) and (max-width: 1335.9px) {
+  .classes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.class-card:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.class-card:nth-child(2) {
-  animation-delay: 0.05s;
-}
-
-.class-card:nth-child(3) {
-  animation-delay: 0.1s;
-}
-
-.class-card:nth-child(4) {
-  animation-delay: 0.15s;
-}
-
-.class-card:nth-child(5) {
-  animation-delay: 0.2s;
-}
-
-.class-card:nth-child(6) {
-  animation-delay: 0.25s;
+/* DESKTOP (>= 1336px) */
+@media screen and (min-width: 1336px) {
+  .classes-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xl);
+  }
 }
