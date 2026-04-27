@@ -1,0 +1,360 @@
+/* ============================================
+   JUNIORPASS PARTNER PORTAL - RESPONSIVE THEME
+   4 Screen Size Breakpoints (matching main site)
+   ============================================ */
+
+/* ===== RESPONSIVE UTILITIES ===== */
+
+/* Hide/Show helpers for different screen sizes */
+.mobile-only {
+  display: none;
+}
+
+.tablet-only,
+.desktop-only {
+  display: none;
+}
+
+/* ===== BREAKPOINT 1: MOBILE (< 768px) ===== */
+@media screen and (max-width: 767.9px) {
+  :root {
+    /* Adjust spacing for mobile */
+    --spacing-page: var(--spacing-md);
+    --spacing-card: var(--spacing-sm);
+    --spacing-section: var(--spacing-lg);
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
+  .tablet-only,
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Mobile layout adjustments */
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  /* Typography adjustments */
+  h1, .h1 {
+    font-size: var(--font-size-4xl);
+  }
+
+  h2, .h2 {
+    font-size: var(--font-size-3xl);
+  }
+
+  h3, .h3 {
+    font-size: var(--font-size-2xl);
+  }
+
+  /* Card padding */
+  .ant-card-body {
+    padding: var(--card-padding-sm);
+  }
+
+  /* Button sizing */
+  .ant-btn-lg {
+    height: var(--button-height-md);
+    font-size: var(--font-size-base);
+  }
+
+  /* Table responsiveness */
+  .ant-table {
+    font-size: var(--font-size-xs);
+  }
+
+  /* Form spacing */
+  .ant-form-item {
+    margin-bottom: var(--spacing-md);
+  }
+
+  /* Modal adjustments */
+  .ant-modal {
+    max-width: calc(100vw - 32px);
+    margin: var(--spacing-md);
+  }
+}
+
+/* ===== BREAKPOINT 2: TABLET PORTRAIT (768px - 1023.9px) ===== */
+@media screen and (min-width: 768px) and (max-width: 1023.9px) {
+  :root {
+    /* Adjust spacing for tablet portrait */
+    --spacing-page: var(--spacing-lg);
+    --spacing-card: var(--spacing-md);
+    --spacing-section: var(--spacing-xl);
+  }
+
+  .mobile-only {
+    display: none !important;
+  }
+
+  .tablet-only {
+    display: block;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Container adjustments */
+  .container {
+    padding: var(--spacing-lg);
+  }
+
+  /* Typography adjustments */
+  h1, .h1 {
+    font-size: var(--font-size-5xl);
+  }
+
+  h2, .h2 {
+    font-size: var(--font-size-4xl);
+  }
+
+  /* Card padding */
+  .ant-card-body {
+    padding: var(--card-padding-md);
+  }
+}
+
+/* ===== BREAKPOINT 3: TABLET LANDSCAPE (1024px - 1335.9px) ===== */
+@media screen and (min-width: 1024px) and (max-width: 1335.9px) {
+  :root {
+    /* Adjust spacing for tablet landscape */
+    --spacing-page: var(--spacing-xl);
+    --spacing-card: var(--spacing-md);
+    --spacing-section: var(--spacing-2xl);
+  }
+
+  .mobile-only,
+  .tablet-only {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: block;
+  }
+
+  /* Container adjustments */
+  .container {
+    padding: var(--spacing-xl);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Card padding */
+  .ant-card-body {
+    padding: var(--card-padding-md);
+  }
+}
+
+/* ===== BREAKPOINT 4: DESKTOP (>= 1336px) ===== */
+@media screen and (min-width: 1336px) {
+  :root {
+    /* Full spacing for desktop */
+    --spacing-page: var(--spacing-2xl);
+    --spacing-card: var(--spacing-lg);
+    --spacing-section: var(--spacing-3xl);
+  }
+
+  .mobile-only,
+  .tablet-only {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: block;
+  }
+
+  /* Container adjustments */
+  .container {
+    padding: var(--spacing-2xl);
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* Card padding */
+  .ant-card-body {
+    padding: var(--card-padding-lg);
+  }
+
+  /* Typography at full scale */
+  h1, .h1 {
+    font-size: var(--font-size-6xl);
+  }
+
+  h2, .h2 {
+    font-size: var(--font-size-5xl);
+  }
+
+  h3, .h3 {
+    font-size: var(--font-size-3xl);
+  }
+}
+
+/* ===== COMMON RESPONSIVE PATTERNS ===== */
+
+/* Flex utilities that adapt to screen size */
+@media screen and (max-width: 767.9px) {
+  .responsive-flex {
+    flex-direction: column;
+  }
+
+  .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .responsive-2-col {
+    grid-template-columns: 1fr;
+  }
+
+  .responsive-3-col {
+    grid-template-columns: 1fr;
+  }
+
+  .responsive-4-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023.9px) {
+  .responsive-2-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .responsive-3-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .responsive-4-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .responsive-2-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .responsive-3-col {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .responsive-4-col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ===== TEXT ALIGNMENT RESPONSIVE ===== */
+@media screen and (max-width: 767.9px) {
+  .text-center-mobile {
+    text-align: center;
+  }
+
+  .text-left-mobile {
+    text-align: left;
+  }
+}
+
+/* ===== SPACING UTILITIES ===== */
+.mt-responsive {
+  margin-top: var(--spacing-lg);
+}
+
+.mb-responsive {
+  margin-bottom: var(--spacing-lg);
+}
+
+.p-responsive {
+  padding: var(--spacing-md);
+}
+
+@media screen and (min-width: 1024px) {
+  .mt-responsive {
+    margin-top: var(--spacing-2xl);
+  }
+
+  .mb-responsive {
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .p-responsive {
+    padding: var(--spacing-xl);
+  }
+}
+
+/* ===== COMMON ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation utility classes */
+.fade-in {
+  animation: fadeIn var(--animation-duration-base) ease-out;
+}
+
+.fade-in-up {
+  animation: fadeInUp var(--animation-duration-base) ease-out;
+}
+
+.fade-in-down {
+  animation: fadeInDown var(--animation-duration-base) ease-out;
+}
+
+.slide-in {
+  animation: slideIn var(--animation-duration-base) ease-out;
+}
+
+.scale-in {
+  animation: scaleIn var(--animation-duration-fast) ease-out;
+}
