@@ -30,6 +30,7 @@ import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { DataContext } from "../../hooks/DataContext";
 import ScheduleItem from "../../utils/ScheduleItem";
 import dayjs from "dayjs";
+import LoadingOverlay from "../LoadingOverlay";
 import "./ClassEdit.css";
 
 const { Title, Text } = Typography;
@@ -49,6 +50,8 @@ const EditClass = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [listing, setListing] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState("");
 
   // Fetch outlets for the current partner
   const fetchOutlets = async () => {
@@ -184,6 +187,8 @@ const EditClass = () => {
   const handleEditClass = async (values) => {
     try {
       setSaving(true);
+      setUploadProgress(0);
+      setUploadStatus("Updating class information...");
 
       // Format dates for backend
       const shortTermDate = values.short_term_start_date
@@ -213,6 +218,9 @@ const EditClass = () => {
         const errorData = await updateResponse.json();
         throw new Error(errorData.error || "Failed to update listing");
       }
+
+      setUploadProgress(30);
+      setUploadStatus("Updating schedules...");
 
       // 2. Update schedules if outlets are provided
       if (values.outlets && values.outlets.length > 0) {
@@ -333,6 +341,13 @@ const EditClass = () => {
 
   return (
     <div className="class-edit-container">
+      <LoadingOverlay
+        visible={saving}
+        status={uploadStatus || "Saving changes..."}
+        progress={uploadProgress}
+        showProgress={true}
+      />
+
       {/* Header */}
       <div className="welcome-banner">
         <div className="welcome-content">

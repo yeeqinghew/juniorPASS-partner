@@ -518,3 +518,63 @@
     font-size: var(--font-size-4xl) !important;
   }
 }
+
+/* ============================================
+   LOADING OVERLAY
+   ============================================ */
+
+.upload-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn var(--animation-duration-fast) ease-out;
+}
+
+.upload-loading-content {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  background: var(--bg-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  min-width: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.upload-status-text {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+  margin-top: var(--spacing-sm);
+}
+
+.upload-loading-content .ant-spin {
+  margin-bottom: var(--spacing-md);
+}
+
+.upload-loading-content .ant-progress {
+  margin-top: var(--spacing-sm);
+}
+
+/* Mobile adjustments for loading overlay */
+@media screen and (max-width: 767.9px) {
+  .upload-loading-content {
+    min-width: 280px;
+    max-width: 90%;
+    padding: var(--spacing-xl);
+  }
+
+  .upload-status-text {
+    font-size: var(--font-size-base);
+  }
+}

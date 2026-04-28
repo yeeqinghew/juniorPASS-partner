@@ -24,6 +24,7 @@ import _ from "lodash";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { DataContext } from "../../hooks/DataContext";
 import ScheduleItem from "../../utils/ScheduleItem";
+import LoadingOverlay from "../LoadingOverlay";
 import "./ClassEdit.css";
 
 const { Title } = Typography;
@@ -38,6 +39,9 @@ const CreateClass = () => {
   const token = user && user?.token;
   const navigate = useNavigate();
   const [outlets, setOutlets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState("");
 
   // Fetch outlets for the current partner
   const fetchOutlets = async () => {
@@ -106,6 +110,10 @@ const CreateClass = () => {
   };
 
   const handleCreateClass = async (values) => {
+    setLoading(true);
+    setUploadProgress(0);
+    setUploadStatus("Creating listing...");
+
     try {
       // 1. Create the listing first
       const createListingResponse = await fetchWithAuth(
@@ -130,11 +138,20 @@ const CreateClass = () => {
       }
 
       const listingId = createListingResult.data.listing_id;
+      setUploadProgress(20);
 
       // 2. Upload images to Cloudinary
       const uploadedImageURLs = [];
-      for (let img of images) {
+      console.log(`Starting upload of ${images.length} images...`);
+      setUploadStatus(`Uploading images (0/${images.length})...`);
+
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
         try {
+          console.log(`Uploading image ${i + 1}/${images.length}...`);
+          setUploadStatus(`Uploading image ${i + 1}/${images.length}...`);
+          setUploadProgress(20 + ((i / images.length) * 60));
+
           // Get Cloudinary signature from backend
           const response = await fetchWithAuth(
             API_ENDPOINTS.UPLOAD_LISTING_IMAGE,
@@ -147,7 +164,10 @@ const CreateClass = () => {
             }
           );
           const sigData = await response.json();
-          if (!response.ok) throw new Error(sigData.message || "Failed to get upload signature");
+          if (!response.ok) {
+            console.error("Failed to get upload signature:", sigData);
+            throw new Error(sigData.message || "Failed to get upload signature");
+          }
 
           // Upload to Cloudinary
           const formData = new FormData();
@@ -169,23 +189,35 @@ const CreateClass = () => {
           const uploadData = await uploadRes.json();
 
           if (!uploadRes.ok) {
+            console.error("Cloudinary upload failed:", uploadData);
             throw new Error(uploadData.error?.message || "Failed to upload image");
           }
 
+          console.log(`Image ${i + 1} uploaded successfully:`, uploadData.secure_url);
           uploadedImageURLs.push(uploadData.secure_url);
         } catch (error) {
-          console.error("Image upload failed:", error);
+          console.error(`Image ${i + 1} upload failed:`, error);
 
           // 3. (Rollback): delete the listing if any image upload fails
-          await fetchWithAuth(API_ENDPOINTS.DELETE_LISTING(listingId), {
-            method: "DELETE",
-          });
+          setUploadStatus("Upload failed. Rolling back...");
+          try {
+            await fetchWithAuth(API_ENDPOINTS.DELETE_LISTING(listingId), {
+              method: "DELETE",
+            });
+            console.log("Listing rolled back successfully");
+          } catch (deleteErr) {
+            console.error("Failed to rollback listing:", deleteErr);
+          }
 
-          throw new Error("Image upload failed. Listing has been rolled back.");
+          throw new Error(`Image upload failed: ${error.message}`);
         }
       }
 
+      setUploadProgress(80);
+      setUploadStatus("Finalizing listing...");
+
       // 4. Update the listing with the uploaded image URLs
+      console.log("Updating listing with images:", uploadedImageURLs);
       const updateListingResponse = await fetchWithAuth(
         API_ENDPOINTS.UPDATE_LISTING(listingId),
         {
@@ -197,27 +229,57 @@ const CreateClass = () => {
       );
 
       const updateListingResult = await updateListingResponse.json();
+      console.log("Update listing response:", updateListingResult);
+
       if (updateListingResponse.status === 200) {
+        setUploadProgress(100);
+        setUploadStatus("Class created successfully!");
         createClassForm.resetFields();
         toast.success(
           updateListingResult.message || "Listing created successfully",
         );
-        navigate("/classes");
+        setTimeout(() => {
+          navigate("/classes");
+        }, 500);
       } else {
+        // Rollback: delete the listing if PATCH fails
+        setUploadStatus("Update failed. Rolling back...");
+        try {
+          await fetchWithAuth(API_ENDPOINTS.DELETE_LISTING(listingId), {
+            method: "DELETE",
+          });
+        } catch (deleteErr) {
+          console.error("Failed to rollback listing:", deleteErr);
+        }
+
         throw new Error(
           updateListingResult.error || "Failed to update listing with images",
         );
       }
     } catch (error) {
       console.error(error.message);
+      setUploadStatus("");
       toast.error(
         error.message || "ERROR in creating class. Please try again later.",
       );
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setUploadProgress(0);
+        setUploadStatus("");
+      }, 2000);
     }
   };
 
   return (
     <div className="class-edit-container">
+      <LoadingOverlay
+        visible={loading}
+        status={uploadStatus}
+        progress={uploadProgress}
+        showProgress={true}
+      />
+
       <div className="class-edit-header">
         <Space align="center">
           <LeftOutlined onClick={() => navigate(-1)} className="back-icon" />
