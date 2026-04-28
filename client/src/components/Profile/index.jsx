@@ -94,7 +94,7 @@ const Profile = () => {
       const res = await fetchWithAuth(
         API_ENDPOINTS.UPDATE_PARTNER(user.partner_id),
         {
-          method: "PUT",
+          method: "PATCH",
           body: JSON.stringify(values),
         }
       );
