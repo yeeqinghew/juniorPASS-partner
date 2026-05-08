@@ -1,0 +1,261 @@
+/* Import global variables */
+@import '../../styles/variables.css';
+
+/* ============================================
+   OUTLET FORM - MODERN DESIGN
+   ============================================ */
+
+.outlet-form {
+  width: 100%;
+}
+
+/* Form Section Card */
+.form-section {
+  background: linear-gradient(
+    135deg,
+    rgba(152, 189, 210, 0.02) 0%,
+    rgba(243, 165, 199, 0.02) 100%
+  );
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Form Labels */
+.form-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+  font-size: var(--font-size-base);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-label .anticon {
+  color: var(--primary-color);
+}
+
+/* Form Helpers */
+.form-helper {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+/* Section Dividers */
+.form-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+  padding: var(--spacing-md) 0;
+  margin: var(--spacing-md) 0;
+  border-top: 2px solid var(--border-light);
+}
+
+.form-section-divider .anticon {
+  color: var(--primary-color);
+  font-size: var(--font-size-xl);
+}
+
+/* Form Inputs */
+.form-input,
+.form-textarea,
+.form-select .ant-select-selector {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-medium);
+  transition: all var(--transition-base);
+}
+
+.form-input:hover,
+.form-textarea:hover,
+.form-select .ant-select-selector:hover {
+  border-color: var(--primary-color);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select.ant-select-focused .ant-select-selector {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(152, 189, 210, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Upload Area */
+.outlet-upload .ant-upload-select {
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--border-medium);
+  transition: all var(--transition-base);
+  background: var(--bg-white);
+}
+
+.outlet-upload .ant-upload-select:hover {
+  border-color: var(--primary-color);
+  background: var(--bg-light-blue);
+}
+
+.outlet-upload .ant-upload-list-picture-card-container {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.outlet-upload .ant-upload-list-item {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-base);
+}
+
+.outlet-upload .ant-upload-list-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Form Buttons */
+.cancel-btn {
+  min-width: 120px;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-base);
+}
+
+.cancel-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.submit-btn {
+  min-width: 160px;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-primary);
+  transition: all var(--transition-spring);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary-hover);
+}
+
+/* Form Item Spacing */
+.outlet-form .ant-form-item {
+  margin-bottom: var(--spacing-lg);
+}
+
+.outlet-form .ant-form-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Form Item Label */
+.outlet-form .ant-form-item-label > label {
+  height: auto;
+  font-size: var(--font-size-base);
+}
+
+/* Form Item Extra */
+.outlet-form .ant-form-item-extra {
+  min-height: auto;
+  margin-top: 6px;
+}
+
+/* Validation Messages */
+.outlet-form .ant-form-item-explain-error {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  margin-top: 6px;
+}
+
+/* Required Asterisk */
+.outlet-form .ant-form-item-required::before {
+  color: var(--color-error);
+}
+
+/* Input Prefix Icons */
+.outlet-form .ant-input-prefix {
+  margin-right: 10px;
+}
+
+/* Select Dropdown */
+.outlet-form .ant-select-dropdown {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.outlet-form .ant-select-item {
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.outlet-form .ant-select-item-option-selected {
+  background: var(--bg-light-blue);
+  font-weight: var(--font-weight-medium);
+}
+
+.outlet-form .ant-select-item-option-active {
+  background: var(--bg-light-blue);
+}
+
+/* Upload List */
+.outlet-upload .ant-upload-list-item-thumbnail img {
+  object-fit: cover;
+}
+
+.outlet-upload .ant-upload-list-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Loading State */
+.submit-btn .ant-btn-loading-icon {
+  margin-right: 8px;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .form-section {
+    padding: var(--spacing-md);
+  }
+
+  .form-section-divider {
+    font-size: var(--font-size-base);
+    padding: var(--spacing-sm) 0;
+  }
+
+  .submit-btn,
+  .cancel-btn {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .outlet-form .ant-form-item-label > label {
+    font-size: var(--font-size-sm);
+  }
+
+  .outlet-upload .ant-upload-select,
+  .outlet-upload .ant-upload-list-item {
+    width: 100px !important;
+    height: 100px !important;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.outlet-form {
+  animation: fadeIn 0.3s ease-out;
+}
