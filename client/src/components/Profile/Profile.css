@@ -127,7 +127,7 @@
 }
 
 /* Form Elements */
-.profile-form .ant-form-item-label > label {
+.profile-form .ant-form-item-label>label {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--text-dark);
@@ -223,10 +223,6 @@
 
 /* MOBILE (< 768px) */
 @media screen and (max-width: 767.9px) {
-  .profile-container {
-    padding: var(--spacing-sm);
-  }
-
   .profile-header {
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
@@ -295,10 +291,6 @@
 
 /* TABLET PORTRAIT (768px - 1023.9px) */
 @media screen and (min-width: 768px) and (max-width: 1023.9px) {
-  .profile-container {
-    padding: var(--spacing-lg);
-  }
-
   .profile-avatar {
     width: 90px;
     height: 90px;
@@ -316,10 +308,6 @@
 
 /* TABLET LANDSCAPE (1024px - 1335.9px) */
 @media screen and (min-width: 1024px) and (max-width: 1335.9px) {
-  .profile-container {
-    padding: var(--spacing-xl);
-  }
-
   .profile-stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -328,7 +316,6 @@
 /* DESKTOP (>= 1336px) */
 @media screen and (min-width: 1336px) {
   .profile-container {
-    padding: var(--spacing-2xl);
     max-width: 1400px;
     margin: 0 auto;
   }

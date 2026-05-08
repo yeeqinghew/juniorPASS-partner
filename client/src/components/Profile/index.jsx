@@ -29,7 +29,6 @@ import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import UserContext from "../UserContext";
 import useAddressSearch from "../../hooks/useAddressSearch";
 import _ from "lodash";
-import useMRTStations from "../../hooks/useMrtStations";
 import "./Profile.css";
 import LoadingContainer from "../../utils/LoadingContainer";
 import toast from "react-hot-toast";
@@ -40,7 +39,6 @@ const { TextArea } = Input;
 const Profile = () => {
   const { user } = useContext(UserContext);
   const { addressData, handleAddressSearch } = useAddressSearch();
-  const { mrtStations, renderTags } = useMRTStations();
 
   const token = localStorage.getItem("token");
 
@@ -63,23 +61,9 @@ const Profile = () => {
         const partnerData = await partnerRes.json();
         setUserProfile(partnerData);
 
-        const outletRes = await fetchWithAuth(
-          API_ENDPOINTS.GET_OUTLETS(user.partner_id)
-        );
-
-        let outlets = await outletRes.json();
-
-        outlets = outlets.map((o) => ({
-          address: o.address ? JSON.parse(o.address).ADDRESS : "",
-          nearest_mrt: o.nearest_mrt,
-        }));
-
-        profileForm.setFieldsValue({
-          ...partnerData,
-          outlets,
-        });
+        profileForm.setFieldsValue(partnerData);
       } catch (err) {
-        message.error("Error fetching profile");
+        message.error("Error fetching profile, ", err.message);
       } finally {
         setLoading(false);
       }
@@ -96,7 +80,7 @@ const Profile = () => {
         {
           method: "PATCH",
           body: JSON.stringify(values),
-        }
+        },
       );
 
       if (!res.ok) throw new Error();
@@ -110,48 +94,58 @@ const Profile = () => {
     }
   };
 
-  const handleFileChange = async(e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.error("Only image files allowed"); return; }
-    if (file.size / 1024 / 1024 > 5) { toast.error("Image must be under 5MB");   return; }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files allowed");
+      return;
+    }
+    if (file.size / 1024 / 1024 > 5) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
     try {
       setUploadLoading(true);
-      const token = localStorage.getItem("token");
       const sigRes = await fetchWithAuth(API_ENDPOINTS.UPLOAD_PARTNER_DP, {
         method: "POST",
       });
       const sigData = await sigRes.json();
-      if(!sigRes.ok) throw new Error(sigData.message || "Failed to get upload signature");
+      if (!sigRes.ok)
+        throw new Error(sigData.message || "Failed to get upload signature");
 
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("api_key",   sigData.apiKey);
+      formData.append("api_key", sigData.apiKey);
       formData.append("timestamp", sigData.allowedParams.timestamp);
       formData.append("signature", sigData.signature);
-      formData.append("folder",    sigData.allowedParams.folder);
+      formData.append("folder", sigData.allowedParams.folder);
       formData.append("public_id", sigData.allowedParams.public_id);
       formData.append("overwrite", sigData.allowedParams.overwrite);
 
-      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`, {
-        method: "POST",
-        body: formData,
-      });
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
       const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) throw new Error(uploadData.error?.message || "Upload failed");
+      if (!uploadRes.ok)
+        throw new Error(uploadData.error?.message || "Upload failed");
 
       const updateRes = await fetchWithAuth(
         API_ENDPOINTS.UPDATE_PARTNER(user.partner_id),
         {
           method: "PATCH",
           body: JSON.stringify({ picture: uploadData.secure_url }),
-        }
+        },
       );
       if (!updateRes.ok) throw new Error("Failed to update profile picture");
 
       toast.success("Profile picture updated!");
     } catch (error) {
-      toast.error("Failed to upload image");
+      toast.error("Failed to upload image ", error.message);
     } finally {
       setUploadLoading(false);
       e.target.value = ""; // Reset file input
@@ -178,47 +172,32 @@ const Profile = () => {
             {/* LEFT */}
             <Col xs={24} lg={8}>
               <Card className="profile-card">
-                  <div className="ac-avatar-wrap">
-                    <Avatar
-                      size={88}
-                      className="ac-avatar"
-                      src={userProfile?.picture}
-                      icon={<UserOutlined />}
-                    />
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={handleFileChange}
-                    />
-                    <button
-                      className="ac-camera-btn"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadLoading}
-                      title="Change photo"
-                    >
-                      <CameraOutlined />
-                    </button>
-                  </div>
+                <div className="ac-avatar-wrap">
+                  <Avatar
+                    size={88}
+                    className="ac-avatar"
+                    src={userProfile?.picture}
+                    icon={<UserOutlined />}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
+                  <button
+                    className="ac-camera-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadLoading}
+                    title="Change photo"
+                  >
+                    <CameraOutlined />
+                  </button>
+                </div>
 
-                  <h3 style={{ marginTop: 12 }}>{userProfile.partner_name}</h3>
-                  <p>{userProfile.email}</p>
-              </Card>
-
-              <Card className="profile-card">
-                <h4>Quick Stats</h4>
-                <Divider />
-                <Space direction="vertical" style={{ width: "100%" }}>
-                  <div className="stat-item">
-                    <span>Total Classes</span>
-                    <strong>{userProfile.total_classes || 0}</strong>
-                  </div>
-                  <div className="stat-item">
-                    <span>Total Bookings</span>
-                    <strong>{userProfile.total_bookings || 0}</strong>
-                  </div>
-                </Space>
+                <h3 style={{ marginTop: 12 }}>{userProfile.partner_name}</h3>
+                <p>{userProfile.email}</p>
               </Card>
             </Col>
 
@@ -297,78 +276,6 @@ const Profile = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-              </Card>
-
-              {/* OUTLETS */}
-              <Card
-                className="profile-card"
-                title={
-                  <>
-                    <ShopOutlined /> Outlets{" "}
-                    <Tooltip title="Contact admin to remove outlets">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </>
-                }
-              >
-                <Form.List name="outlets">
-                  {(fields, { add }) => (
-                    <>
-                      {fields.map((field) => (
-                        <Card
-                          key={field.key}
-                          className="outlet-card"
-                          title={`Outlet ${field.name + 1}`}
-                        >
-                          <Row gutter={16}>
-                            <Col span={12}>
-                              <Form.Item
-                                name={[field.name, "address"]}
-                                label="Address"
-                                required
-                              >
-                                <Select
-                                  showSearch
-                                  onSearch={handleAddressSearch}
-                                  options={(addressData || []).map((d) => ({
-                                    value: JSON.stringify(d),
-                                    label: d.ADDRESS,
-                                  }))}
-                                />
-                              </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                              <Form.Item
-                                name={[field.name, "nearest_mrt"]}
-                                label="Nearest MRT"
-                                required
-                              >
-                                <Select>
-                                  {Object.keys(mrtStations).map((k) => (
-                                    <Option key={k} value={k}>
-                                      {renderTags(mrtStations[k])} {k}
-                                    </Option>
-                                  ))}
-                                </Select>
-                              </Form.Item>
-                            </Col>
-                          </Row>
-                        </Card>
-                      ))}
-
-                      <Button
-                        type="dashed"
-                        block
-                        icon={<PlusOutlined />}
-                        onClick={() => add()}
-                        className="add-outlet-button"
-                      >
-                        Add Outlet
-                      </Button>
-                    </>
-                  )}
-                </Form.List>
               </Card>
 
               <div className="profile-actions">

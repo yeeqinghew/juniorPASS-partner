@@ -93,6 +93,11 @@ const PartnerHomeLayout = ({ setAuth }) => {
             label: <Link to="/profile">Profile</Link>,
           },
           {
+            key: "outlets",
+            icon: <DatabaseOutlined />,
+            label: <Link to="/outlets">Outlets</Link>,
+          },
+          {
             key: "classes",
             icon: <DatabaseOutlined />,
             label: <Link to="/classes">Classes</Link>,
