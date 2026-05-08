@@ -9,6 +9,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -19,6 +20,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -30,6 +32,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -40,12 +43,9 @@
 .outlets-management {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    rgba(152, 189, 210, 0.03) 0%,
-    rgba(243, 165, 199, 0.03) 100%
-  );
-  padding: var(--spacing-3xl) var(--spacing-2xl);
+  background: linear-gradient(135deg,
+      rgba(152, 189, 210, 0.03) 0%,
+      rgba(243, 165, 199, 0.03) 100%);
   position: relative;
   animation: fadeIn 0.5s ease-out;
 }
@@ -432,12 +432,29 @@
 }
 
 /* Stagger animation for cards */
-.outlets-grid > *:nth-child(1) { animation-delay: 0.1s; }
-.outlets-grid > *:nth-child(2) { animation-delay: 0.15s; }
-.outlets-grid > *:nth-child(3) { animation-delay: 0.2s; }
-.outlets-grid > *:nth-child(4) { animation-delay: 0.25s; }
-.outlets-grid > *:nth-child(5) { animation-delay: 0.3s; }
-.outlets-grid > *:nth-child(6) { animation-delay: 0.35s; }
+.outlets-grid>*:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.outlets-grid>*:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.outlets-grid>*:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.outlets-grid>*:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+.outlets-grid>*:nth-child(5) {
+  animation-delay: 0.3s;
+}
+
+.outlets-grid>*:nth-child(6) {
+  animation-delay: 0.35s;
+}
 
 /* Responsive Design */
 @media screen and (max-width: 1200px) {

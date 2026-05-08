@@ -20,7 +20,6 @@ import {
 import {
   EditOutlined,
   DeleteOutlined,
-  DeleteOutlined,
   EnvironmentOutlined,
   PlusOutlined,
   ShopOutlined,
@@ -62,7 +61,7 @@ const OutletsManagement = () => {
     setLoading(true);
     try {
       const response = await fetchWithAuth(
-        `/outlets/partner/${user?.partner_id}`
+        `/outlets/partner/${user?.partner_id}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -85,7 +84,7 @@ const OutletsManagement = () => {
         (outlet) =>
           outlet.outlet_name?.toLowerCase().includes(term) ||
           outlet.description?.toLowerCase().includes(term) ||
-          outlet.nearest_mrt?.toLowerCase().includes(term)
+          outlet.nearest_mrt?.toLowerCase().includes(term),
       );
     }
 
@@ -121,7 +120,7 @@ const OutletsManagement = () => {
 
   const handleSaveSuccess = () => {
     toast.success(
-      `Outlet ${editingOutlet ? "updated" : "created"} successfully!`
+      `Outlet ${editingOutlet ? "updated" : "created"} successfully!`,
     );
     setIsModalOpen(false);
     setEditingOutlet(null);
@@ -131,9 +130,7 @@ const OutletsManagement = () => {
   const getAddress = (addressJson) => {
     try {
       const addr =
-        typeof addressJson === "string"
-          ? JSON.parse(addressJson)
-          : addressJson;
+        typeof addressJson === "string" ? JSON.parse(addressJson) : addressJson;
       return addr?.ADDRESS || "No address";
     } catch {
       return "No address";
