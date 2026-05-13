@@ -260,7 +260,11 @@ const EditClass = () => {
         : [];
 
       if (images.length > 0) {
-        for (let img of images) {
+        setUploadStatus(`Uploading images (0/${images.length})...`);
+        for (let i = 0; i < images.length; i++) {
+          const img = images[i];
+          setUploadStatus(`Uploading image ${i + 1}/${images.length}...`);
+          setUploadProgress(50 + ((i / images.length) * 30));
           try {
             // Get Cloudinary signature from backend
             const response = await fetchWithAuth(
@@ -308,6 +312,9 @@ const EditClass = () => {
       }
 
       // 4. Update images if changed
+      setUploadProgress(80);
+      setUploadStatus("Finalizing changes...");
+
       if (
         uploadedImageURLs.length !== existingImages.length ||
         images.length > 0
@@ -320,13 +327,23 @@ const EditClass = () => {
         });
       }
 
+      setUploadProgress(100);
+      setUploadStatus("Class updated successfully!");
       toast.success("Class updated successfully!");
-      navigate(`/class/${listing_id}`);
+
+      setTimeout(() => {
+        navigate(`/class/${listing_id}`);
+      }, 500);
     } catch (error) {
       console.error(error.message);
+      setUploadStatus("");
       toast.error(error.message || "Failed to update class");
     } finally {
       setSaving(false);
+      setTimeout(() => {
+        setUploadProgress(0);
+        setUploadStatus("");
+      }, 2000);
     }
   };
 

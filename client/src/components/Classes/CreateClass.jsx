@@ -110,9 +110,17 @@ const CreateClass = () => {
   };
 
   const handleCreateClass = async (values) => {
+    // Validate images before proceeding
+    if (images.length === 0) {
+      toast.error("Please upload at least one image for the class");
+      return;
+    }
+
     setLoading(true);
     setUploadProgress(0);
     setUploadStatus("Creating listing...");
+
+    let listingId = null; // Track listing ID for rollback
 
     try {
       // 1. Create the listing first
@@ -137,7 +145,7 @@ const CreateClass = () => {
         );
       }
 
-      const listingId = createListingResult.data.listing_id;
+      listingId = createListingResult.data.listing_id;
       setUploadProgress(20);
 
       // 2. Upload images to Cloudinary
@@ -259,9 +267,29 @@ const CreateClass = () => {
     } catch (error) {
       console.error(error.message);
       setUploadStatus("");
-      toast.error(
-        error.message || "ERROR in creating class. Please try again later.",
-      );
+
+      // Rollback: Delete the listing if it was created
+      if (listingId) {
+        console.log(`Attempting to rollback listing ${listingId}...`);
+        try {
+          await fetchWithAuth(API_ENDPOINTS.DELETE_LISTING(listingId), {
+            method: "DELETE",
+          });
+          console.log("Listing rolled back successfully");
+          toast.error(
+            error.message || "Failed to create class. Changes have been rolled back.",
+          );
+        } catch (deleteErr) {
+          console.error("Failed to rollback listing:", deleteErr);
+          toast.error(
+            `Failed to create class. Please manually delete listing ID: ${listingId}`,
+          );
+        }
+      } else {
+        toast.error(
+          error.message || "ERROR in creating class. Please try again later.",
+        );
+      }
     } finally {
       setLoading(false);
       setTimeout(() => {
@@ -522,7 +550,9 @@ const CreateClass = () => {
           )}
         </Form.List>
 
-        <div className="form-section-header">Class Images</div>
+        <div className="form-section-header">
+          Class Images <span style={{ color: "red" }}>*</span>
+        </div>
 
         <Dragger {...props} className="upload-dragger mb-24">
           <p className="ant-upload-drag-icon">
@@ -530,7 +560,7 @@ const CreateClass = () => {
           </p>
           <p className="ant-upload-text">Click or drag files to upload</p>
           <p className="ant-upload-hint">
-            Upload up to 5 images for your class
+            Upload at least 1 image (up to 5 images) for your class
           </p>
         </Dragger>
 

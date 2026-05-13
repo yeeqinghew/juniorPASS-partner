@@ -1,0 +1,181 @@
+/* Import global variables */
+@import '../styles/variables.css';
+
+/* ============================================
+   SCHEDULE ITEM WITH PACKAGES - STYLING
+   ============================================ */
+
+.schedule-item-card {
+  margin-bottom: 16px;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border-light);
+  transition: all var(--transition-base);
+  background: var(--bg-white);
+}
+
+.schedule-item-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+}
+
+.remove-schedule-btn {
+  color: var(--color-error);
+  fontSize: 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.remove-schedule-btn:hover {
+  color: #d32029;
+  transform: scale(1.2);
+}
+
+/* Package Configuration Section */
+.package-config-section {
+  padding: var(--spacing-md);
+  background: linear-gradient(
+    135deg,
+    rgba(152, 189, 210, 0.03) 0%,
+    rgba(243, 165, 199, 0.03) 100%
+  );
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
+}
+
+.long-term-config {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+/* Form Items */
+.schedule-item-card .ant-form-item {
+  margin-bottom: 0;
+}
+
+.schedule-item-card .ant-form-item-label > label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+}
+
+/* Select Dropdowns */
+.schedule-item-card .ant-select-selector {
+  border-radius: var(--radius-sm);
+  border-color: var(--border-medium);
+  transition: all var(--transition-base);
+}
+
+.schedule-item-card .ant-select-selector:hover {
+  border-color: var(--primary-color);
+}
+
+.schedule-item-card .ant-select-focused .ant-select-selector {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(152, 189, 210, 0.1);
+}
+
+/* Input Numbers */
+.schedule-item-card .ant-input-number {
+  border-radius: var(--radius-sm);
+  border-color: var(--border-medium);
+}
+
+.schedule-item-card .ant-input-number:hover {
+  border-color: var(--primary-color);
+}
+
+.schedule-item-card .ant-input-number-focused {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(152, 189, 210, 0.1);
+}
+
+/* Date Picker */
+.schedule-item-card .ant-picker {
+  border-radius: var(--radius-sm);
+  border-color: var(--border-medium);
+}
+
+.schedule-item-card .ant-picker:hover {
+  border-color: var(--primary-color);
+}
+
+.schedule-item-card .ant-picker-focused {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(152, 189, 210, 0.1);
+}
+
+/* Switch */
+.schedule-item-card .ant-switch-checked {
+  background-color: var(--primary-color);
+}
+
+.schedule-item-card .ant-switch-checked:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Alerts */
+.package-config-section .ant-alert {
+  border-radius: var(--radius-sm);
+  border-color: var(--border-medium);
+}
+
+.package-config-section .ant-alert-info {
+  background: var(--bg-light-blue);
+  border-color: var(--primary-color);
+}
+
+.package-config-section .ant-alert-success {
+  background: var(--color-success-light);
+  border-color: var(--color-success);
+}
+
+/* Tooltips */
+.schedule-item-card .anticon-info-circle {
+  cursor: help;
+  transition: color var(--transition-fast);
+}
+
+.schedule-item-card .anticon-info-circle:hover {
+  color: var(--primary-dark);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .schedule-item-card {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .package-config-section {
+    padding: var(--spacing-sm);
+  }
+
+  .long-term-config {
+    padding: var(--spacing-md);
+  }
+
+  .remove-schedule-btn {
+    fontSize: 18px;
+  }
+}
+
+/* Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.schedule-item-card {
+  animation: slideIn 0.3s ease-out;
+}
+
+.long-term-config {
+  animation: slideIn 0.4s ease-out;
+}
