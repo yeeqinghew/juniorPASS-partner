@@ -37,14 +37,13 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
   // Pricing state
   const [pricing, setPricing] = useState({
     payAsYouGo: null,
-    shortTerm: null,
     fullTerm: null,
   });
 
   const [credits, setCredits] = useState({
     payAsYouGo: 0,
-    shortTerm: 0,
     fullTerm: 0,
+    shortTerm: 0, // Auto-calculated
   });
 
   // Get field values
@@ -56,36 +55,14 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
     return Math.ceil(amount);
   };
 
-  // Calculate suggested short-term price (15% markup, rounded up to cents)
-  const calculateSuggestedShortTerm = (fullTermPrice) => {
-    if (!fullTermPrice || fullTermPrice <= 0) return null;
-    return Math.ceil(fullTermPrice * 1.15 * 100) / 100;
-  };
-
-  // Validate short-term pricing (must be 10-20% more than full-term)
-  const validateShortTermPrice = (fullTermPrice, shortTermPrice) => {
-    if (!fullTermPrice || !shortTermPrice) return { valid: true, message: "" };
-
-    const minPrice = fullTermPrice * 1.10;
-    const maxPrice = fullTermPrice * 1.20;
-
-    if (shortTermPrice < minPrice) {
-      return {
-        valid: false,
-        message: `Too low! Min: $${minPrice.toFixed(2)} (10% markup)`,
-        type: "error"
-      };
-    }
-
-    if (shortTermPrice > maxPrice) {
-      return {
-        valid: false,
-        message: `Too high! Max: $${maxPrice.toFixed(2)} (20% markup)`,
-        type: "error"
-      };
-    }
-
-    return { valid: true, message: "✓ Valid pricing (10-20% markup)", type: "success" };
+  // Calculate short-term price automatically
+  // Short-term = (Full-term ÷ Full-term classes) × 1.15 × Short-term classes
+  const calculateShortTermPrice = (fullTermPrice, fullTermClasses, shortTermClasses) => {
+    if (!fullTermPrice || !fullTermClasses || !shortTermClasses) return null;
+    const perClassRate = fullTermPrice / fullTermClasses;
+    const shortTermPerClass = perClassRate * 1.15;
+    const shortTermTotal = shortTermPerClass * shortTermClasses;
+    return Math.ceil(shortTermTotal * 100) / 100; // Round to cents
   };
 
   // Handle price changes
@@ -93,27 +70,27 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
     const newPricing = { ...pricing, [packageType]: value };
     setPricing(newPricing);
 
-    // Auto-calculate credits
+    // Calculate credits for pay-as-you-go and full-term
     const newCredits = {
       payAsYouGo: dollarsToCredits(newPricing.payAsYouGo),
-      shortTerm: dollarsToCredits(newPricing.shortTerm),
       fullTerm: dollarsToCredits(newPricing.fullTerm),
+      shortTerm: 0,
     };
-    setCredits(newCredits);
 
-    // Auto-suggest short-term price if full-term is set
-    if (packageType === "fullTerm" && value && !newPricing.shortTerm) {
-      const suggested = calculateSuggestedShortTerm(value);
-      if (suggested) {
-        setPricing(prev => ({ ...prev, shortTerm: suggested }));
-        setCredits(prev => ({ ...prev, shortTerm: dollarsToCredits(suggested) }));
-        // Update form field
+    // Auto-calculate short-term price and credits
+    if (packageType === "fullTerm" && value && fullTermClassCount && shortTermClassCount) {
+      const shortTermPrice = calculateShortTermPrice(value, fullTermClassCount, shortTermClassCount);
+      if (shortTermPrice) {
+        newCredits.shortTerm = dollarsToCredits(shortTermPrice);
+        // Update form field with calculated short-term price
         form.setFieldValue(
           ['outlets', field.name, 'schedules', 0, 'price_shortterm'],
-          suggested
+          shortTermPrice
         );
       }
     }
+
+    setCredits(newCredits);
   };
 
   useEffect(() => {
@@ -136,6 +113,19 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
           ['outlets', field.name, 'schedules', 0, 'short_term_class_count'],
           shortTerm
         );
+
+        // Recalculate short-term price if full-term price exists
+        const fullTermPrice = pricing.fullTerm;
+        if (fullTermPrice && types.includes('short-term')) {
+          const shortTermPrice = calculateShortTermPrice(fullTermPrice, fullTerm, shortTerm);
+          if (shortTermPrice) {
+            setCredits(prev => ({ ...prev, shortTerm: dollarsToCredits(shortTermPrice) }));
+            form.setFieldValue(
+              ['outlets', field.name, 'schedules', 0, 'price_shortterm'],
+              shortTermPrice
+            );
+          }
+        }
       }
     }
   }, [fieldValue, field.name, form]);
@@ -275,7 +265,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
 
             {/* Progressive Classes Toggle */}
             {(packageTypes.includes('full-term') || packageTypes.includes('short-term')) && (
-              <Col xs={24} md={12}>
+              <Col xs={24} md={8}>
                 <Form.Item
                   name={[field.name, "schedules", 0, "is_progressive"]}
                   label={
@@ -293,6 +283,86 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   Enable for classes that build on previous lessons
                 </Text>
+              </Col>
+            )}
+
+            {/* Full Term Start Date - ONLY if full-term is selected */}
+            {packageTypes.includes('full-term') && (
+              <Col xs={24} md={8}>
+                <Form.Item
+                  name={[field.name, "schedules", 0, "full_term_start_date"]}
+                  label={
+                    <Space>
+                      <Text strong>Full-term Start Date</Text>
+                      <CalendarOutlined style={{ color: 'var(--primary-color)' }} />
+                    </Space>
+                  }
+                  rules={[{ required: true, message: "Required" }]}
+                >
+                  <DatePicker
+                    showTime
+                    format="DD/MM/YYYY HH:mm"
+                    placeholder="Select start date"
+                    size="large"
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  When users can start booking
+                </Text>
+              </Col>
+            )}
+
+            {/* Full Term Class Count - ONLY if full-term is selected */}
+            {packageTypes.includes('full-term') && (
+              <Col xs={24} md={8}>
+                <Form.Item
+                  name={[field.name, "schedules", 0, "full_term_class_count"]}
+                  label={
+                    <Space>
+                      <Text strong>Number of Classes</Text>
+                      <ClockCircleOutlined style={{ color: 'var(--primary-color)' }} />
+                    </Space>
+                  }
+                  rules={[{ required: true, message: "Required" }]}
+                >
+                  <InputNumber
+                    min={1}
+                    max={100}
+                    placeholder="e.g., 12 classes"
+                    size="large"
+                    style={{ width: '100%' }}
+                    onChange={handleFullTermClassCountChange}
+                  />
+                </Form.Item>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Package expires when complete
+                </Text>
+              </Col>
+            )}
+
+            {/* Short-term Preview - Auto-calculated */}
+            {packageTypes.includes('short-term') && fullTermClassCount && (
+              <Col span={24}>
+                <Alert
+                  message={
+                    <Space direction="vertical" size={4}>
+                      <Text strong>Short-term Trial: {shortTermClassCount} classes</Text>
+                      <Text type="secondary">
+                        Automatically calculated as 25% of full-term ({fullTermClassCount} classes)
+                      </Text>
+                    </Space>
+                  }
+                  type="success"
+                  showIcon
+                  icon={<InfoCircleOutlined />}
+                />
+                <Form.Item
+                  name={[field.name, "schedules", 0, "short_term_class_count"]}
+                  hidden
+                >
+                  <InputNumber />
+                </Form.Item>
               </Col>
             )}
           </Row>
@@ -374,157 +444,47 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
               </Col>
             )}
 
-            {/* Short-Term */}
-            {packageTypes.includes("short-term") && (
+            {/* Short-Term Price - AUTO-CALCULATED (Display Only) */}
+            {packageTypes.includes("short-term") && pricing.fullTerm && fullTermClassCount && shortTermClassCount && (
               <Col xs={24} sm={8}>
                 <div style={{ marginBottom: 4 }}>
                   <Text strong style={{ fontSize: 13 }}>
-                    Short-Term
-                    {pricing.fullTerm && (
-                      <Tooltip title={`Suggested: $${calculateSuggestedShortTerm(pricing.fullTerm)?.toFixed(2)} (15% markup)`}>
-                        <InfoCircleOutlined style={{ marginLeft: 4, fontSize: 11, color: "#1890ff" }} />
-                      </Tooltip>
-                    )}
+                    Short-Term (Auto-calculated)
+                    <Tooltip title="Calculated as: (Full-term price ÷ Full-term classes) × 1.15 × Short-term classes">
+                      <InfoCircleOutlined style={{ marginLeft: 4, fontSize: 11, color: "#1890ff" }} />
+                    </Tooltip>
                   </Text>
                 </div>
+                <div style={{
+                  padding: "8px 12px",
+                  background: "#f0f0f0",
+                  borderRadius: 6,
+                  border: "1px solid #d9d9d9",
+                  fontSize: 16,
+                  fontWeight: 600,
+                  color: "#1890ff"
+                }}>
+                  ${calculateShortTermPrice(pricing.fullTerm, fullTermClassCount, shortTermClassCount)?.toFixed(2)}
+                </div>
+                <Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 4 }}>
+                  = {credits.shortTerm} {credits.shortTerm === 1 ? "credit" : "credits"} (15% markup)
+                </Text>
+                {/* Hidden field to store the calculated price */}
                 <Form.Item
                   name={[field.name, "schedules", 0, "price_shortterm"]}
-                  rules={[
-                    { required: true, message: "Required" },
-                    { type: "number", min: 0.01, message: "Must be > $0" },
-                    {
-                      validator: (_, value) => {
-                        if (!pricing.fullTerm || !value) return Promise.resolve();
-                        const validation = validateShortTermPrice(pricing.fullTerm, value);
-                        return validation.valid
-                          ? Promise.resolve()
-                          : Promise.reject(new Error(validation.message));
-                      },
-                    },
-                  ]}
-                  style={{ marginBottom: 4 }}
+                  hidden
                 >
-                  <InputNumber
-                    prefix="$"
-                    placeholder="0.00"
-                    min={0}
-                    step={0.01}
-                    precision={2}
-                    size="large"
-                    style={{ width: "100%" }}
-                    onChange={(value) => handlePriceChange("shortTerm", value)}
-                  />
+                  <InputNumber />
                 </Form.Item>
-                {pricing.fullTerm && pricing.shortTerm && (
-                  <Text
-                    type={validateShortTermPrice(pricing.fullTerm, pricing.shortTerm).type === "success" ? "success" : "danger"}
-                    style={{ fontSize: 11 }}
-                  >
-                    {validateShortTermPrice(pricing.fullTerm, pricing.shortTerm).message}
-                  </Text>
-                )}
-                {credits.shortTerm > 0 && (
-                  <div>
-                    <Text type="secondary" style={{ fontSize: 11 }}>
-                      = {credits.shortTerm} {credits.shortTerm === 1 ? "credit" : "credits"}
-                    </Text>
-                  </div>
-                )}
               </Col>
             )}
 
             {/* Trial - Remove this, we don't use trial anymore */}
           </Row>
         </div>
-
-        {/* Full-term Configuration (class count and start date) */}
-        {packageTypes.includes('full-term') && (
-          <div className="package-config-section">
-            <div className="long-term-config">
-              <Row gutter={[16, 16]}>
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    name={[field.name, "schedules", 0, "full_term_start_date"]}
-                    label={
-                      <Space>
-                        <Text strong>Start Date</Text>
-                        <CalendarOutlined style={{ color: 'var(--primary-color)' }} />
-                      </Space>
-                    }
-                    rules={[{ required: true, message: "Required" }]}
-                  >
-                    <DatePicker
-                      showTime
-                      format="DD/MM/YYYY HH:mm"
-                      placeholder="Select start date"
-                      size="large"
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    When users can start booking this package
-                  </Text>
-                </Col>
-
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    name={[field.name, "schedules", 0, "full_term_class_count"]}
-                    label={
-                      <Space>
-                        <Text strong>Number of Classes</Text>
-                        <ClockCircleOutlined style={{ color: 'var(--primary-color)' }} />
-                      </Space>
-                    }
-                    rules={[{ required: true, message: "Required" }]}
-                  >
-                    <InputNumber
-                      min={1}
-                      max={100}
-                      placeholder="e.g., 12 classes"
-                      size="large"
-                      style={{ width: '100%' }}
-                      onChange={handleFullTermClassCountChange}
-                    />
-                  </Form.Item>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Package expires when user completes all classes
-                  </Text>
-                </Col>
-
-
-                {/* Short-term Preview */}
-                {packageTypes.includes('short-term') && fullTermClassCount && (
-                  <Col span={24}>
-                    <Alert
-                      message={
-                        <Space direction="vertical" size={4}>
-                          <Text strong>Short-term Trial: {shortTermClassCount} classes</Text>
-                          <Text type="secondary">
-                            Automatically calculated as 25% of full-term ({fullTermClassCount} classes)
-                          </Text>
-                        </Space>
-                      }
-                      type="success"
-                      showIcon
-                      icon={<InfoCircleOutlined />}
-                    />
-                    <Form.Item
-                      name={[field.name, "schedules", 0, "short_term_class_count"]}
-                      hidden
-                    >
-                      <InputNumber />
-                    </Form.Item>
-                  </Col>
-                )}
-              </Row>
-            </div>
-          </div>
-        )}
       </Space>
     </Card>
   );
 };
-
-export default ScheduleItemWithPackages;
 
 export default ScheduleItemWithPackages;
