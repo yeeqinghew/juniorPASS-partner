@@ -2,6 +2,7 @@ import {
   InboxOutlined,
   PlusCircleOutlined,
   LeftOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -14,6 +15,8 @@ import {
   Col,
   Space,
   DatePicker,
+  Checkbox,
+  Tooltip,
 } from "antd";
 import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -35,6 +38,7 @@ const CreateClass = () => {
   const { packageTypes, ageGroups } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
   const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
+  const [isProgressive, setIsProgressive] = useState(false);
   const { user } = useContext(UserContext);
   const token = user && user?.token;
   const navigate = useNavigate();
@@ -109,6 +113,23 @@ const CreateClass = () => {
     createClassForm.setFieldValue("package_types", values);
   };
 
+  const handleIsProgressiveChange = (value) => {
+    setIsProgressive(value);
+    // If switching to progressive, remove pay-as-you-go if selected
+    if (value) {
+      const currentPackages = createClassForm.getFieldValue("package_types") || [];
+      const filteredPackages = currentPackages.filter(pkg => pkg !== "pay-as-you-go");
+      createClassForm.setFieldValue("package_types", filteredPackages);
+      setSelectedPackageTypes(filteredPackages);
+
+      if (currentPackages.includes("pay-as-you-go")) {
+        toast("Pay-as-you-go removed: not available for progressive programs", {
+          icon: "ℹ️"
+        });
+      }
+    }
+  };
+
   const handleCreateClass = async (values) => {
     // Validate images before proceeding
     if (images.length === 0) {
@@ -133,7 +154,7 @@ const CreateClass = () => {
             partner_id: user.partner_id,
             images: [], // temporarily empty, will be updated later
             short_term_start_date: values.short_term_start_date || null,
-            long_term_start_date: values.long_term_start_date || null,
+            full_term_start_date: values.full_term_start_date || null,
           }),
         }
       );
@@ -338,6 +359,39 @@ const CreateClass = () => {
         >
           <Input placeholder="Enter class title" size="large" />
         </Form.Item>
+
+        <Form.Item
+          name="lesson_type"
+          label="Lesson Type"
+          rules={[
+            {
+              required: true,
+              message: "Please select the lesson type",
+            },
+          ]}
+        >
+          <Select placeholder="Select lesson type" size="large">
+            <Select.Option value="Workshop">Workshop</Select.Option>
+            <Select.Option value="Classes">Classes</Select.Option>
+            <Select.Option value="Camp">Camp</Select.Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="is_progressive"
+          label=""
+          valuePropName="checked"
+          initialValue={false}
+          style={{ marginBottom: 8 }}
+        >
+          <Checkbox onChange={(e) => handleIsProgressiveChange(e.target.checked)}>
+            <span style={{ fontWeight: 500 }}>Progressive Program</span>
+            <Tooltip title="Progressive programs require structured commitment and disable pay-as-you-go bookings">
+              <InfoCircleOutlined style={{ marginLeft: 6, color: "#1890ff" }} />
+            </Tooltip>
+          </Checkbox>
+        </Form.Item>
+
         <Form.Item
           name="package_types"
           label="Package Types"
@@ -355,14 +409,24 @@ const CreateClass = () => {
             size="large"
           >
             {packageTypes &&
-              packageTypes.map((packageType) => (
-                <Select.Option
-                  key={packageType.id}
-                  value={packageType.package_type}
-                >
-                  {packageType.name}
-                </Select.Option>
-              ))}
+              packageTypes
+                .filter((packageType) => {
+                  // If progressive, hide pay-as-you-go
+                  if (isProgressive && packageType.package_type === "pay-as-you-go") {
+                    return false;
+                  }
+                  return true;
+                })
+                .map((packageType) => (
+                  <Select.Option
+                    key={packageType.id}
+                    value={packageType.package_type}
+                    disabled={isProgressive && packageType.package_type === "pay-as-you-go"}
+                  >
+                    {packageType.name}
+                    {isProgressive && packageType.package_type === "pay-as-you-go" && " (Not available for progressive programs)"}
+                  </Select.Option>
+                ))}
           </Select>
         </Form.Item>
         {createClassForm
@@ -387,19 +451,19 @@ const CreateClass = () => {
         )}
         {createClassForm
           .getFieldValue("package_types")
-          ?.includes("long-term") && (
+          ?.includes("full-term") && (
           <Form.Item
-            name="long_term_start_date"
-            label="Long-term Start Date"
+            name="full_term_start_date"
+            label="Full-Term Start Date"
             rules={[
               {
                 required: true,
-                message: "Please select the start date for long-term",
+                message: "Please select the start date for full-term",
               },
             ]}
           >
             <DatePicker
-              placeholder="Select long-term start date"
+              placeholder="Select full-term start date"
               size="large"
               className="w-full"
             />
