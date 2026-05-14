@@ -21,6 +21,7 @@ import {
   DollarOutlined
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import TimeRangePicker from "./TimeRangePicker";
 import day from "../data/day.json";
 import frequency from "../data/frequency.json";
@@ -31,6 +32,7 @@ const { Text } = Typography;
 const ScheduleItemWithPackages = ({ field, remove, form }) => {
   const [showPackageConfig, setShowPackageConfig] = useState(false);
   const [packageTypes, setPackageTypes] = useState([]);
+  const [isProgressive, setIsProgressive] = useState(false);
   const [fullTermClassCount, setFullTermClassCount] = useState(null);
   const [shortTermClassCount, setShortTermClassCount] = useState(null);
 
@@ -95,7 +97,11 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
 
   useEffect(() => {
     const types = fieldValue.schedules?.[0]?.package_types || [];
+    const progressive = fieldValue.schedules?.[0]?.is_progressive || false;
+
     setPackageTypes(types);
+    setIsProgressive(progressive);
+
     setShowPackageConfig(types.length > 0 && !types.includes('pay-as-you-go'));
 
     // Auto-calculate short-term class count (25% of full-term, rounded up)
@@ -133,6 +139,26 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
   const handlePackageTypeChange = (types) => {
     setPackageTypes(types);
     setShowPackageConfig(types.length > 0 && !types.includes('pay-as-you-go'));
+  };
+
+  const handleProgressiveChange = (checked) => {
+    setIsProgressive(checked);
+
+    // If progressive is enabled, remove pay-as-you-go and short-term from selection
+    if (checked) {
+      const filtered = packageTypes.filter(
+        (type) => type !== 'pay-as-you-go' && type !== 'short-term'
+      );
+      setPackageTypes(filtered);
+      form.setFieldValue(
+        ['outlets', field.name, 'schedules', 0, 'package_types'],
+        filtered
+      );
+
+      if (packageTypes.includes('pay-as-you-go') || packageTypes.includes('short-term')) {
+        toast.info("Pay-as-you-go and Short-term removed: not available for progressive classes");
+      }
+    }
   };
 
   const handleFullTermClassCountChange = (value) => {
@@ -221,12 +247,32 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
           </Col>
         </Row>
 
-        {/* Pricing Section */}
-        <Divider style={{ margin: "12px 0" }} />
-
         {/* Package Type Configuration */}
+        <Divider style={{ margin: "12px 0" }} />
         <div className="package-config-section">
           <Row gutter={[16, 16]}>
+            {/* Progressive Classes Toggle - FIRST */}
+            <Col span={24}>
+              <Form.Item
+                name={[field.name, "schedules", 0, "is_progressive"]}
+                label=""
+                valuePropName="checked"
+                style={{ marginBottom: 8 }}
+              >
+                <Space>
+                  <Switch onChange={handleProgressiveChange} />
+                  <Text strong>Progressive Classes</Text>
+                  <Tooltip title="When enabled: prevents mid-cycle joining and disables pay-as-you-go and short-term trial">
+                    <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+                  </Tooltip>
+                </Space>
+              </Form.Item>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: -8 }}>
+                Enable for classes that build on previous lessons (disables pay-as-you-go and trial)
+              </Text>
+            </Col>
+
+            {/* Package Types - SECOND */}
             <Col span={24}>
               <Form.Item
                 name={[field.name, "schedules", 0, "package_types"]}
@@ -248,12 +294,22 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                   maxTagCount={3}
                 >
                   <Select.Option value="full-term">Full-term Package</Select.Option>
-                  <Select.Option value="short-term">Short-term Trial (25%)</Select.Option>
-                  <Select.Option value="pay-as-you-go">Pay-as-you-go</Select.Option>
+                  <Select.Option
+                    value="short-term"
+                    disabled={isProgressive}
+                  >
+                    Short-term {isProgressive && "(Not available for progressive)"}
+                  </Select.Option>
+                  <Select.Option
+                    value="pay-as-you-go"
+                    disabled={isProgressive}
+                  >
+                    Pay-as-you-go {isProgressive && "(Not available for progressive)"}
+                  </Select.Option>
                 </Select>
               </Form.Item>
 
-              {packageTypes.length > 0 && (
+              {packageTypes.length > 0 && !isProgressive && (
                 <Alert
                   message="Valid combinations: Full-term only, Full-term + Short-term, or Pay-as-you-go only"
                   type="info"
@@ -261,30 +317,15 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                   style={{ marginTop: 8 }}
                 />
               )}
+              {isProgressive && (
+                <Alert
+                  message="Progressive mode: Only Full-term package available"
+                  type="warning"
+                  showIcon
+                  style={{ marginTop: 8 }}
+                />
+              )}
             </Col>
-
-            {/* Progressive Classes Toggle */}
-            {(packageTypes.includes('full-term') || packageTypes.includes('short-term')) && (
-              <Col xs={24} md={8}>
-                <Form.Item
-                  name={[field.name, "schedules", 0, "is_progressive"]}
-                  label={
-                    <Space>
-                      <Text strong>Progressive Classes</Text>
-                      <Tooltip title="When enabled: prevents mid-cycle joining and closes short-term after start date">
-                        <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
-                      </Tooltip>
-                    </Space>
-                  }
-                  valuePropName="checked"
-                >
-                  <Switch />
-                </Form.Item>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Enable for classes that build on previous lessons
-                </Text>
-              </Col>
-            )}
 
             {/* Full Term Start Date - ONLY if full-term is selected */}
             {packageTypes.includes('full-term') && (
@@ -479,7 +520,6 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
               </Col>
             )}
 
-            {/* Trial - Remove this, we don't use trial anymore */}
           </Row>
         </div>
       </Space>
