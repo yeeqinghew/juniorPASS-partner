@@ -24,12 +24,3 @@
 .time-range-picker-popup .ant-picker-footer .ant-btn {
   min-height: 32px;
 }
-
-/* Ensure the panel has enough space for footer */
-.time-range-picker-popup .ant-picker-panel-container {
-  overflow: visible;
-}
-
-.time-range-picker-popup .ant-picker-panel {
-  padding-bottom: 48px;
-}
