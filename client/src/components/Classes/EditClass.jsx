@@ -28,7 +28,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import _ from "lodash";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { DataContext } from "../../hooks/DataContext";
-import ScheduleItem from "../../utils/ScheduleItem";
+import ScheduleItemWithPackages from "../../utils/ScheduleItemPackages";
 import dayjs from "dayjs";
 import LoadingOverlay from "../LoadingOverlay";
 import "./ClassEdit.css";
@@ -429,71 +429,7 @@ const EditClass = () => {
           <Input placeholder="Enter class title" size="large" />
         </Form.Item>
 
-        <Form.Item
-          name="package_types"
-          label="Package Types"
-          rules={[
-            {
-              required: true,
-              message: "Please select the package type",
-            },
-          ]}
-        >
-          <Select
-            placeholder="Select package types"
-            onChange={handleSelectPackage}
-            mode="multiple"
-            size="large"
-          >
-            {packageTypes &&
-              packageTypes.map((packageType) => (
-                <Select.Option
-                  key={packageType.id}
-                  value={packageType.package_type}
-                >
-                  {packageType.name}
-                </Select.Option>
-              ))}
-          </Select>
-        </Form.Item>
-
-        {selectedPackageTypes?.includes("short-term") && (
-          <Form.Item
-            name="short_term_start_date"
-            label="Short-term Start Date"
-            rules={[
-              {
-                required: true,
-                message: "Please select the start date for short-term",
-              },
-            ]}
-          >
-            <DatePicker
-              placeholder="Select short-term start date"
-              size="large"
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-        )}
-
-        {selectedPackageTypes?.includes("long-term") && (
-          <Form.Item
-            name="long_term_start_date"
-            label="Long-term Start Date"
-            rules={[
-              {
-                required: true,
-                message: "Please select the start date for long-term",
-              },
-            ]}
-          >
-            <DatePicker
-              placeholder="Select long-term start date"
-              size="large"
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-        )}
+        {/* Package types and progressive are now PER SCHEDULE - removed from listing level */}
 
         <Form.Item
           name="description"
@@ -600,12 +536,13 @@ const EditClass = () => {
                               align="middle"
                             >
                               <Col span={20}>
-                                <ScheduleItem
+                                <ScheduleItemWithPackages
                                   key={scheduleField.key}
                                   field={scheduleField}
                                   remove={() =>
                                     removeSchedule(scheduleField.name)
                                   }
+                                  form={editClassForm}
                                 />
                               </Col>
                             </Row>

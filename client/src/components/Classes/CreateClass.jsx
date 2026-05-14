@@ -26,7 +26,7 @@ import { useNavigate } from "react-router-dom";
 import _ from "lodash";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { DataContext } from "../../hooks/DataContext";
-import ScheduleItem from "../../utils/ScheduleItem";
+import ScheduleItemWithPackages from "../../utils/ScheduleItemPackages";
 import LoadingOverlay from "../LoadingOverlay";
 import "./ClassEdit.css";
 
@@ -38,7 +38,6 @@ const CreateClass = () => {
   const { packageTypes, ageGroups } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
   const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
-  const [isProgressive, setIsProgressive] = useState(false);
   const { user } = useContext(UserContext);
   const token = user && user?.token;
   const navigate = useNavigate();
@@ -113,22 +112,6 @@ const CreateClass = () => {
     createClassForm.setFieldValue("package_types", values);
   };
 
-  const handleIsProgressiveChange = (value) => {
-    setIsProgressive(value);
-    // If switching to progressive, remove pay-as-you-go if selected
-    if (value) {
-      const currentPackages = createClassForm.getFieldValue("package_types") || [];
-      const filteredPackages = currentPackages.filter(pkg => pkg !== "pay-as-you-go");
-      createClassForm.setFieldValue("package_types", filteredPackages);
-      setSelectedPackageTypes(filteredPackages);
-
-      if (currentPackages.includes("pay-as-you-go")) {
-        toast("Pay-as-you-go removed: not available for progressive programs", {
-          icon: "ℹ️"
-        });
-      }
-    }
-  };
 
   const handleCreateClass = async (values) => {
     // Validate images before proceeding
@@ -378,98 +361,6 @@ const CreateClass = () => {
         </Form.Item>
 
         <Form.Item
-          name="is_progressive"
-          label=""
-          valuePropName="checked"
-          initialValue={false}
-          style={{ marginBottom: 8 }}
-        >
-          <Checkbox onChange={(e) => handleIsProgressiveChange(e.target.checked)}>
-            <span style={{ fontWeight: 500 }}>Progressive Program</span>
-            <Tooltip title="Progressive programs require structured commitment and disable pay-as-you-go bookings">
-              <InfoCircleOutlined style={{ marginLeft: 6, color: "#1890ff" }} />
-            </Tooltip>
-          </Checkbox>
-        </Form.Item>
-
-        <Form.Item
-          name="package_types"
-          label="Package Types"
-          rules={[
-            {
-              required: true,
-              message: "Please select the package type",
-            },
-          ]}
-        >
-          <Select
-            placeholder="Select package types"
-            onChange={handleSelectPackage}
-            mode="multiple"
-            size="large"
-          >
-            {packageTypes &&
-              packageTypes
-                .filter((packageType) => {
-                  // If progressive, hide pay-as-you-go
-                  if (isProgressive && packageType.package_type === "pay-as-you-go") {
-                    return false;
-                  }
-                  return true;
-                })
-                .map((packageType) => (
-                  <Select.Option
-                    key={packageType.id}
-                    value={packageType.package_type}
-                    disabled={isProgressive && packageType.package_type === "pay-as-you-go"}
-                  >
-                    {packageType.name}
-                    {isProgressive && packageType.package_type === "pay-as-you-go" && " (Not available for progressive programs)"}
-                  </Select.Option>
-                ))}
-          </Select>
-        </Form.Item>
-        {createClassForm
-          .getFieldValue("package_types")
-          ?.includes("short-term") && (
-          <Form.Item
-            name="short_term_start_date"
-            label="Short-term Start Date"
-            rules={[
-              {
-                required: true,
-                message: "Please select the start date for short-term",
-              },
-            ]}
-          >
-            <DatePicker
-              placeholder="Select short-term start date"
-              size="large"
-              className="w-full"
-            />
-          </Form.Item>
-        )}
-        {createClassForm
-          .getFieldValue("package_types")
-          ?.includes("full-term") && (
-          <Form.Item
-            name="full_term_start_date"
-            label="Full-Term Start Date"
-            rules={[
-              {
-                required: true,
-                message: "Please select the start date for full-term",
-              },
-            ]}
-          >
-            <DatePicker
-              placeholder="Select full-term start date"
-              size="large"
-              className="w-full"
-            />
-          </Form.Item>
-        )}
-        <Form.Item
           name="description"
           label="Class Description"
           rules={[
@@ -573,12 +464,13 @@ const CreateClass = () => {
                               align="middle"
                             >
                               <Col span={20}>
-                                <ScheduleItem
+                                <ScheduleItemWithPackages
                                   key={scheduleField.key}
                                   field={scheduleField}
                                   remove={() =>
                                     removeSchedule(scheduleField.name)
                                   }
+                                  form={createClassForm}
                                 />
                               </Col>
                             </Row>
