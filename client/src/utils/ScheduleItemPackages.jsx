@@ -28,7 +28,7 @@ import "./ScheduleItemPackages.css";
 
 const { Text } = Typography;
 
-const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedPackages, isProgressive }) => {
+const ScheduleItemWithPackages = ({ field, remove, form }) => {
   const [showPackageConfig, setShowPackageConfig] = useState(false);
   const [packageTypes, setPackageTypes] = useState([]);
   const [fullTermClassCount, setFullTermClassCount] = useState(null);
@@ -117,6 +117,10 @@ const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedP
   };
 
   useEffect(() => {
+    const types = fieldValue.schedules?.[0]?.package_types || [];
+    setPackageTypes(types);
+    setShowPackageConfig(types.length > 0 && !types.includes('pay-as-you-go'));
+
     // Auto-calculate short-term class count (25% of full-term, rounded up)
     const fullTerm = fieldValue.schedules?.[0]?.full_term_class_count;
     setFullTermClassCount(fullTerm);
@@ -135,6 +139,11 @@ const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedP
       }
     }
   }, [fieldValue, field.name, form]);
+
+  const handlePackageTypeChange = (types) => {
+    setPackageTypes(types);
+    setShowPackageConfig(types.length > 0 && !types.includes('pay-as-you-go'));
+  };
 
   const handleFullTermClassCountChange = (value) => {
     setFullTermClassCount(value);
@@ -224,6 +233,72 @@ const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedP
 
         {/* Pricing Section */}
         <Divider style={{ margin: "12px 0" }} />
+
+        {/* Package Type Configuration */}
+        <div className="package-config-section">
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <Form.Item
+                name={[field.name, "schedules", 0, "package_types"]}
+                label={
+                  <Space>
+                    <Text strong>Package Types</Text>
+                    <Tooltip title="Choose how users can book this schedule">
+                      <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+                    </Tooltip>
+                  </Space>
+                }
+                rules={[{ required: true, message: "Select at least one package type" }]}
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Select package types"
+                  size="large"
+                  onChange={handlePackageTypeChange}
+                  maxTagCount={3}
+                >
+                  <Select.Option value="full-term">Full-term Package</Select.Option>
+                  <Select.Option value="short-term">Short-term Trial (25%)</Select.Option>
+                  <Select.Option value="pay-as-you-go">Pay-as-you-go</Select.Option>
+                </Select>
+              </Form.Item>
+
+              {packageTypes.length > 0 && (
+                <Alert
+                  message="Valid combinations: Full-term only, Full-term + Short-term, or Pay-as-you-go only"
+                  type="info"
+                  showIcon
+                  style={{ marginTop: 8 }}
+                />
+              )}
+            </Col>
+
+            {/* Progressive Classes Toggle */}
+            {(packageTypes.includes('full-term') || packageTypes.includes('short-term')) && (
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name={[field.name, "schedules", 0, "is_progressive"]}
+                  label={
+                    <Space>
+                      <Text strong>Progressive Classes</Text>
+                      <Tooltip title="When enabled: prevents mid-cycle joining and closes short-term after start date">
+                        <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+                      </Tooltip>
+                    </Space>
+                  }
+                  valuePropName="checked"
+                >
+                  <Switch />
+                </Form.Item>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Enable for classes that build on previous lessons
+                </Text>
+              </Col>
+            )}
+          </Row>
+        </div>
+
+        <Divider style={{ margin: "12px 0" }} />
         <div style={{ padding: "12px", backgroundColor: "#f5f5f5", borderRadius: 6 }}>
           <div style={{ marginBottom: 12, fontWeight: 600, fontSize: 14 }}>
             <DollarOutlined style={{ color: "#52c41a" }} /> Pricing per Session
@@ -234,7 +309,7 @@ const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedP
 
           <Row gutter={[12, 12]}>
             {/* Pay-As-You-Go */}
-            {selectedPackages?.includes("pay-as-you-go") && !isProgressive && (
+            {packageTypes.includes("pay-as-you-go") && (
               <Col xs={24} sm={8}>
                 <div style={{ marginBottom: 4 }}>
                   <Text strong style={{ fontSize: 13 }}>Pay-As-You-Go</Text>
@@ -267,7 +342,7 @@ const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedP
             )}
 
             {/* Full-Term */}
-            {selectedPackages?.includes("full-term") && (
+            {packageTypes.includes("full-term") && (
               <Col xs={24} sm={8}>
                 <div style={{ marginBottom: 4 }}>
                   <Text strong style={{ fontSize: 13 }}>Full-Term</Text>
@@ -300,7 +375,7 @@ const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedP
             )}
 
             {/* Short-Term */}
-            {selectedPackages?.includes("short-term") && (
+            {packageTypes.includes("short-term") && (
               <Col xs={24} sm={8}>
                 <div style={{ marginBottom: 4 }}>
                   <Text strong style={{ fontSize: 13 }}>
@@ -358,61 +433,15 @@ const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedP
               </Col>
             )}
 
-            {/* Trial */}
-            {selectedPackages?.includes("trial") && (
-              <Col xs={24} sm={8}>
-                <div style={{ marginBottom: 4 }}>
-                  <Text strong style={{ fontSize: 13 }}>Trial</Text>
-                </div>
-                <Form.Item
-                  name={[field.name, "schedules", 0, "price_trial"]}
-                  rules={[
-                    { required: true, message: "Required" },
-                    { type: "number", min: 0, message: "Must be >= $0" }
-                  ]}
-                  style={{ marginBottom: 4 }}
-                >
-                  <InputNumber
-                    prefix="$"
-                    placeholder="0.00"
-                    min={0}
-                    step={0.01}
-                    precision={2}
-                    size="large"
-                    style={{ width: "100%" }}
-                  />
-                </Form.Item>
-              </Col>
-            )}
+            {/* Trial - Remove this, we don't use trial anymore */}
           </Row>
         </div>
 
-        {/* Package Configuration (for full-term/short-term) */}
-        {(selectedPackages?.includes('full-term') || selectedPackages?.includes('short-term')) && (
+        {/* Full-term Configuration (class count and start date) */}
+        {packageTypes.includes('full-term') && (
+          <div className="package-config-section">
             <div className="long-term-config">
               <Row gutter={[16, 16]}>
-                <Col xs={24} md={12}>
-                  <Form.Item
-                    name={[field.name, "schedules", 0, "is_progressive"]}
-                    label={
-                      <Space>
-                        <Text strong>Progressive Classes</Text>
-                        <Tooltip title="When enabled: prevents mid-cycle joining and closes short-term after start date">
-                          <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
-                        </Tooltip>
-                      </Space>
-                    }
-                    valuePropName="checked"
-                  >
-                    <Switch />
-                  </Form.Item>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Enable for classes that build on previous lessons
-                  </Text>
-                </Col>
-              </Row>
-
-              <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} md={12}>
                   <Form.Item
                     name={[field.name, "schedules", 0, "full_term_start_date"]}
@@ -489,8 +518,8 @@ const ScheduleItemWithPackages = ({ field, remove, form, packageTypes: selectedP
                 )}
               </Row>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </Space>
     </Card>
   );

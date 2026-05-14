@@ -1,5 +1,6 @@
 import { TimePicker } from "antd";
 import dayjs from "dayjs";
+import "./TimeRangePicker.css";
 
 const { RangePicker } = TimePicker;
 
@@ -21,6 +22,10 @@ const TimeRangePicker = ({ value = [], onChange }) => {
       format="HH:mm"
       value={formattedValues}
       onChange={handleChange}
+      className="time-range-picker"
+      popupClassName="time-range-picker-popup"
+      size="large"
+      style={{ width: "100%" }}
     />
   );
 };

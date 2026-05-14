@@ -1,0 +1,35 @@
+/* Time Range Picker Styling */
+
+.time-range-picker {
+  width: 100%;
+}
+
+/* Fix popup to ensure OK button is visible */
+.time-range-picker-popup {
+  z-index: 1050;
+}
+
+.time-range-picker-popup .ant-picker-time-panel-column {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.time-range-picker-popup .ant-picker-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.time-range-picker-popup .ant-picker-footer .ant-btn {
+  min-height: 32px;
+}
+
+/* Ensure the panel has enough space for footer */
+.time-range-picker-popup .ant-picker-panel-container {
+  overflow: visible;
+}
+
+.time-range-picker-popup .ant-picker-panel {
+  padding-bottom: 48px;
+}
