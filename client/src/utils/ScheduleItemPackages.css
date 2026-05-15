@@ -1,181 +1,294 @@
-/* Import global variables */
-@import '../styles/variables.css';
+/* ScheduleItemPackages.css
+   Mobile-first. Uses your existing theme.css variables.
+   No Ant Design Row/Col gutter — pure CSS grid & flex.
+*/
 
-/* ============================================
-   SCHEDULE ITEM WITH PACKAGES - STYLING
-   ============================================ */
-
+/* ── Card shell ─────────────────────────────────────────────────────────────── */
 .schedule-item-card {
+  border: 1px solid var(--border-color, #e8e8e8) !important;
+  border-radius: 10px !important;
+  background: var(--card-bg, #fff) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
   margin-bottom: 16px;
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--border-light);
-  transition: all var(--transition-base);
-  background: var(--bg-white);
 }
 
-.schedule-item-card:hover {
-  border-color: var(--primary-color);
-  box-shadow: var(--shadow-md);
+.schedule-item-card .ant-card-body {
+  padding: 16px !important;
+}
+
+/* ── Card header ─────────────────────────────────────────────────────────────── */
+.schedule-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.schedule-label {
+  font-size: 15px;
+  color: var(--text-primary, #1a1a1a);
 }
 
 .remove-schedule-btn {
-  color: var(--color-error);
-  fontSize: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid #ff4d4f;
+  color: #ff4d4f;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
 }
 
 .remove-schedule-btn:hover {
-  color: #d32029;
-  transform: scale(1.2);
+  background: #fff1f0;
 }
 
-/* Package Configuration Section */
-.package-config-section {
-  padding: var(--spacing-md);
-  background: linear-gradient(
-    135deg,
-    rgba(152, 189, 210, 0.03) 0%,
-    rgba(243, 165, 199, 0.03) 100%
-  );
-  border-radius: var(--radius-md);
-  margin-top: var(--spacing-md);
+/* ── Dividers ────────────────────────────────────────────────────────────────── */
+.card-divider {
+  margin: 12px 0 !important;
 }
 
-.long-term-config {
-  margin-top: var(--spacing-lg);
-  padding: var(--spacing-lg);
-  background: var(--bg-white);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
+/* ── Section blocks ──────────────────────────────────────────────────────────── */
+.section-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* Form Items */
-.schedule-item-card .ant-form-item {
-  margin-bottom: 0;
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
 }
 
-.schedule-item-card .ant-form-item-label > label {
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-dark);
+.section-icon {
+  color: var(--primary-color, #1890ff);
+  font-size: 13px;
 }
 
-/* Select Dropdowns */
-.schedule-item-card .ant-select-selector {
-  border-radius: var(--radius-sm);
-  border-color: var(--border-medium);
-  transition: all var(--transition-base);
-}
-
-.schedule-item-card .ant-select-selector:hover {
-  border-color: var(--primary-color);
-}
-
-.schedule-item-card .ant-select-focused .ant-select-selector {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(152, 189, 210, 0.1);
-}
-
-/* Input Numbers */
-.schedule-item-card .ant-input-number {
-  border-radius: var(--radius-sm);
-  border-color: var(--border-medium);
-}
-
-.schedule-item-card .ant-input-number:hover {
-  border-color: var(--primary-color);
-}
-
-.schedule-item-card .ant-input-number-focused {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(152, 189, 210, 0.1);
-}
-
-/* Date Picker */
-.schedule-item-card .ant-picker {
-  border-radius: var(--radius-sm);
-  border-color: var(--border-medium);
-}
-
-.schedule-item-card .ant-picker:hover {
-  border-color: var(--primary-color);
-}
-
-.schedule-item-card .ant-picker-focused {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(152, 189, 210, 0.1);
-}
-
-/* Switch */
-.schedule-item-card .ant-switch-checked {
-  background-color: var(--primary-color);
-}
-
-.schedule-item-card .ant-switch-checked:hover {
-  background-color: var(--primary-dark);
-}
-
-/* Alerts */
-.package-config-section .ant-alert {
-  border-radius: var(--radius-sm);
-  border-color: var(--border-medium);
-}
-
-.package-config-section .ant-alert-info {
-  background: var(--bg-light-blue);
-  border-color: var(--primary-color);
-}
-
-.package-config-section .ant-alert-success {
-  background: var(--color-success-light);
-  border-color: var(--color-success);
-}
-
-/* Tooltips */
-.schedule-item-card .anticon-info-circle {
+.info-icon {
+  color: var(--primary-color, #1890ff);
+  font-size: 12px;
   cursor: help;
-  transition: color var(--transition-fast);
 }
 
-.schedule-item-card .anticon-info-circle:hover {
-  color: var(--primary-dark);
+.section-hint {
+  font-size: 12px;
+  color: var(--text-secondary, #888);
+  margin-top: -4px;
 }
 
-/* Responsive Design */
-@media screen and (max-width: 768px) {
-  .schedule-item-card {
-    margin-bottom: var(--spacing-md);
+/* ── Time slots ──────────────────────────────────────────────────────────────── */
+.time-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.time-slot-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.time-slot-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.time-slot-fields .ant-form-item {
+  margin-bottom: 0;
+  min-width: 120px;
+}
+
+.slot-remove-btn {
+  background: none;
+  border: none;
+  color: #ff4d4f;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 8px 4px;
+  flex-shrink: 0;
+  align-self: center;
+  transition: opacity 0.15s;
+}
+
+.slot-remove-btn:hover {
+  opacity: 0.7;
+}
+
+.add-slot-btn {
+  align-self: flex-start;
+  font-size: 12px !important;
+  height: 28px !important;
+}
+
+/* ── Field grids ─────────────────────────────────────────────────────────────── */
+
+/* 2-column grid that collapses to 1 on mobile */
+.fields-row-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* 3-column grid that collapses progressively */
+.fields-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 767px) {
+  .fields-row-2 {
+    grid-template-columns: 1fr;
   }
 
-  .package-config-section {
-    padding: var(--spacing-sm);
+  .fields-row-3 {
+    grid-template-columns: 1fr;
   }
 
-  .long-term-config {
-    padding: var(--spacing-md);
+  .time-slot-fields {
+    flex-direction: column;
   }
 
-  .remove-schedule-btn {
-    fontSize: 18px;
+  .time-slot-fields .ant-form-item {
+    min-width: 0;
+    width: 100%;
   }
 }
 
-/* Animation */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@media (min-width: 768px) and (max-width: 1023px) {
+  .fields-row-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.schedule-item-card {
-  animation: slideIn 0.3s ease-out;
+/* ── Progressive toggle ──────────────────────────────────────────────────────── */
+.progressive-toggle {
+  background: var(--surface-secondary, #fafafa);
+  border: 1px solid var(--border-color, #e8e8e8);
+  border-radius: 8px;
+  padding: 10px 14px;
 }
 
-.long-term-config {
-  animation: slideIn 0.4s ease-out;
+/* ── Package option in dropdown ──────────────────────────────────────────────── */
+.pkg-option {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0;
+}
+
+.pkg-option-label {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.pkg-option-desc {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+}
+
+.pkg-option-blocked {
+  font-size: 10px;
+  color: #faad14;
+}
+
+/* ── Combo validation alert ──────────────────────────────────────────────────── */
+.combo-alert {
+  margin-top: 4px !important;
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+}
+
+/* ── Price derived tags ──────────────────────────────────────────────────────── */
+.price-derived {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Auto-calculated short-term block ────────────────────────────────────────── */
+.auto-calc-block {
+  border: 1px solid #b7eb8f;
+  background: #f6ffed;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.auto-calc-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.auto-calc-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 80px;
+  padding: 0 16px;
+  min-width: 80px;
+}
+
+.auto-calc-item:first-child {
+  padding-left: 0;
+}
+
+.auto-calc-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auto-calc-value {
+  font-size: 18px;
+  color: #52c41a;
+}
+
+.auto-calc-divider {
+  width: 1px;
+  background: #b7eb8f;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .auto-calc-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .auto-calc-divider {
+    width: 100%;
+    height: 1px;
+    align-self: auto;
+  }
+
+  .auto-calc-item {
+    padding: 0;
+  }
+}
+
+/* ── Trial badge ─────────────────────────────────────────────────────────────── */
+.trial-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }

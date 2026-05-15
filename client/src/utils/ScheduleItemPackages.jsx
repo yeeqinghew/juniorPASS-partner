@@ -2,8 +2,6 @@ import {
   Form,
   Select,
   InputNumber,
-  Row,
-  Col,
   Switch,
   DatePicker,
   Alert,
@@ -11,16 +9,20 @@ import {
   Card,
   Space,
   Typography,
-  Divider
+  Divider,
+  Button,
+  Tag,
 } from "antd";
 import {
   MinusCircleOutlined,
   InfoCircleOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
-  DollarOutlined
+  DollarOutlined,
+  PlusOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import toast from "react-hot-toast";
 import TimeRangePicker from "./TimeRangePicker";
 import day from "../data/day.json";
@@ -30,270 +32,339 @@ import "./ScheduleItemPackages.css";
 
 const { Text } = Typography;
 
+// ─── constants ───────────────────────────────────────────────────────────────
+
+const PACKAGE_OPTIONS = [
+  {
+    value: "full-term",
+    label: "Full-term",
+    desc: "Full-cycle commitment",
+    progressiveOnly: false,
+  },
+  {
+    value: "short-term",
+    label: "Short-term",
+    desc: "Trial sampler (auto-priced)",
+    progressiveOnly: false,
+  },
+  {
+    value: "pay-as-you-go",
+    label: "Pay-as-you-go",
+    desc: "Drop-in, per session",
+    progressiveOnly: false,
+    blockedByProgressive: true,
+  },
+  {
+    value: "trial",
+    label: "Trial",
+    desc: "First session free",
+    progressiveOnly: false,
+    blockedByProgressive: true,
+  },
+];
+
+// Valid package combos (order-independent)
+const VALID_COMBOS = [
+  ["full-term"],
+  ["full-term", "short-term"],
+  ["full-term", "short-term", "trial"],
+  ["pay-as-you-go"],
+  ["pay-as-you-go", "trial"],
+];
+
+const isValidCombo = (types) => {
+  if (!types || types.length === 0) return false;
+  const sorted = [...types].sort();
+  return VALID_COMBOS.some(
+    (combo) =>
+      combo.length === sorted.length &&
+      [...combo].sort().every((v, i) => v === sorted[i]),
+  );
+};
+
+// Short-term: 25% of long-term class count, 15% price markup per class
+const calcShortTermPrice = (ltTotal, ltClasses, stClasses) => {
+  if (!ltTotal || !ltClasses || !stClasses) return null;
+  const perClass = ltTotal / ltClasses;
+  return Math.ceil(perClass * 1.15 * stClasses * 100) / 100;
+};
+
+const toCents = (dollars) => (dollars ? Math.ceil(dollars) : 0); // $1 = 1 credit
+
+// ─── sub-component: single time slot row ─────────────────────────────────────
+
+const TimeSlotRow = ({ slotIndex, scheduleField, remove, form, isOnly }) => (
+  <div className="time-slot-row">
+    <div className="time-slot-fields">
+      <Form.Item
+        name={[scheduleField.name, "time_slots", slotIndex, "day"]}
+        rules={[{ required: true, message: "Day" }]}
+        style={{ marginBottom: 0, flex: "1 1 130px" }}
+      >
+        <Select placeholder="Day" size="large">
+          {day.map((d) => (
+            <Select.Option key={d} value={d}>
+              {d}
+            </Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      <Form.Item
+        name={[scheduleField.name, "time_slots", slotIndex, "timeslot"]}
+        rules={[{ required: true, message: "Time" }]}
+        style={{ marginBottom: 0, flex: "1 1 180px" }}
+      >
+        <TimeRangePicker />
+      </Form.Item>
+    </div>
+
+    {!isOnly && (
+      <button
+        type="button"
+        className="slot-remove-btn"
+        onClick={() => remove(slotIndex)}
+        aria-label="Remove time slot"
+      >
+        <DeleteOutlined />
+      </button>
+    )}
+  </div>
+);
+
+// ─── main component ───────────────────────────────────────────────────────────
+
 const ScheduleItemWithPackages = ({ field, remove, form }) => {
   const { packageTypes: dbPackageTypes } = useContext(DataContext);
   const [showPackageConfig, setShowPackageConfig] = useState(false);
   const [packageTypes, setPackageTypes] = useState([]);
   const [isProgressive, setIsProgressive] = useState(false);
-  const [fullTermClassCount, setFullTermClassCount] = useState(null);
-  const [shortTermClassCount, setShortTermClassCount] = useState(null);
+  const [ltTotal, setLtTotal] = useState(null); // long-term total price
+  const [ltClasses, setLtClasses] = useState(null);
+  const [paygPrice, setPaygPrice] = useState(null);
 
-  // Pricing state
-  const [pricing, setPricing] = useState({
-    payAsYouGo: null,
-    fullTerm: null,
-  });
+  // Derived values
+  const stClasses = ltClasses ? Math.ceil(ltClasses * 0.25) : null;
+  const stPrice = calcShortTermPrice(ltTotal, ltClasses, stClasses);
+  const stCredits = toCents(stPrice);
+  const ltCredits = toCents(ltTotal);
+  const paygCredits = toCents(paygPrice);
 
-  const [credits, setCredits] = useState({
-    payAsYouGo: 0,
-    fullTerm: 0,
-    shortTerm: 0, // Auto-calculated
-  });
-
-  // Get field values
-  const fieldValue = form.getFieldValue(['outlets', field.name]) || {};
-
-  // Conversion: $1 = 1 credit (rounded up)
-  const dollarsToCredits = (amount) => {
-    if (!amount || amount <= 0) return 0;
-    return Math.ceil(amount);
-  };
-
-  // Calculate short-term price automatically
-  // Short-term = (Full-term ÷ Full-term classes) × 1.15 × Short-term classes
-  const calculateShortTermPrice = (fullTermPrice, fullTermClasses, shortTermClasses) => {
-    if (!fullTermPrice || !fullTermClasses || !shortTermClasses) return null;
-    const perClassRate = fullTermPrice / fullTermClasses;
-    const shortTermPerClass = perClassRate * 1.15;
-    const shortTermTotal = shortTermPerClass * shortTermClasses;
-    return Math.ceil(shortTermTotal * 100) / 100; // Round to cents
-  };
-
-  // Handle price changes
-  const handlePriceChange = (packageType, value) => {
-    const newPricing = { ...pricing, [packageType]: value };
-    setPricing(newPricing);
-
-    // Calculate credits for pay-as-you-go and full-term
-    const newCredits = {
-      payAsYouGo: dollarsToCredits(newPricing.payAsYouGo),
-      fullTerm: dollarsToCredits(newPricing.fullTerm),
-      shortTerm: 0,
-    };
-
-    // Auto-calculate short-term price and credits
-    if (packageType === "fullTerm" && value && fullTermClassCount && shortTermClassCount) {
-      const shortTermPrice = calculateShortTermPrice(value, fullTermClassCount, shortTermClassCount);
-      if (shortTermPrice) {
-        newCredits.shortTerm = dollarsToCredits(shortTermPrice);
-        // Update form field with calculated short-term price
-        form.setFieldValue(
-          ['outlets', field.name, 'schedules', 0, 'price_shortterm'],
-          shortTermPrice
-        );
-      }
-    }
-
-    setCredits(newCredits);
-  };
-
+  // Sync form field for short-term calculated values
   useEffect(() => {
-    const types = fieldValue.schedules?.[0]?.package_types || [];
-    const progressive = fieldValue.schedules?.[0]?.is_progressive || false;
+    if (stClasses !== null) {
+      form.setFieldValue(
+        [
+          "outlets",
+          field.name,
+          "schedules",
+          field.name,
+          "short_term_class_count",
+        ],
+        stClasses,
+      );
+    }
+    if (stPrice !== null) {
+      form.setFieldValue(
+        ["outlets", field.name, "schedules", field.name, "price_shortterm"],
+        stPrice,
+      );
+    }
+  }, [stClasses, stPrice]);
 
-    setPackageTypes(types);
-    setIsProgressive(progressive);
-
-    setShowPackageConfig(types.length > 0 && !types.includes('pay-as-you-go'));
-
-    // Auto-calculate short-term class count (25% of full-term, rounded up)
-    const fullTerm = fieldValue.schedules?.[0]?.full_term_class_count;
-    setFullTermClassCount(fullTerm);
-
-    if (fullTerm) {
-      const shortTerm = Math.ceil(fullTerm * 0.25);
-      setShortTermClassCount(shortTerm);
-
-      // Update form value
-      const currentSchedules = form.getFieldValue(['outlets', field.name, 'schedules']) || [];
-      if (currentSchedules[0]) {
+  const handleProgressiveChange = useCallback(
+    (checked) => {
+      setIsProgressive(checked);
+      if (checked) {
+        const filtered = packageTypes.filter((t) => t === "full-term");
+        setPackageTypes(filtered);
         form.setFieldValue(
-          ['outlets', field.name, 'schedules', 0, 'short_term_class_count'],
-          shortTerm
+          ["outlets", field.name, "schedules", field.name, "package_types"],
+          filtered,
         );
-
-        // Recalculate short-term price if full-term price exists
-        const fullTermPrice = pricing.fullTerm;
-        if (fullTermPrice && types.includes('short-term')) {
-          const shortTermPrice = calculateShortTermPrice(fullTermPrice, fullTerm, shortTerm);
-          if (shortTermPrice) {
-            setCredits(prev => ({ ...prev, shortTerm: dollarsToCredits(shortTermPrice) }));
-            form.setFieldValue(
-              ['outlets', field.name, 'schedules', 0, 'price_shortterm'],
-              shortTermPrice
-            );
-          }
+        if (
+          packageTypes.some((t) =>
+            ["short-term", "pay-as-you-go", "trial"].includes(t),
+          )
+        ) {
+          toast(
+            "Short-term, Pay-as-you-go and Trial removed — not compatible with progressive classes.",
+            {
+              icon: "ℹ️",
+            },
+          );
         }
       }
-    }
-  }, [fieldValue, field.name, form]);
+    },
+    [packageTypes, field.name, form],
+  );
 
-  const handlePackageTypeChange = (types) => {
+  const handlePackageChange = useCallback((types) => {
     setPackageTypes(types);
-    setShowPackageConfig(types.length > 0 && !types.includes('pay-as-you-go'));
-  };
+  }, []);
 
-  const handleProgressiveChange = (checked) => {
-    setIsProgressive(checked);
-
-    // If progressive is enabled, remove pay-as-you-go and short-term from selection
-    if (checked) {
-      const filtered = packageTypes.filter(
-        (type) => type !== 'pay-as-you-go' && type !== 'short-term'
-      );
-      setPackageTypes(filtered);
-      form.setFieldValue(
-        ['outlets', field.name, 'schedules', 0, 'package_types'],
-        filtered
-      );
-
-      if (packageTypes.includes('pay-as-you-go') || packageTypes.includes('short-term')) {
-        toast.info("Pay-as-you-go and Short-term removed: not available for progressive classes");
-      }
-    }
-  };
-
-  const handleFullTermClassCountChange = (value) => {
-    setFullTermClassCount(value);
-    if (value) {
-      const shortTerm = Math.ceil(value * 0.25);
-      setShortTermClassCount(shortTerm);
-
-      // Update form
-      form.setFieldValue(
-        ['outlets', field.name, 'schedules', 0, 'short_term_class_count'],
-        shortTerm
-      );
-    }
-  };
+  const comboValid = isValidCombo(packageTypes);
+  const hasFullTerm = packageTypes.includes("full-term");
+  const hasShortTerm = packageTypes.includes("short-term");
+  const hasPayg = packageTypes.includes("pay-as-you-go");
+  const hasTrial = packageTypes.includes("trial");
 
   return (
     <Card className="schedule-item-card" size="small">
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        {/* Basic Schedule Info */}
-        <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} sm={5}>
-            <Form.Item
-              name={[field.name, "schedules", 0, "day"]}
-              rules={[{ required: true, message: "Select day" }]}
-              style={{ marginBottom: 0 }}
-            >
-              <Select placeholder="Select day" size="large">
-                {day.map((d) => (
-                  <Select.Option key={d} value={d}>
-                    {d}
-                  </Select.Option>
+      <Space direction="vertical" style={{ width: "100%" }} size={0}>
+        {/* ── Header row ── */}
+        <div className="schedule-card-header">
+          <Text strong className="schedule-label">
+            Schedule
+          </Text>
+          <button
+            type="button"
+            className="remove-schedule-btn"
+            onClick={() => remove(field.name)}
+            aria-label="Remove schedule"
+          >
+            <MinusCircleOutlined /> Remove
+          </button>
+        </div>
+
+        <Divider className="card-divider" />
+
+        {/* ── Time Slots ── */}
+        <div className="section-block">
+          <div className="section-title">
+            <ClockCircleOutlined className="section-icon" />
+            Time Slots
+            <Tooltip title="Add multiple days/times that must ALL be attended (e.g. Sat + Sun). Children enrol in this schedule as a whole.">
+              <InfoCircleOutlined className="info-icon" />
+            </Tooltip>
+          </div>
+          <Text type="secondary" className="section-hint">
+            Children who enrol in this schedule must attend every slot listed.
+          </Text>
+
+          <Form.List name={[field.name, "time_slots"]}>
+            {(slotFields, { add: addSlot, remove: removeSlot }) => (
+              <div className="time-slots-list">
+                {slotFields.map((slotField, idx) => (
+                  <TimeSlotRow
+                    key={slotField.key}
+                    slotIndex={idx}
+                    scheduleField={field}
+                    remove={removeSlot}
+                    form={form}
+                    isOnly={slotFields.length === 1}
+                  />
                 ))}
-              </Select>
-            </Form.Item>
-          </Col>
+                <Button
+                  type="dashed"
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={() => addSlot()}
+                  className="add-slot-btn"
+                >
+                  Add another day / time
+                </Button>
+              </div>
+            )}
+          </Form.List>
+        </div>
 
-          <Col xs={24} sm={6}>
-            <Form.Item
-              name={[field.name, "schedules", 0, "timeslot"]}
-              rules={[{ required: true, message: "Select time" }]}
-              style={{ marginBottom: 0 }}
-            >
-              <TimeRangePicker />
-            </Form.Item>
-          </Col>
+        <Divider className="card-divider" />
 
-          <Col xs={24} sm={4}>
+        {/* ── Frequency & Slots ── */}
+        <div className="section-block">
+          <div className="fields-row-2">
             <Form.Item
-              name={[field.name, "schedules", 0, "frequency"]}
+              name={[field.name, "frequency"]}
+              label="Frequency"
               rules={[{ required: true, message: "Select frequency" }]}
               style={{ marginBottom: 0 }}
             >
               <Select
-                placeholder="Frequency"
+                placeholder="How often?"
                 size="large"
-                options={frequency.map((freq) => ({ value: freq, label: freq }))}
+                options={frequency.map((f) => ({ value: f, label: f }))}
               />
             </Form.Item>
-          </Col>
 
-          <Col xs={24} sm={3}>
             <Form.Item
-              name={[field.name, "schedules", 0, "slots"]}
+              name={[field.name, "slots"]}
+              label="Capacity"
               rules={[
                 { required: true, message: "Required" },
-                { type: 'number', min: 1, max: 100, message: "1-100" }
+                { type: "number", min: 1, max: 100, message: "1–100" },
               ]}
               style={{ marginBottom: 0 }}
             >
               <InputNumber
-                placeholder="Slots"
+                placeholder="Max students"
                 min={1}
                 max={100}
                 size="large"
                 style={{ width: "100%" }}
               />
             </Form.Item>
-          </Col>
+          </div>
+        </div>
 
-          <Col xs={24} sm={3} style={{ textAlign: "center" }}>
-            <MinusCircleOutlined
-              onClick={() => remove(field.name)}
-              className="remove-schedule-btn"
-            />
-          </Col>
-        </Row>
+        <Divider className="card-divider" />
 
-        {/* Package Type Configuration */}
-        <Divider style={{ margin: "12px 0" }} />
-        <div className="package-config-section">
-          <Row gutter={[16, 16]}>
-            {/* Progressive Classes Toggle - FIRST */}
-            <Col span={24}>
-              <Form.Item
-                name={[field.name, "schedules", 0, "is_progressive"]}
-                label=""
-                valuePropName="checked"
-                style={{ marginBottom: 8 }}
-              >
-                <Space>
-                  <Switch onChange={handleProgressiveChange} />
-                  <Text strong>Progressive Classes</Text>
-                  <Tooltip title="When enabled: prevents mid-cycle joining and disables pay-as-you-go and short-term trial">
-                    <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
-                  </Tooltip>
-                </Space>
-              </Form.Item>
-              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: -8 }}>
-                Enable for classes that build on previous lessons (disables pay-as-you-go and trial)
-              </Text>
-            </Col>
+        {/* ── Package Configuration ── */}
+        <div className="section-block">
+          <div className="section-title">
+            Package Types
+            <Tooltip title="Choose how parents can book this schedule. Not all combinations are valid.">
+              <InfoCircleOutlined className="info-icon" />
+            </Tooltip>
+          </div>
 
-            {/* Package Types - SECOND */}
-            <Col span={24}>
-              <Form.Item
-                name={[field.name, "schedules", 0, "package_types"]}
-                label={
-                  <Space>
-                    <Text strong>Package Types</Text>
-                    <Tooltip title="Choose how users can book this schedule">
-                      <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[{ required: true, message: "Select at least one package type" }]}
-              >
-                <Select
-                  mode="multiple"
-                  placeholder="Select package types"
-                  size="large"
-                  onChange={handlePackageTypeChange}
-                  maxTagCount={3}
+          {/* Progressive toggle */}
+          <div className="progressive-toggle">
+            <Form.Item
+              name={[field.name, "is_progressive"]}
+              valuePropName="checked"
+              style={{ marginBottom: 6 }}
+            >
+              <Space>
+                <Switch onChange={handleProgressiveChange} />
+                <Text strong>Progressive Classes</Text>
+                <Tooltip title="Each lesson builds on the previous — prevents mid-cycle joins and disables trial/PAYG/short-term.">
+                  <InfoCircleOutlined className="info-icon" />
+                </Tooltip>
+              </Space>
+            </Form.Item>
+            <Text
+              type="secondary"
+              className="section-hint"
+              style={{ display: "block", marginTop: -4 }}
+            >
+              Enable for structured curricula where skipping sessions isn't
+              possible
+            </Text>
+          </div>
+
+          {/* Package type selector */}
+          <Form.Item
+            name={[field.name, "package_types"]}
+            rules={[
+              { required: true, message: "Select at least one package type" },
+            ]}
+            style={{ marginBottom: 8 }}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Select package types…"
+              size="large"
+              onChange={handlePackageChange}
+              maxTagCount="responsive"
+              optionLabelProp="label"
+            >
+              {PACKAGE_OPTIONS.map((opt) => (
+                <Select.Option
+                  key={opt.value}
+                  value={opt.value}
+                  label={opt.label}
+                  disabled={isProgressive && opt.blockedByProgressive}
                 >
                   {dbPackageTypes && dbPackageTypes.map((pkg) => (
                     <Select.Option
@@ -304,132 +375,208 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                       {pkg.name} {isProgressive && (pkg.package_type === 'pay-as-you-go' || pkg.package_type === 'short-term') && "(Not available for progressive)"}
                     </Select.Option>
                   ))}
-                </Select>
-              </Form.Item>
+                  </Select.Option>
+              ))}
+              </Select>
+          </Form.Item>
 
-              {packageTypes.length > 0 && !isProgressive && (
-                <Alert
-                  message="Valid combinations: Full-term only, Full-term + Short-term, or Pay-as-you-go only"
-                  type="info"
-                  showIcon
-                  style={{ marginTop: 8 }}
-                />
-              )}
-              {isProgressive && (
-                <Alert
-                  message="Progressive mode: Only Full-term package available"
-                  type="warning"
-                  showIcon
-                  style={{ marginTop: 8 }}
-                />
-              )}
-            </Col>
+          {/* Validation hint */}
+          {packageTypes.length > 0 && (
+            <Alert
+              message={
+                comboValid
+                  ? "Valid package combination ✓"
+                  : "Invalid combination. Valid options: Long-term only · Long-term + Short-term · Long-term + Short-term + Trial · Pay-as-you-go · Pay-as-you-go + Trial"
+              }
+              type={comboValid ? "success" : "warning"}
+              showIcon
+              className="combo-alert"
+            />
+          )}
+          {isProgressive && (
+            <Alert
+              message="Progressive mode: only Full-term and short-term are available"
+              type="info"
+              showIcon
+              className="combo-alert"
+            />
+          )}
+        </div>
 
-            {/* Full Term Start Date - ONLY if full-term is selected */}
-            {packageTypes.includes('full-term') && (
-              <Col xs={24} md={8}>
+        {/* ── Full-term config ── */}
+        {hasFullTerm && (
+          <>
+            <Divider className="card-divider" />
+            <div className="section-block">
+              <div className="section-title">
+                <CalendarOutlined className="section-icon" />
+                Full-term Package
+              </div>
+
+              <div className="fields-row-3">
                 <Form.Item
-                  name={[field.name, "schedules", 0, "full_term_start_date"]}
-                  label={
-                    <Space>
-                      <Text strong>Full-term Start Date</Text>
-                      <CalendarOutlined style={{ color: 'var(--primary-color)' }} />
-                    </Space>
-                  }
+                  name={[field.name, "full_term_start_date"]}
+                  label="Start Date"
                   rules={[{ required: true, message: "Required" }]}
+                  style={{ marginBottom: 0 }}
                 >
                   <DatePicker
-                    showTime
-                    format="DD/MM/YYYY HH:mm"
-                    placeholder="Select start date"
+                    format="DD/MM/YYYY"
+                    placeholder="Booking opens…"
                     size="large"
-                    style={{ width: '100%' }}
+                    style={{ width: "100%" }}
                   />
                 </Form.Item>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  When users can start booking
-                </Text>
-              </Col>
-            )}
 
-            {/* Full Term Class Count - ONLY if full-term is selected */}
-            {packageTypes.includes('full-term') && (
-              <Col xs={24} md={8}>
                 <Form.Item
-                  name={[field.name, "schedules", 0, "full_term_class_count"]}
-                  label={
-                    <Space>
-                      <Text strong>Number of Classes</Text>
-                      <ClockCircleOutlined style={{ color: 'var(--primary-color)' }} />
-                    </Space>
-                  }
+                  name={[field.name, "full_term_class_count"]}
+                  label="Number of Classes"
                   rules={[{ required: true, message: "Required" }]}
+                  style={{ marginBottom: 0 }}
                 >
                   <InputNumber
                     min={1}
                     max={100}
-                    placeholder="e.g., 12 classes"
+                    placeholder="e.g. 12"
                     size="large"
-                    style={{ width: '100%' }}
-                    onChange={handleFullTermClassCountChange}
+                    style={{ width: "100%" }}
+                    onChange={(v) => setLtClasses(v)}
                   />
                 </Form.Item>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Package expires when complete
-                </Text>
-              </Col>
-            )}
 
-            {/* Short-term Preview - Auto-calculated */}
-            {packageTypes.includes('short-term') && fullTermClassCount && (
-              <Col span={24}>
-                <Alert
-                  message={
-                    <Space direction="vertical" size={4}>
-                      <Text strong>Short-term Trial: {shortTermClassCount} classes</Text>
-                      <Text type="secondary">
-                        Automatically calculated as 25% of full-term ({fullTermClassCount} classes)
-                      </Text>
+                <Form.Item
+                  name={[field.name, "price_fullterm"]}
+                  label={
+                    <Space size={4}>
+                      Total Package Price
+                      <Tooltip title="Enter the full price for the entire full-term package (not per-class).">
+                        <InfoCircleOutlined style={{ fontSize: 12 }} />
+                      </Tooltip>
                     </Space>
                   }
-                  type="success"
+                  rules={[
+                    { required: true, message: "Required" },
+                    { type: "number", min: 0.01, message: "Must be > $0" },
+                  ]}
+                  style={{ marginBottom: 0 }}
+                >
+                  <InputNumber
+                    prefix="$"
+                    placeholder="0.00"
+                    min={0}
+                    step={0.01}
+                    precision={2}
+                    size="large"
+                    style={{ width: "100%" }}
+                    onChange={(v) => setLtTotal(v)}
+                  />
+                </Form.Item>
+              </div>
+
+              {ltTotal && ltClasses && (
+                <div className="price-derived">
+                  <Tag color="green">{ltCredits} credits total</Tag>
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    ≈ ${(ltTotal / ltClasses).toFixed(2)} per class ·{" "}
+                    {Math.ceil(ltTotal / ltClasses)} credit/class
+                  </Text>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ── Short-term summary (auto-calculated) ── */}
+        {hasShortTerm && hasFullTerm && (
+          <>
+            <Divider className="card-divider" />
+            <div className="section-block">
+              <div className="section-title">
+                Short-term Package (auto-calculated)
+              </div>
+
+              {stClasses && stPrice ? (
+                <div className="auto-calc-block">
+                  <div className="auto-calc-row">
+                    <div className="auto-calc-item">
+                      <Text type="secondary" className="auto-calc-label">
+                        Classes
+                      </Text>
+                      <Text strong className="auto-calc-value">
+                        {stClasses}
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        25% of {ltClasses}
+                      </Text>
+                    </div>
+                    <div className="auto-calc-divider" />
+                    <div className="auto-calc-item">
+                      <Text type="secondary" className="auto-calc-label">
+                        Total Price
+                      </Text>
+                      <Text strong className="auto-calc-value">
+                        ${stPrice.toFixed(2)}
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        {stCredits} credits · 15% markup
+                      </Text>
+                    </div>
+                    <div className="auto-calc-divider" />
+                    <div className="auto-calc-item">
+                      <Text type="secondary" className="auto-calc-label">
+                        Per Class
+                      </Text>
+                      <Text strong className="auto-calc-value">
+                        ${(stPrice / stClasses).toFixed(2)}
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        vs ${(ltTotal / ltClasses).toFixed(2)} LT
+                      </Text>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Alert
+                  message="Enter long-term total price and class count above to auto-calculate short-term pricing."
+                  type="info"
                   showIcon
-                  icon={<InfoCircleOutlined />}
                 />
-                <Form.Item
-                  name={[field.name, "schedules", 0, "short_term_class_count"]}
-                  hidden
-                >
-                  <InputNumber />
-                </Form.Item>
-              </Col>
-            )}
-          </Row>
-        </div>
+              )}
 
-        <Divider style={{ margin: "12px 0" }} />
-        <div style={{ padding: "12px", backgroundColor: "#f5f5f5", borderRadius: 6 }}>
-          <div style={{ marginBottom: 12, fontWeight: 600, fontSize: 14 }}>
-            <DollarOutlined style={{ color: "#52c41a" }} /> Pricing per Session
-            <Tooltip title="Enter prices in dollars. Credits are automatically calculated and rounded up.">
-              <InfoCircleOutlined style={{ marginLeft: 6, color: "#1890ff", fontSize: 12 }} />
-            </Tooltip>
-          </div>
+              {/* Hidden form fields to store computed values */}
+              <Form.Item name={[field.name, "short_term_class_count"]} hidden>
+                <InputNumber />
+              </Form.Item>
+              <Form.Item name={[field.name, "price_shortterm"]} hidden>
+                <InputNumber />
+              </Form.Item>
+            </div>
+          </>
+        )}
 
-          <Row gutter={[12, 12]}>
-            {/* Pay-As-You-Go */}
-            {packageTypes.includes("pay-as-you-go") && (
-              <Col xs={24} sm={8}>
-                <div style={{ marginBottom: 4 }}>
-                  <Text strong style={{ fontSize: 13 }}>Pay-As-You-Go</Text>
-                </div>
+        {/* ── Pay-as-you-go pricing ── */}
+        {hasPayg && (
+          <>
+            <Divider className="card-divider" />
+            <div className="section-block">
+              <div className="section-title">
+                <DollarOutlined className="section-icon" />
+                Pay-as-you-go Pricing
+              </div>
+              <Text type="secondary" className="section-hint">
+                Partners set this independently — drop-in rates are typically
+                higher than the pro-rated long-term price.
+              </Text>
+
+              <div className="fields-row-2" style={{ maxWidth: 340 }}>
                 <Form.Item
-                  name={[field.name, "schedules", 0, "price_payg"]}
+                  name={[field.name, "price_payg"]}
+                  label="Price per Session"
                   rules={[
                     { required: true, message: "Required" },
-                    { type: "number", min: 0.01, message: "Must be > $0" }
+                    { type: "number", min: 0.01, message: "Must be > $0" },
                   ]}
-                  style={{ marginBottom: 4 }}
+                  style={{ marginBottom: 0 }}
                 >
                   <InputNumber
                     prefix="$"
@@ -439,87 +586,41 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                     precision={2}
                     size="large"
                     style={{ width: "100%" }}
-                    onChange={(value) => handlePriceChange("payAsYouGo", value)}
+                    onChange={(v) => setPaygPrice(v)}
                   />
                 </Form.Item>
-                {credits.payAsYouGo > 0 && (
-                  <Text type="secondary" style={{ fontSize: 11 }}>
-                    = {credits.payAsYouGo} {credits.payAsYouGo === 1 ? "credit" : "credits"}
-                  </Text>
-                )}
-              </Col>
-            )}
+              </div>
 
-            {/* Full-Term */}
-            {packageTypes.includes("full-term") && (
-              <Col xs={24} sm={8}>
-                <div style={{ marginBottom: 4 }}>
-                  <Text strong style={{ fontSize: 13 }}>Full-Term</Text>
+              {paygCredits > 0 && (
+                <div className="price-derived">
+                  <Tag color="blue">
+                    {paygCredits} credit{paygCredits !== 1 ? "s" : ""} per
+                    session
+                  </Tag>
                 </div>
-                <Form.Item
-                  name={[field.name, "schedules", 0, "price_fullterm"]}
-                  rules={[
-                    { required: true, message: "Required" },
-                    { type: "number", min: 0.01, message: "Must be > $0" }
-                  ]}
-                  style={{ marginBottom: 4 }}
-                >
-                  <InputNumber
-                    prefix="$"
-                    placeholder="0.00"
-                    min={0}
-                    step={0.01}
-                    precision={2}
-                    size="large"
-                    style={{ width: "100%" }}
-                    onChange={(value) => handlePriceChange("fullTerm", value)}
-                  />
-                </Form.Item>
-                {credits.fullTerm > 0 && (
-                  <Text type="secondary" style={{ fontSize: 11 }}>
-                    = {credits.fullTerm} {credits.fullTerm === 1 ? "credit" : "credits"}
-                  </Text>
-                )}
-              </Col>
-            )}
+              )}
+            </div>
+          </>
+        )}
 
-            {/* Short-Term Price - AUTO-CALCULATED (Display Only) */}
-            {packageTypes.includes("short-term") && pricing.fullTerm && fullTermClassCount && shortTermClassCount && (
-              <Col xs={24} sm={8}>
-                <div style={{ marginBottom: 4 }}>
-                  <Text strong style={{ fontSize: 13 }}>
-                    Short-Term (Auto-calculated)
-                    <Tooltip title="Calculated as: (Full-term price ÷ Full-term classes) × 1.15 × Short-term classes">
-                      <InfoCircleOutlined style={{ marginLeft: 4, fontSize: 11, color: "#1890ff" }} />
-                    </Tooltip>
-                  </Text>
-                </div>
-                <div style={{
-                  padding: "8px 12px",
-                  background: "#f0f0f0",
-                  borderRadius: 6,
-                  border: "1px solid #d9d9d9",
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: "#1890ff"
-                }}>
-                  ${calculateShortTermPrice(pricing.fullTerm, fullTermClassCount, shortTermClassCount)?.toFixed(2)}
-                </div>
-                <Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 4 }}>
-                  = {credits.shortTerm} {credits.shortTerm === 1 ? "credit" : "credits"} (15% markup)
+        {/* ── Trial ── */}
+        {hasTrial && (
+          <>
+            <Divider className="card-divider" />
+            <div className="section-block">
+              <div className="section-title">Trial Class</div>
+              <div className="trial-badge">
+                <Tag color="gold" style={{ fontSize: 13, padding: "4px 12px" }}>
+                  🎁 First session FREE
+                </Tag>
+                <Text type="secondary" className="section-hint">
+                  Trial sessions are always complimentary — no pricing input
+                  needed.
                 </Text>
-                {/* Hidden field to store the calculated price */}
-                <Form.Item
-                  name={[field.name, "schedules", 0, "price_shortterm"]}
-                  hidden
-                >
-                  <InputNumber />
-                </Form.Item>
-              </Col>
-            )}
-
-          </Row>
-        </div>
+              </div>
+            </div>
+          </>
+        )}
       </Space>
     </Card>
   );
