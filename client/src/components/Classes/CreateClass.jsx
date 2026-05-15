@@ -23,19 +23,34 @@ const { Dragger } = Upload;
 
 /**
  * Flatten the form's outlet/schedule tree into the payload shape the API expects.
- * Each schedule now carries a `time_slots[]` array instead of a single day+timeslot.
+ * Each schedule.time_slots[] item becomes a separate schedule object.
  */
 const buildPayload = (values, partnerId) => ({
   ...values,
   partner_id: partnerId,
   images: [],
   outlets: (values.outlets || []).map((outlet) => ({
-    ...outlet,
-    schedules: (outlet.schedules || []).map((schedule) => ({
-      ...schedule,
-      // time_slots is already an array of { day, timeslot }
-      // short_term_class_count and price_shortterm are auto-set via form
-    })),
+    outlet_id: outlet.outlet_id,
+    schedules: (outlet.schedules || []).flatMap((schedule) => {
+      // Extract time_slots array
+      const timeSlots = schedule.time_slots || [];
+
+      // Create one schedule object per time slot
+      return timeSlots.map((slot) => ({
+        day: slot.day,
+        timeslot: slot.timeslot,
+        frequency: schedule.frequency,
+        slots: schedule.slots,
+        package_types: schedule.package_types,
+        is_progressive: schedule.is_progressive || false,
+        full_term_start_date: schedule.full_term_start_date,
+        full_term_class_count: schedule.full_term_class_count,
+        short_term_class_count: schedule.short_term_class_count,
+        price_payg: schedule.price_payg,
+        price_fullterm: schedule.price_fullterm,
+        price_shortterm: schedule.price_shortterm,
+      }));
+    }),
   })),
 });
 
