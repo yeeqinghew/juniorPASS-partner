@@ -20,16 +20,18 @@ import {
   ClockCircleOutlined,
   DollarOutlined
 } from "@ant-design/icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import toast from "react-hot-toast";
 import TimeRangePicker from "./TimeRangePicker";
 import day from "../data/day.json";
 import frequency from "../data/frequency.json";
+import { DataContext } from "../../hooks/DataContext";
 import "./ScheduleItemPackages.css";
 
 const { Text } = Typography;
 
 const ScheduleItemWithPackages = ({ field, remove, form }) => {
+  const { packageTypes: dbPackageTypes } = useContext(DataContext);
   const [showPackageConfig, setShowPackageConfig] = useState(false);
   const [packageTypes, setPackageTypes] = useState([]);
   const [isProgressive, setIsProgressive] = useState(false);
@@ -293,19 +295,15 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                   onChange={handlePackageTypeChange}
                   maxTagCount={3}
                 >
-                  <Select.Option value="full-term">Full-term Package</Select.Option>
-                  <Select.Option
-                    value="short-term"
-                    disabled={isProgressive}
-                  >
-                    Short-term {isProgressive && "(Not available for progressive)"}
-                  </Select.Option>
-                  <Select.Option
-                    value="pay-as-you-go"
-                    disabled={isProgressive}
-                  >
-                    Pay-as-you-go {isProgressive && "(Not available for progressive)"}
-                  </Select.Option>
+                  {dbPackageTypes && dbPackageTypes.map((pkg) => (
+                    <Select.Option
+                      key={pkg.id}
+                      value={pkg.package_type}
+                      disabled={isProgressive && (pkg.package_type === 'pay-as-you-go' || pkg.package_type === 'short-term')}
+                    >
+                      {pkg.name} {isProgressive && (pkg.package_type === 'pay-as-you-go' || pkg.package_type === 'short-term') && "(Not available for progressive)"}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
 
