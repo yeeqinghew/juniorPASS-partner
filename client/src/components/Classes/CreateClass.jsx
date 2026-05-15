@@ -35,21 +35,29 @@ const buildPayload = (values, partnerId) => ({
       // Extract time_slots array
       const timeSlots = schedule.time_slots || [];
 
+      // If no time slots, return empty (will be filtered out)
+      if (timeSlots.length === 0) {
+        console.warn('Schedule has no time_slots:', schedule);
+        return [];
+      }
+
       // Create one schedule object per time slot
-      return timeSlots.map((slot) => ({
-        day: slot.day,
-        timeslot: slot.timeslot,
-        frequency: schedule.frequency,
-        slots: schedule.slots,
-        package_types: schedule.package_types,
-        is_progressive: schedule.is_progressive || false,
-        full_term_start_date: schedule.full_term_start_date,
-        full_term_class_count: schedule.full_term_class_count,
-        short_term_class_count: schedule.short_term_class_count,
-        price_payg: schedule.price_payg,
-        price_fullterm: schedule.price_fullterm,
-        price_shortterm: schedule.price_shortterm,
-      }));
+      return timeSlots
+        .filter(slot => slot && slot.day && slot.timeslot) // Filter out invalid slots
+        .map((slot) => ({
+          day: slot.day,
+          timeslot: slot.timeslot,
+          frequency: schedule.frequency,
+          slots: schedule.slots,
+          package_types: schedule.package_types,
+          is_progressive: schedule.is_progressive || false,
+          full_term_start_date: schedule.full_term_start_date,
+          full_term_class_count: schedule.full_term_class_count,
+          short_term_class_count: schedule.short_term_class_count,
+          price_payg: schedule.price_payg,
+          price_fullterm: schedule.price_fullterm,
+          price_shortterm: schedule.price_shortterm,
+        }));
     }),
   })),
 });
