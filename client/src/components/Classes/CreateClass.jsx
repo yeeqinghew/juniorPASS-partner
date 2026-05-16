@@ -22,8 +22,8 @@ const { Dragger } = Upload;
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 /**
- * Flatten the form's outlet/schedule tree into the payload shape the API expects.
- * Each schedule.time_slots[] item becomes a separate schedule object.
+ * Transform form values into the payload shape the API expects.
+ * Each schedule (with its time_slots array) becomes one schedule_group.
  */
 const buildPayload = (values, partnerId) => ({
   ...values,
@@ -31,34 +31,36 @@ const buildPayload = (values, partnerId) => ({
   images: [],
   outlets: (values.outlets || []).map((outlet) => ({
     outlet_id: outlet.outlet_id,
-    schedules: (outlet.schedules || []).flatMap((schedule) => {
-      // Extract time_slots array
-      const timeSlots = schedule.time_slots || [];
-
-      // If no time slots, return empty (will be filtered out)
-      if (timeSlots.length === 0) {
-        console.warn("Schedule has no time_slots:", schedule);
-        return [];
-      }
-
-      // Create one schedule object per time slot
-      return timeSlots
-        .filter((slot) => slot && slot.day && slot.timeslot) // Filter out invalid slots
-        .map((slot) => ({
-          day: slot.day,
-          timeslot: slot.timeslot,
-          frequency: schedule.frequency,
-          slots: schedule.slots,
-          package_types: schedule.package_types,
-          is_progressive: schedule.is_progressive || false,
-          full_term_start_date: schedule.full_term_start_date,
-          full_term_class_count: schedule.full_term_class_count,
-          short_term_class_count: schedule.short_term_class_count,
-          price_payg: schedule.price_payg,
-          price_fullterm: schedule.price_fullterm,
-          price_shortterm: schedule.price_shortterm,
-        }));
-    }),
+    schedule_groups: (outlet.schedules || [])
+      .filter((schedule) => {
+        // Filter out schedules with no time slots
+        const timeSlots = schedule.time_slots || [];
+        if (timeSlots.length === 0) {
+          console.warn("Schedule has no time_slots:", schedule);
+          return false;
+        }
+        return true;
+      })
+      .map((schedule) => ({
+        // time_slots stays as array (multiple days for same program)
+        time_slots: (schedule.time_slots || [])
+          .filter((slot) => slot && slot.day && slot.timeslot)
+          .map((slot) => ({
+            day: slot.day,
+            timeslot: slot.timeslot,
+          })),
+        // Package configuration (shared across all time slots)
+        frequency: schedule.frequency,
+        slots: schedule.slots,
+        package_types: schedule.package_types,
+        is_progressive: schedule.is_progressive || false,
+        full_term_start_date: schedule.full_term_start_date,
+        full_term_class_count: schedule.full_term_class_count,
+        short_term_class_count: schedule.short_term_class_count,
+        price_payg: schedule.price_payg,
+        price_fullterm: schedule.price_fullterm,
+        price_shortterm: schedule.price_shortterm,
+      })),
   })),
 });
 
