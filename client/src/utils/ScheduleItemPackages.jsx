@@ -27,7 +27,7 @@ import toast from "react-hot-toast";
 import TimeRangePicker from "./TimeRangePicker";
 import day from "../data/day.json";
 import frequency from "../data/frequency.json";
-import { DataContext } from "../../hooks/DataContext";
+import { DataContext } from "../hooks/DataContext";
 import "./ScheduleItemPackages.css";
 
 const { Text } = Typography;
@@ -82,7 +82,7 @@ const isValidCombo = (types) => {
   );
 };
 
-// Short-term: 25% of long-term class count, 15% price markup per class
+// Short-term: 25% of full-term class count, 15% price markup per class
 const calcShortTermPrice = (ltTotal, ltClasses, stClasses) => {
   if (!ltTotal || !ltClasses || !stClasses) return null;
   const perClass = ltTotal / ltClasses;
@@ -97,7 +97,7 @@ const TimeSlotRow = ({ slotIndex, scheduleField, remove, form, isOnly }) => (
   <div className="time-slot-row">
     <div className="time-slot-fields">
       <Form.Item
-        name={[scheduleField.name, "time_slots", slotIndex, "day"]}
+        name={[slotIndex, "day"]}
         rules={[{ required: true, message: "Day" }]}
         style={{ marginBottom: 0, flex: "1 1 130px" }}
       >
@@ -111,7 +111,7 @@ const TimeSlotRow = ({ slotIndex, scheduleField, remove, form, isOnly }) => (
       </Form.Item>
 
       <Form.Item
-        name={[scheduleField.name, "time_slots", slotIndex, "timeslot"]}
+        name={[slotIndex, "timeslot"]}
         rules={[{ required: true, message: "Time" }]}
         style={{ marginBottom: 0, flex: "1 1 180px" }}
       >
@@ -139,7 +139,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
   const [showPackageConfig, setShowPackageConfig] = useState(false);
   const [packageTypes, setPackageTypes] = useState([]);
   const [isProgressive, setIsProgressive] = useState(false);
-  const [ltTotal, setLtTotal] = useState(null); // long-term total price
+  const [ltTotal, setLtTotal] = useState(null); // full-term total price
   const [ltClasses, setLtClasses] = useState(null);
   const [paygPrice, setPaygPrice] = useState(null);
 
@@ -359,25 +359,40 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
               maxTagCount="responsive"
               optionLabelProp="label"
             >
-              {PACKAGE_OPTIONS.map((opt) => (
-                <Select.Option
-                  key={opt.value}
-                  value={opt.value}
-                  label={opt.label}
-                  disabled={isProgressive && opt.blockedByProgressive}
-                >
-                  {dbPackageTypes && dbPackageTypes.map((pkg) => (
-                    <Select.Option
-                      key={pkg.id}
-                      value={pkg.package_type}
-                      disabled={isProgressive && (pkg.package_type === 'pay-as-you-go' || pkg.package_type === 'short-term')}
-                    >
-                      {pkg.name} {isProgressive && (pkg.package_type === 'pay-as-you-go' || pkg.package_type === 'short-term') && "(Not available for progressive)"}
-                    </Select.Option>
-                  ))}
+              {dbPackageTypes &&
+                dbPackageTypes.map((pkg) => (
+                  <Select.Option
+                    key={pkg.id}
+                    value={pkg.package_types}
+                    label={pkg.name}
+                    disabled={
+                      isProgressive &&
+                      (pkg.package_type === "pay-as-you-go" ||
+                        pkg.package_type === "short-term" ||
+                        pkg.package_type === "trial")
+                    }
+                  >
+                    <div className="pkg-option">
+                      <span className="pkg-option-label">{pkg.name}</span>
+
+                      {pkg.description && (
+                        <span className="pkg-option-desc">
+                          {pkg.description}
+                        </span>
+                      )}
+
+                      {isProgressive &&
+                        (pkg.package_type === "pay-as-you-go" ||
+                          pkg.package_type === "short-term" ||
+                          pkg.package_type === "trial") && (
+                          <span className="pkg-option-blocked">
+                            Not available for progressive
+                          </span>
+                        )}
+                    </div>
                   </Select.Option>
-              ))}
-              </Select>
+                ))}
+            </Select>
           </Form.Item>
 
           {/* Validation hint */}
@@ -386,7 +401,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
               message={
                 comboValid
                   ? "Valid package combination ✓"
-                  : "Invalid combination. Valid options: Long-term only · Long-term + Short-term · Long-term + Short-term + Trial · Pay-as-you-go · Pay-as-you-go + Trial"
+                  : "Invalid combination. Valid options: Full-term only, Full-term + Short-term, Full-term + Short-term + Trial, Pay-as-you-go, Pay-as-you-go + Trial"
               }
               type={comboValid ? "success" : "warning"}
               showIcon
@@ -537,7 +552,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                 </div>
               ) : (
                 <Alert
-                  message="Enter long-term total price and class count above to auto-calculate short-term pricing."
+                  message="Enter full-term total price and class count above to auto-calculate short-term pricing."
                   type="info"
                   showIcon
                 />
@@ -565,7 +580,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
               </div>
               <Text type="secondary" className="section-hint">
                 Partners set this independently — drop-in rates are typically
-                higher than the pro-rated long-term price.
+                higher than the pro-rated full-term price.
               </Text>
 
               <div className="fields-row-2" style={{ maxWidth: 340 }}>

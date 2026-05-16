@@ -25,6 +25,7 @@ const TimeRangePicker = ({ value = [], onChange }) => {
       className="time-range-picker"
       popupClassName="time-range-picker-popup"
       size="large"
+      minuteStep={15}
       style={{ width: "100%" }}
     />
   );

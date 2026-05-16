@@ -37,13 +37,13 @@ const buildPayload = (values, partnerId) => ({
 
       // If no time slots, return empty (will be filtered out)
       if (timeSlots.length === 0) {
-        console.warn('Schedule has no time_slots:', schedule);
+        console.warn("Schedule has no time_slots:", schedule);
         return [];
       }
 
       // Create one schedule object per time slot
       return timeSlots
-        .filter(slot => slot && slot.day && slot.timeslot) // Filter out invalid slots
+        .filter((slot) => slot && slot.day && slot.timeslot) // Filter out invalid slots
         .map((slot) => ({
           day: slot.day,
           timeslot: slot.timeslot,
@@ -123,7 +123,6 @@ const CreateClass = () => {
     setUploadStatus("Creating listing…");
 
     let listingId = null;
-
     try {
       // 1. Create listing
       const createRes = await fetchWithAuth(API_ENDPOINTS.CREATE_LISTING, {

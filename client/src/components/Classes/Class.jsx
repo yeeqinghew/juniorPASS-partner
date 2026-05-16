@@ -54,7 +54,7 @@ const Class = () => {
     try {
       setLoadingStudents(true);
       const response = await fetchWithAuth(
-        API_ENDPOINTS.GET_BOOKINGS_FOR_LISTING(listing_id)
+        API_ENDPOINTS.GET_BOOKINGS_FOR_LISTING(listing_id),
       );
 
       if (response.ok) {
@@ -74,9 +74,12 @@ const Class = () => {
   useEffect(() => {
     async function fetchClassDetails() {
       try {
-        const response = await fetchWithAuth(API_ENDPOINTS.GET_LISTING(listing_id), {
-          method: "GET",
-        });
+        const response = await fetchWithAuth(
+          API_ENDPOINTS.GET_LISTING(listing_id),
+          {
+            method: "GET",
+          },
+        );
         const parseRes = await response.json();
         setListing(parseRes);
       } catch (error) {
@@ -313,14 +316,14 @@ const Class = () => {
                 let color = "default";
 
                 if (
-                  packageType.includes("long") ||
+                  packageType.includes("full") ||
                   packageType.includes("term")
                 ) {
-                  if (packageType.includes("long")) {
-                    startDate = listing.long_term_start_date;
+                  if (packageType.includes("full")) {
+                    startDate = listing.full_term_start_date;
                     color = "purple";
                   } else if (packageType.includes("short")) {
-                    startDate = listing.short_term_start_date;
+                    startDate = listing.full_term_start_date;
                     color = "blue";
                   }
                 } else if (

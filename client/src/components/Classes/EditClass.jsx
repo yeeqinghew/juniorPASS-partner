@@ -57,7 +57,7 @@ const EditClass = () => {
   const fetchOutlets = async () => {
     try {
       const response = await fetchWithAuth(
-        API_ENDPOINTS.GET_OUTLETS(user.partner_id)
+        API_ENDPOINTS.GET_OUTLETS(user.partner_id),
       );
 
       if (response.ok) {
@@ -75,9 +75,12 @@ const EditClass = () => {
   const fetchClassDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetchWithAuth(API_ENDPOINTS.GET_LISTING(listing_id), {
-        method: "GET",
-      });
+      const response = await fetchWithAuth(
+        API_ENDPOINTS.GET_LISTING(listing_id),
+        {
+          method: "GET",
+        },
+      );
       const parseRes = await response.json();
       setListing(parseRes);
 
@@ -88,6 +91,7 @@ const EditClass = () => {
           imgs = JSON.parse(imgs);
         } catch (e) {
           imgs = [];
+          console.error("Error fetching existing images: ", e.message);
         }
       }
       setExistingImages(imgs || []);
@@ -122,11 +126,8 @@ const EditClass = () => {
         description: parseRes.description,
         package_types: parseRes.package_types,
         age_groups: parseRes.age_groups,
-        short_term_start_date: parseRes.short_term_start_date
-          ? dayjs(parseRes.short_term_start_date)
-          : null,
-        long_term_start_date: parseRes.long_term_start_date
-          ? dayjs(parseRes.long_term_start_date)
+        full_term_start_date: parseRes.full_term_start_date
+          ? dayjs(parseRes.full_term_start_date)
           : null,
         outlets: outletsData,
       });
@@ -194,8 +195,8 @@ const EditClass = () => {
       const shortTermDate = values.short_term_start_date
         ? values.short_term_start_date.format("YYYY-MM-DD")
         : null;
-      const longTermDate = values.long_term_start_date
-        ? values.long_term_start_date.format("YYYY-MM-DD")
+      const fullTermDate = values.full_term_start_date
+        ? values.full_term_start_date.format("YYYY-MM-DD")
         : null;
 
       // 1. Update the listing basic info
@@ -209,9 +210,9 @@ const EditClass = () => {
             package_types: values.package_types,
             age_groups: values.age_groups,
             short_term_start_date: shortTermDate,
-            long_term_start_date: longTermDate,
+            full_term_start_date: fullTermDate,
           }),
-        }
+        },
       );
 
       if (!updateResponse.ok) {
@@ -241,7 +242,7 @@ const EditClass = () => {
                   })) || [],
               })),
             }),
-          }
+          },
         );
 
         if (!schedulesResponse.ok) {
@@ -264,7 +265,7 @@ const EditClass = () => {
         for (let i = 0; i < images.length; i++) {
           const img = images[i];
           setUploadStatus(`Uploading image ${i + 1}/${images.length}...`);
-          setUploadProgress(50 + ((i / images.length) * 30));
+          setUploadProgress(50 + (i / images.length) * 30);
           try {
             // Get Cloudinary signature from backend
             const response = await fetchWithAuth(
@@ -275,10 +276,13 @@ const EditClass = () => {
                   listingId: listing_id,
                   partnerId: user.partner_id,
                 }),
-              }
+              },
             );
             const sigData = await response.json();
-            if (!response.ok) throw new Error(sigData.message || "Failed to get upload signature");
+            if (!response.ok)
+              throw new Error(
+                sigData.message || "Failed to get upload signature",
+              );
 
             // Upload to Cloudinary
             const formData = new FormData();
@@ -295,7 +299,7 @@ const EditClass = () => {
               {
                 method: "POST",
                 body: formData,
-              }
+              },
             );
             const uploadData = await uploadRes.json();
 
@@ -428,8 +432,6 @@ const EditClass = () => {
         >
           <Input placeholder="Enter class title" size="large" />
         </Form.Item>
-
-        {/* Package types and progressive are now PER SCHEDULE - removed from listing level */}
 
         <Form.Item
           name="description"
