@@ -159,25 +159,22 @@ const Class = () => {
     return images;
   };
 
-  // Parse schedule info
-  const getScheduleInfo = () => {
-    return listing?.schedule_info || [];
+  // Parse outlets and schedule groups
+  const getOutletsInfo = () => {
+    return listing?.outlets_info || [];
   };
 
-  // Format timeslot for display
-  const formatTimeslot = (timeslot) => {
-    if (!timeslot) return "N/A";
-    if (Array.isArray(timeslot)) {
-      return timeslot
-        .map((time) => {
-          if (typeof time === "string") {
-            return time.trim();
-          }
-          return time;
-        })
-        .join(" - ");
-    }
-    return String(timeslot);
+  // Get total schedule count across all outlets
+  const getTotalScheduleCount = () => {
+    return getOutletsInfo().reduce((total, outlet) => {
+      return total + (outlet.schedule_groups?.length || 0);
+    }, 0);
+  };
+
+  // Format time for display
+  const formatTime = (startTime, endTime) => {
+    if (!startTime || !endTime) return "N/A";
+    return `${startTime} - ${endTime}`;
   };
 
   // Overview Tab Content
@@ -198,7 +195,7 @@ const Class = () => {
           <Card className="stat-mini-card">
             <Statistic
               title="Schedules"
-              value={getScheduleInfo().length}
+              value={getTotalScheduleCount()}
               prefix={<CalendarOutlined />}
             />
           </Card>
@@ -228,54 +225,70 @@ const Class = () => {
       </Row>
 
       {/* Class Info */}
-      <Card className="info-card" title="Class Information">
-        <Row gutter={[24, 16]}>
-          <Col xs={24} md={16}>
-            <div className="info-section">
-              <Title level={4}>{listing?.listing_title}</Title>
-              <Paragraph>{listing?.description}</Paragraph>
+      <Card className="info-card" title="Class Information" bordered={false}>
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={16}>
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <div>
+                <Title level={3} style={{ marginBottom: 12 }}>
+                  {listing?.listing_title}
+                </Title>
+                <Paragraph
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 1.7,
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  {listing?.description}
+                </Paragraph>
+              </div>
 
-              <Space wrap className="mt-16">
-                {listing?.package_types &&
-                  (Array.isArray(listing.package_types) ? (
-                    listing.package_types.map((type, i) => (
-                      <Tag key={i} color="blue">
-                        {type}
-                      </Tag>
-                    ))
-                  ) : (
-                    <Tag color="blue">{listing.package_types}</Tag>
-                  ))}
-              </Space>
+              <Divider style={{ margin: "8px 0" }} />
 
-              <Divider />
-
-              <Row gutter={[16, 8]}>
+              <Row gutter={[24, 16]}>
                 <Col span={12}>
-                  <Text type="secondary">Age Groups:</Text>
-                  <div>
-                    {listing?.age_groups &&
-                      (Array.isArray(listing.age_groups) ? (
-                        listing.age_groups.map((age, i) => (
-                          <Tag key={i}>{age}</Tag>
-                        ))
-                      ) : (
-                        <Tag>{listing.age_groups}</Tag>
-                      ))}
-                  </div>
+                  <Space direction="vertical" size={4}>
+                    <Text type="secondary" style={{ fontSize: 13 }}>
+                      Age Groups
+                    </Text>
+                    <Space wrap size={[8, 8]}>
+                      {listing?.age_groups &&
+                        (Array.isArray(listing.age_groups) ? (
+                          listing.age_groups.map((age, i) => (
+                            <Tag key={i} color="blue" style={{ margin: 0 }}>
+                              {age}
+                            </Tag>
+                          ))
+                        ) : (
+                          <Tag color="blue">{listing.age_groups}</Tag>
+                        ))}
+                    </Space>
+                  </Space>
                 </Col>
                 <Col span={12}>
-                  <Text type="secondary">Created:</Text>
-                  <div>
-                    {listing?.created_at
-                      ? new Date(listing.created_at).toLocaleDateString()
-                      : "N/A"}
-                  </div>
+                  <Space direction="vertical" size={4}>
+                    <Text type="secondary" style={{ fontSize: 13 }}>
+                      Created
+                    </Text>
+                    <Text strong>
+                      {listing?.created_at
+                        ? new Date(listing.created_at).toLocaleDateString(
+                            "en-SG",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          )
+                        : "N/A"}
+                    </Text>
+                  </Space>
                 </Col>
               </Row>
-            </div>
+            </Space>
           </Col>
-          <Col xs={24} md={8}>
+          <Col xs={24} lg={8}>
             <div className="images-preview">
               {getImages().length > 0 ? (
                 <Image.PreviewGroup>
@@ -302,117 +315,287 @@ const Class = () => {
         </Row>
       </Card>
 
-      {/* Package Types & Start Dates */}
-      <Card className="info-card mt-16" title="Package Information">
-        <Row gutter={[16, 16]}>
-          {listing?.package_types && (
-            <>
-              {(Array.isArray(listing.package_types)
-                ? listing.package_types
-                : listing.package_types.replace(/[{}]/g, "").split(",")
-              ).map((type, i) => {
-                const packageType = type.trim().toLowerCase();
-                let startDate = null;
-                let color = "default";
-
-                if (
-                  packageType.includes("full") ||
-                  packageType.includes("term")
-                ) {
-                  if (packageType.includes("full")) {
-                    startDate = listing.full_term_start_date;
-                    color = "purple";
-                  } else if (packageType.includes("short")) {
-                    startDate = listing.full_term_start_date;
-                    color = "blue";
-                  }
-                } else if (
-                  packageType.includes("pay") ||
-                  packageType.includes("go")
-                ) {
-                  color = "green";
-                }
-
-                return (
-                  <Col xs={24} sm={8} key={i}>
-                    <Card size="small" className="package-info-card">
-                      <Space direction="vertical" className="w-full">
-                        <Tag color={color} className="package-tag">
-                          {type.trim()}
-                        </Tag>
-                        {startDate && (
-                          <div className="mt-8">
-                            <PlayCircleOutlined className="schedule-card-icon" />
-                            <Text type="secondary">Starts: </Text>
-                            <Text strong>
-                              {new Date(startDate).toLocaleDateString("en-SG", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </Text>
-                          </div>
-                        )}
-                      </Space>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </>
-          )}
-        </Row>
-      </Card>
-
-      {/* Schedules */}
-      <Card className="info-card mt-16" title="Schedules & Locations">
-        {getScheduleInfo().length > 0 ? (
-          <Row gutter={[16, 16]}>
-            {getScheduleInfo().map((schedule, index) => (
-              <Col xs={24} sm={12} key={index}>
-                <Card size="small" className="schedule-card">
-                  <Space direction="vertical" className="w-full">
-                    {/* Frequency Tag */}
-                    <div className="mb-8">
-                      <Tag color="cyan" icon={<SyncOutlined />}>
-                        {schedule.frequency || "Weekly"}
-                      </Tag>
-                    </div>
-                    <div>
-                      <CalendarOutlined className="schedule-card-icon" />
-                      <Text strong>{schedule.day}</Text>
-                    </div>
-                    <div>
-                      <ClockCircleOutlined className="schedule-card-icon" />
-                      <Text>{formatTimeslot(schedule.timeslot)}</Text>
-                    </div>
-                    <div>
-                      <EnvironmentOutlined className="schedule-card-icon" />
-                      <Text type="secondary">{schedule.nearest_mrt} MRT</Text>
-                    </div>
-                    <Divider className="divider-compact" />
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <div>
-                          <TeamOutlined className="schedule-card-icon" />
-                          <Text>Slots: </Text>
-                          <Text strong>{schedule.slots || 10}</Text>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <div>
-                          <DollarOutlined className="schedule-card-icon-secondary" />
-                          <Text>Credits: </Text>
-                          <Text strong>{schedule.credit || 1}</Text>
-                        </div>
-                      </Col>
-                    </Row>
+      {/* Schedules & Locations grouped by outlet */}
+      <Card
+        className="info-card mt-16"
+        title={
+          <Space>
+            <EnvironmentOutlined />
+            <span>Schedules & Locations</span>
+          </Space>
+        }
+        bordered={false}
+      >
+        {getOutletsInfo().length > 0 ? (
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            {getOutletsInfo().map((outlet, outletIndex) => (
+              <div key={outletIndex}>
+                {/* Outlet Header */}
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    background: "var(--bg-lighter)",
+                    borderRadius: "8px",
+                    marginBottom: 16,
+                  }}
+                >
+                  <Space>
+                    <EnvironmentOutlined
+                      style={{ fontSize: 18, color: "var(--primary-color)" }}
+                    />
+                    <Text strong style={{ fontSize: 16 }}>
+                      {outlet.outlet_address || "Unknown Location"}
+                    </Text>
+                    {outlet.nearest_mrt && (
+                      <Tag color="blue">{outlet.nearest_mrt} MRT</Tag>
+                    )}
                   </Space>
-                </Card>
-              </Col>
+                </div>
+
+                {/* Schedule Groups for this outlet */}
+                {outlet.schedule_groups && outlet.schedule_groups.length > 0 ? (
+                  <Row gutter={[16, 16]}>
+                    {outlet.schedule_groups.map((group, groupIndex) => (
+                      <Col xs={24} lg={12} key={groupIndex}>
+                        <Card
+                          size="small"
+                          style={{
+                            borderRadius: 12,
+                            border: "1px solid var(--border-light)",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                          }}
+                          hoverable
+                        >
+                          <Space
+                            direction="vertical"
+                            size="middle"
+                            style={{ width: "100%" }}
+                          >
+                            {/* Package Types & Tags */}
+                            <div>
+                              <Space wrap size={[8, 8]}>
+                                {group.package_types?.map((type, i) => (
+                                  <Tag
+                                    key={i}
+                                    color={
+                                      type === "full-term"
+                                        ? "purple"
+                                        : type === "short-term"
+                                        ? "blue"
+                                        : "green"
+                                    }
+                                    style={{ margin: 0, fontSize: 13 }}
+                                  >
+                                    {type.toUpperCase()}
+                                  </Tag>
+                                ))}
+                                {group.is_progressive && (
+                                  <Tag
+                                    color="orange"
+                                    style={{ margin: 0, fontSize: 13 }}
+                                  >
+                                    PROGRESSIVE
+                                  </Tag>
+                                )}
+                                <Tag
+                                  color="cyan"
+                                  icon={<SyncOutlined />}
+                                  style={{ margin: 0 }}
+                                >
+                                  {group.frequency || "Weekly"}
+                                </Tag>
+                                <Tag icon={<TeamOutlined />} style={{ margin: 0 }}>
+                                  {group.slots || 10} slots
+                                </Tag>
+                              </Space>
+                            </div>
+
+                            {/* Time Slots */}
+                            <div>
+                              <Text
+                                type="secondary"
+                                strong
+                                style={{ fontSize: 12, marginBottom: 8, display: "block" }}
+                              >
+                                TIME SLOTS
+                              </Text>
+                              <Space
+                                direction="vertical"
+                                size={4}
+                                style={{ width: "100%" }}
+                              >
+                                {group.time_slots?.map((slot, slotIndex) => (
+                                  <div
+                                    key={slotIndex}
+                                    style={{
+                                      padding: "8px 12px",
+                                      background: "var(--bg-lighter)",
+                                      borderRadius: 6,
+                                    }}
+                                  >
+                                    <Space>
+                                      <CalendarOutlined
+                                        style={{
+                                          color: "var(--primary-color)",
+                                          fontSize: 14,
+                                        }}
+                                      />
+                                      <Text strong style={{ minWidth: 80 }}>
+                                        {slot.day}
+                                      </Text>
+                                      <ClockCircleOutlined
+                                        style={{
+                                          color: "var(--text-muted)",
+                                          fontSize: 14,
+                                        }}
+                                      />
+                                      <Text>
+                                        {formatTime(slot.start_time, slot.end_time)}
+                                      </Text>
+                                    </Space>
+                                  </div>
+                                ))}
+                              </Space>
+                            </div>
+
+                            {/* Pricing */}
+                            {(group.price_payg ||
+                              group.price_fullterm ||
+                              group.price_shortterm) && (
+                              <div>
+                                <Text
+                                  type="secondary"
+                                  strong
+                                  style={{
+                                    fontSize: 12,
+                                    marginBottom: 8,
+                                    display: "block",
+                                  }}
+                                >
+                                  PRICING
+                                </Text>
+                                <Row gutter={[12, 12]}>
+                                  {group.price_payg && (
+                                    <Col span={24}>
+                                      <Space
+                                        style={{
+                                          padding: "8px 12px",
+                                          background: "#f0fdf4",
+                                          borderRadius: 6,
+                                          width: "100%",
+                                        }}
+                                      >
+                                        <DollarOutlined
+                                          style={{ color: "#16a34a" }}
+                                        />
+                                        <Text type="secondary">Pay-as-you-go:</Text>
+                                        <Text strong style={{ color: "#16a34a" }}>
+                                          ${group.price_payg}
+                                        </Text>
+                                      </Space>
+                                    </Col>
+                                  )}
+                                  {group.price_fullterm && (
+                                    <Col span={24}>
+                                      <Space
+                                        style={{
+                                          padding: "8px 12px",
+                                          background: "#faf5ff",
+                                          borderRadius: 6,
+                                          width: "100%",
+                                        }}
+                                      >
+                                        <DollarOutlined
+                                          style={{ color: "#9333ea" }}
+                                        />
+                                        <Text type="secondary">Full-term:</Text>
+                                        <Text strong style={{ color: "#9333ea" }}>
+                                          ${group.price_fullterm}
+                                        </Text>
+                                        {group.full_term_class_count && (
+                                          <Text type="secondary" style={{ fontSize: 12 }}>
+                                            ({group.full_term_class_count} classes)
+                                          </Text>
+                                        )}
+                                      </Space>
+                                    </Col>
+                                  )}
+                                  {group.price_shortterm && (
+                                    <Col span={24}>
+                                      <Space
+                                        style={{
+                                          padding: "8px 12px",
+                                          background: "#eff6ff",
+                                          borderRadius: 6,
+                                          width: "100%",
+                                        }}
+                                      >
+                                        <DollarOutlined
+                                          style={{ color: "#2563eb" }}
+                                        />
+                                        <Text type="secondary">Short-term:</Text>
+                                        <Text strong style={{ color: "#2563eb" }}>
+                                          ${group.price_shortterm}
+                                        </Text>
+                                        {group.short_term_class_count && (
+                                          <Text type="secondary" style={{ fontSize: 12 }}>
+                                            ({group.short_term_class_count} classes)
+                                          </Text>
+                                        )}
+                                      </Space>
+                                    </Col>
+                                  )}
+                                </Row>
+                              </div>
+                            )}
+
+                            {/* Start Date */}
+                            {group.full_term_start_date && (
+                              <div
+                                style={{
+                                  padding: "8px 12px",
+                                  background: "var(--bg-lighter)",
+                                  borderRadius: 6,
+                                  marginTop: 8,
+                                }}
+                              >
+                                <Space>
+                                  <PlayCircleOutlined
+                                    style={{ color: "var(--primary-color)" }}
+                                  />
+                                  <Text type="secondary">Starts:</Text>
+                                  <Text strong>
+                                    {new Date(
+                                      group.full_term_start_date,
+                                    ).toLocaleDateString("en-SG", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
+                                  </Text>
+                                </Space>
+                              </div>
+                            )}
+                          </Space>
+                        </Card>
+                      </Col>
+                    ))}
+                  </Row>
+                ) : (
+                  <Empty description="No schedules for this outlet" />
+                )}
+
+                {outletIndex < getOutletsInfo().length - 1 && (
+                  <Divider style={{ margin: "32px 0" }} />
+                )}
+              </div>
             ))}
-          </Row>
+          </Space>
         ) : (
-          <Empty description="No schedules configured" />
+          <Empty
+            description="No schedules configured"
+            style={{ padding: "48px 0" }}
+          />
         )}
       </Card>
     </div>
