@@ -136,7 +136,6 @@ const TimeSlotRow = ({ slotIndex, scheduleField, remove, form, isOnly }) => (
 
 const ScheduleItemWithPackages = ({ field, remove, form }) => {
   const { packageTypes: dbPackageTypes } = useContext(DataContext);
-  const [showPackageConfig, setShowPackageConfig] = useState(false);
   const [packageTypes, setPackageTypes] = useState([]);
   const [isProgressive, setIsProgressive] = useState(false);
   const [ltTotal, setLtTotal] = useState(null); // full-term total price
@@ -363,12 +362,11 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                 dbPackageTypes.map((pkg) => (
                   <Select.Option
                     key={pkg.id}
-                    value={pkg.package_types}
+                    value={pkg.package_type}
                     label={pkg.name}
                     disabled={
                       isProgressive &&
                       (pkg.package_type === "pay-as-you-go" ||
-                        pkg.package_type === "short-term" ||
                         pkg.package_type === "trial")
                     }
                   >
@@ -383,7 +381,6 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
 
                       {isProgressive &&
                         (pkg.package_type === "pay-as-you-go" ||
-                          pkg.package_type === "short-term" ||
                           pkg.package_type === "trial") && (
                           <span className="pkg-option-blocked">
                             Not available for progressive
@@ -410,7 +407,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
           )}
           {isProgressive && (
             <Alert
-              message="Progressive mode: only Full-term and short-term are available"
+              message="Progressive mode: only Full-term and Short-term are available"
               type="info"
               showIcon
               className="combo-alert"
