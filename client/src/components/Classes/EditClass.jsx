@@ -96,39 +96,38 @@ const EditClass = () => {
       }
       setExistingImages(imgs || []);
 
-      // Parse existing outlets and schedules from schedule_info
+      // Parse existing outlets and schedule_groups from outlets_info
       let outletsData = [];
-      if (parseRes.schedule_info && parseRes.schedule_info.length > 0) {
-        // Group schedules by outlet_id
-        const outletMap = {};
-        parseRes.schedule_info.forEach((schedule) => {
-          const outletId = schedule.outlet_id || schedule.listing_outlet_id;
-          if (!outletMap[outletId]) {
-            outletMap[outletId] = {
-              outlet_id: outletId,
-              schedules: [],
-            };
-          }
-          outletMap[outletId].schedules.push({
-            day: schedule.day,
-            timeslot: schedule.timeslot,
-            frequency: schedule.frequency,
-            slots: schedule.slots,
-            credit: schedule.credit,
-          });
-        });
-        outletsData = Object.values(outletMap);
+      if (parseRes.outlets_info && parseRes.outlets_info.length > 0) {
+        outletsData = parseRes.outlets_info.map((outlet) => ({
+          outlet_id: outlet.outlet_id,
+          schedules: (outlet.schedule_groups || []).map((group) => ({
+            // Map schedule_group to schedule form structure
+            time_slots: (group.time_slots || []).map((slot) => ({
+              day: slot.day,
+              timeslot: [slot.start_time, slot.end_time],
+            })),
+            frequency: group.frequency,
+            slots: group.slots,
+            package_types: group.package_types,
+            is_progressive: group.is_progressive,
+            full_term_start_date: group.full_term_start_date
+              ? dayjs(group.full_term_start_date)
+              : null,
+            full_term_class_count: group.full_term_class_count,
+            short_term_class_count: group.short_term_class_count,
+            price_payg: group.price_payg,
+            price_fullterm: group.price_fullterm,
+            price_shortterm: group.price_shortterm,
+          })),
+        }));
       }
 
       // Set form values
       editClassForm.setFieldsValue({
         title: parseRes.listing_title,
         description: parseRes.description,
-        package_types: parseRes.package_types,
         age_groups: parseRes.age_groups,
-        full_term_start_date: parseRes.full_term_start_date
-          ? dayjs(parseRes.full_term_start_date)
-          : null,
         outlets: outletsData,
       });
 
@@ -191,26 +190,15 @@ const EditClass = () => {
       setUploadProgress(0);
       setUploadStatus("Updating class information...");
 
-      // Format dates for backend
-      const shortTermDate = values.short_term_start_date
-        ? values.short_term_start_date.format("YYYY-MM-DD")
-        : null;
-      const fullTermDate = values.full_term_start_date
-        ? values.full_term_start_date.format("YYYY-MM-DD")
-        : null;
-
       // 1. Update the listing basic info
       const updateResponse = await fetchWithAuth(
         API_ENDPOINTS.UPDATE_LISTING(listing_id),
         {
           method: "PATCH",
           body: JSON.stringify({
-            title_name: values.title,
+            listing_title: values.title,
             description: values.description,
-            package_types: values.package_types,
             age_groups: values.age_groups,
-            short_term_start_date: shortTermDate,
-            full_term_start_date: fullTermDate,
           }),
         },
       );
@@ -223,7 +211,7 @@ const EditClass = () => {
       setUploadProgress(30);
       setUploadStatus("Updating schedules...");
 
-      // 2. Update schedules if outlets are provided
+      // 2. Update schedule_groups if outlets are provided
       if (values.outlets && values.outlets.length > 0) {
         const schedulesResponse = await fetchWithAuth(
           API_ENDPOINTS.UPDATE_LISTING_SCHEDULES(listing_id),
@@ -232,14 +220,33 @@ const EditClass = () => {
             body: JSON.stringify({
               outlets: values.outlets.map((outlet) => ({
                 outlet_id: outlet.outlet_id,
-                schedules:
-                  outlet.schedules?.map((schedule) => ({
-                    day: schedule.day,
-                    timeslot: schedule.timeslot,
+                schedule_groups: (outlet.schedules || [])
+                  .filter((schedule) => {
+                    const timeSlots = schedule.time_slots || [];
+                    if (timeSlots.length === 0) {
+                      console.warn("Schedule has no time_slots:", schedule);
+                      return false;
+                    }
+                    return true;
+                  })
+                  .map((schedule) => ({
+                    time_slots: (schedule.time_slots || [])
+                      .filter((slot) => slot && slot.day && slot.timeslot)
+                      .map((slot) => ({
+                        day: slot.day,
+                        timeslot: slot.timeslot,
+                      })),
                     frequency: schedule.frequency,
-                    slots: schedule.slots || 10,
-                    credit: schedule.credit || 1,
-                  })) || [],
+                    slots: schedule.slots,
+                    package_types: schedule.package_types,
+                    is_progressive: schedule.is_progressive || false,
+                    full_term_start_date: schedule.full_term_start_date,
+                    full_term_class_count: schedule.full_term_class_count,
+                    short_term_class_count: schedule.short_term_class_count,
+                    price_payg: schedule.price_payg,
+                    price_fullterm: schedule.price_fullterm,
+                    price_shortterm: schedule.price_shortterm,
+                  })),
               })),
             }),
           },
