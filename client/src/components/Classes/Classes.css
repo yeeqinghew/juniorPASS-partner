@@ -146,6 +146,46 @@
   border-color: var(--primary-light);
 }
 
+/* Class Card Cover */
+.class-card .ant-card-cover {
+  position: relative;
+}
+
+/* Status Badge */
+.class-status-badge {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: var(--transition-fast);
+}
+
+.class-status-active {
+  background: rgba(82, 196, 26, 0.95);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.class-status-inactive {
+  background: rgba(140, 140, 140, 0.95);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Class Info Tags */
+.class-info-tags {
+  margin-top: var(--spacing-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;
