@@ -99,7 +99,6 @@ const EditClass = () => {
       // Parse existing outlets and schedule_groups from outlets_info
       let outletsData = [];
       if (parseRes.outlets_info && parseRes.outlets_info.length > 0) {
-        console.log("outlets_info from API:", parseRes.outlets_info);
         outletsData = parseRes.outlets_info.map((outlet) => ({
           outlet_id: outlet.outlet_id,
           schedules: (outlet.schedule_groups || []).map((group) => {
@@ -124,7 +123,6 @@ const EditClass = () => {
             };
           }),
         }));
-        console.log("Mapped outletsData:", outletsData);
       }
 
       // Set form values

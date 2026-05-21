@@ -46,7 +46,6 @@ const PartnerHome = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Dashboard Overview Data:", data);
         setStats(data);
       }
 

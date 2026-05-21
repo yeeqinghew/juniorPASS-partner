@@ -141,7 +141,6 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
       ["outlets", field.name, "schedules", field.name, "package_types"],
       form,
     ) || [];
-  console.log("pacakgeTypesL: " + packageTypes);
   // const [packageTypes, setPackageTypes] = useState([]);
   const isProgressive = Form.useWatch(
     ["outlets", field.name, "schedules", field.name, "is_progressive"],
