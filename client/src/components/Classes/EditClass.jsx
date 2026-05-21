@@ -103,7 +103,6 @@ const EditClass = () => {
         outletsData = parseRes.outlets_info.map((outlet) => ({
           outlet_id: outlet.outlet_id,
           schedules: (outlet.schedule_groups || []).map((group) => {
-            console.log("Schedule group is_progressive:", group.is_progressive, typeof group.is_progressive);
             // Map schedule_group to schedule form structure
             return {
               time_slots: (group.time_slots || []).map((slot) => ({
@@ -113,7 +112,7 @@ const EditClass = () => {
               frequency: group.frequency,
               slots: group.slots,
               package_types: group.package_types,
-              is_progressive: Boolean(group.is_progressive),
+              is_progressive: group.is_progressive,
               full_term_start_date: group.full_term_start_date
                 ? dayjs(group.full_term_start_date)
                 : null,
@@ -244,7 +243,7 @@ const EditClass = () => {
                     frequency: schedule.frequency,
                     slots: schedule.slots,
                     package_types: schedule.package_types,
-                    is_progressive: schedule.is_progressive || false,
+                    is_progressive: schedule.is_progressive,
                     full_term_start_date: schedule.full_term_start_date,
                     full_term_class_count: schedule.full_term_class_count,
                     short_term_class_count: schedule.short_term_class_count,

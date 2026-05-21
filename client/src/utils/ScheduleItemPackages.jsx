@@ -136,8 +136,17 @@ const TimeSlotRow = ({ slotIndex, scheduleField, remove, form, isOnly }) => (
 
 const ScheduleItemWithPackages = ({ field, remove, form }) => {
   const { packageTypes: dbPackageTypes } = useContext(DataContext);
-  const [packageTypes, setPackageTypes] = useState([]);
-  const [isProgressive, setIsProgressive] = useState(false);
+  const packageTypes =
+    Form.useWatch(
+      ["outlets", field.name, "schedules", field.name, "package_types"],
+      form,
+    ) || [];
+  console.log("pacakgeTypesL: " + packageTypes);
+  // const [packageTypes, setPackageTypes] = useState([]);
+  const isProgressive = Form.useWatch(
+    ["outlets", field.name, "schedules", field.name, "is_progressive"],
+    form,
+  );
   const [ltTotal, setLtTotal] = useState(null); // full-term total price
   const [ltClasses, setLtClasses] = useState(null);
   const [paygPrice, setPaygPrice] = useState(null);
@@ -151,43 +160,40 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
 
   // Sync form field for short-term calculated values
   useEffect(() => {
-    if (stClasses !== null) {
-      form.setFieldValue(
-        [
-          "outlets",
-          field.name,
-          "schedules",
-          field.name,
-          "short_term_class_count",
-        ],
-        stClasses,
-      );
+    // Grab current values from the form instance
+    const currentSchedule = form.getFieldValue([
+      "outlets",
+      field.name,
+      "schedules",
+      field.name,
+    ]);
+
+    if (currentSchedule) {
+      if (currentSchedule.price_fullterm)
+        setLtTotal(currentSchedule.price_fullterm);
+      if (currentSchedule.full_term_class_count)
+        setLtClasses(currentSchedule.full_term_class_count);
+      if (currentSchedule.price_payg) setPaygPrice(currentSchedule.price_payg);
     }
-    if (stPrice !== null) {
-      form.setFieldValue(
-        ["outlets", field.name, "schedules", field.name, "price_shortterm"],
-        stPrice,
-      );
-    }
-  }, [stClasses, stPrice]);
+  }, [field.name, form]);
 
   const handleProgressiveChange = useCallback(
     (checked) => {
-      setIsProgressive(checked);
       if (checked) {
-        const filtered = packageTypes.filter((t) => t === "full-term");
-        setPackageTypes(filtered);
+        const filtered = packageTypes.filter(
+          (t) => t === "full-term" || t === "short-term",
+        );
+
+        // setPackageTypes(filtered);
+
         form.setFieldValue(
           ["outlets", field.name, "schedules", field.name, "package_types"],
           filtered,
         );
-        if (
-          packageTypes.some((t) =>
-            ["short-term", "pay-as-you-go", "trial"].includes(t),
-          )
-        ) {
+
+        if (packageTypes.some((t) => ["pay-as-you-go", "trial"].includes(t))) {
           toast(
-            "Short-term, Pay-as-you-go and Trial removed — not compatible with progressive classes.",
+            "Pay-as-you-go and Trial removed — not compatible with progressive classes.",
             {
               icon: "ℹ️",
             },
@@ -198,9 +204,15 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
     [packageTypes, field.name, form],
   );
 
-  const handlePackageChange = useCallback((types) => {
-    setPackageTypes(types);
-  }, []);
+  const handlePackageChange = useCallback(
+    (types) => {
+      form.setFieldValue(
+        ["outlets", field.name, "schedules", field.name, "package_types"],
+        types,
+      );
+    },
+    [field.name, form],
+  );
 
   const comboValid = isValidCombo(packageTypes);
   const hasFullTerm = packageTypes.includes("full-term");
@@ -318,28 +330,35 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
           </div>
 
           {/* Progressive toggle */}
+          {/* Progressive toggle */}
           <div className="progressive-toggle">
-            <Form.Item
-              name={[field.name, "is_progressive"]}
-              valuePropName="checked"
-              style={{ marginBottom: 6 }}
-            >
-              <Space>
+            <Space align="start">
+              {/* Keep Form.Item wrapped tightly around the Switch only */}
+              <Form.Item
+                name={[field.name, "is_progressive"]}
+                valuePropName="checked"
+                style={{ marginBottom: 0 }}
+              >
                 <Switch onChange={handleProgressiveChange} />
-                <Text strong>Progressive Classes</Text>
-                <Tooltip title="Each lesson builds on the previous — prevents mid-cycle joins and disables trial/PAYG/short-term.">
-                  <InfoCircleOutlined className="info-icon" />
-                </Tooltip>
-              </Space>
-            </Form.Item>
-            <Text
-              type="secondary"
-              className="section-hint"
-              style={{ display: "block", marginTop: -4 }}
-            >
-              Enable for structured curricula where skipping sessions isn't
-              possible
-            </Text>
+              </Form.Item>
+
+              <div style={{ marginTop: -2 }}>
+                <Space>
+                  <Text strong>Progressive Classes</Text>
+                  <Tooltip title="Each lesson builds on the previous — prevents mid-cycle joins and disables trial/PAYG/short-term.">
+                    <InfoCircleOutlined className="info-icon" />
+                  </Tooltip>
+                </Space>
+                <Text
+                  type="secondary"
+                  className="section-hint"
+                  style={{ display: "block", marginTop: 2 }}
+                >
+                  Enable for structured curricula where skipping sessions isn't
+                  possible
+                </Text>
+              </div>
+            </Space>
           </div>
 
           {/* Package type selector */}

@@ -189,7 +189,7 @@ const Class = () => {
               title={<span className="stat-card-title">Total Bookings</span>}
               value={registeredStudents.length}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: 'white' }}
+              valueStyle={{ color: "white" }}
             />
           </Card>
         </Col>
@@ -199,16 +199,20 @@ const Class = () => {
               title={<span className="stat-card-title">Programs</span>}
               value={getTotalScheduleCount()}
               prefix={<CalendarOutlined />}
-              valueStyle={{ color: 'white' }}
+              valueStyle={{ color: "white" }}
             />
           </Card>
         </Col>
         <Col xs={12} md={6}>
-          <Card className={listing?.active ? "stat-gradient-blue" : "stat-gradient-gray"}>
+          <Card
+            className={
+              listing?.active ? "stat-gradient-blue" : "stat-gradient-gray"
+            }
+          >
             <Statistic
               title={<span className="stat-card-title">Status</span>}
               value={listing?.active ? "Active" : "Inactive"}
-              valueStyle={{ color: 'white', fontSize: 20 }}
+              valueStyle={{ color: "white", fontSize: 20 }}
             />
           </Card>
         </Col>
@@ -218,7 +222,7 @@ const Class = () => {
               title={<span className="stat-card-title">Rating</span>}
               value={listing?.rating || 0}
               suffix={<span style={{ fontSize: 16 }}>/ 5</span>}
-              valueStyle={{ color: 'white' }}
+              valueStyle={{ color: "white" }}
             />
           </Card>
         </Col>
@@ -238,7 +242,7 @@ const Class = () => {
                 </Paragraph>
               </div>
 
-              <Divider style={{ margin: '12px 0' }} />
+              <Divider style={{ margin: "12px 0" }} />
 
               <Row gutter={[24, 20]}>
                 <Col span={12}>
@@ -292,11 +296,7 @@ const Class = () => {
                     {getImages()
                       .slice(0, 4)
                       .map((img, i) => (
-                        <Image
-                          key={i}
-                          src={img}
-                          className="gallery-image"
-                        />
+                        <Image key={i} src={img} className="gallery-image" />
                       ))}
                   </div>
                 </Image.PreviewGroup>
@@ -331,7 +331,8 @@ const Class = () => {
                   <Space align="center">
                     <EnvironmentOutlined className="outlet-icon" />
                     <Text strong className="outlet-name">
-                      {outlet.outlet_address || "Unknown Location"}
+                      {JSON.parse(outlet.outlet_address).ADDRESS ||
+                        "Unknown Location"}
                     </Text>
                     {outlet.nearest_mrt && (
                       <Tag className="outlet-mrt-tag">
@@ -366,8 +367,8 @@ const Class = () => {
                                       type === "full-term"
                                         ? "package-tag-fullterm"
                                         : type === "short-term"
-                                        ? "package-tag-shortterm"
-                                        : "package-tag-payg"
+                                          ? "package-tag-shortterm"
+                                          : "package-tag-payg"
                                     }
                                   >
                                     {type.toUpperCase()}
@@ -381,10 +382,16 @@ const Class = () => {
                               </Space>
                               <div style={{ marginTop: 12 }}>
                                 <Space size={12}>
-                                  <Tag icon={<SyncOutlined />} className="info-tag">
+                                  <Tag
+                                    icon={<SyncOutlined />}
+                                    className="info-tag"
+                                  >
                                     {group.frequency || "Weekly"}
                                   </Tag>
-                                  <Tag icon={<TeamOutlined />} className="info-tag">
+                                  <Tag
+                                    icon={<TeamOutlined />}
+                                    className="info-tag"
+                                  >
                                     {group.slots || 10} slots
                                   </Tag>
                                 </Space>
@@ -402,14 +409,20 @@ const Class = () => {
                                 style={{ width: "100%" }}
                               >
                                 {group.time_slots?.map((slot, slotIndex) => (
-                                  <div key={slotIndex} className="time-slot-item">
+                                  <div
+                                    key={slotIndex}
+                                    className="time-slot-item"
+                                  >
                                     <CalendarOutlined className="time-slot-icon" />
                                     <Text strong className="time-slot-day">
                                       {slot.day}
                                     </Text>
                                     <ClockCircleOutlined className="time-slot-time-icon" />
                                     <Text className="time-slot-time">
-                                      {formatTime(slot.start_time, slot.end_time)}
+                                      {formatTime(
+                                        slot.start_time,
+                                        slot.end_time,
+                                      )}
                                     </Text>
                                   </div>
                                 ))}
@@ -424,7 +437,11 @@ const Class = () => {
                                 <Text strong className="subsection-header">
                                   Pricing
                                 </Text>
-                                <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                                <Space
+                                  direction="vertical"
+                                  size={8}
+                                  style={{ width: "100%" }}
+                                >
                                   {group.price_payg && (
                                     <div className="pricing-item pricing-item-payg">
                                       <Space>
@@ -433,7 +450,10 @@ const Class = () => {
                                           Pay-as-you-go
                                         </Text>
                                       </Space>
-                                      <Text strong className="pricing-value-payg">
+                                      <Text
+                                        strong
+                                        className="pricing-value-payg"
+                                      >
                                         ${group.price_payg}
                                       </Text>
                                     </div>
@@ -446,12 +466,19 @@ const Class = () => {
                                           Full-term
                                         </Text>
                                         {group.full_term_class_count && (
-                                          <Text type="secondary" className="pricing-class-count">
-                                            ({group.full_term_class_count} classes)
+                                          <Text
+                                            type="secondary"
+                                            className="pricing-class-count"
+                                          >
+                                            ({group.full_term_class_count}{" "}
+                                            classes)
                                           </Text>
                                         )}
                                       </Space>
-                                      <Text strong className="pricing-value-fullterm">
+                                      <Text
+                                        strong
+                                        className="pricing-value-fullterm"
+                                      >
                                         ${group.price_fullterm}
                                       </Text>
                                     </div>
@@ -464,12 +491,19 @@ const Class = () => {
                                           Short-term
                                         </Text>
                                         {group.short_term_class_count && (
-                                          <Text type="secondary" className="pricing-class-count">
-                                            ({group.short_term_class_count} classes)
+                                          <Text
+                                            type="secondary"
+                                            className="pricing-class-count"
+                                          >
+                                            ({group.short_term_class_count}{" "}
+                                            classes)
                                           </Text>
                                         )}
                                       </Space>
-                                      <Text strong className="pricing-value-shortterm">
+                                      <Text
+                                        strong
+                                        className="pricing-value-shortterm"
+                                      >
                                         ${group.price_shortterm}
                                       </Text>
                                     </div>
@@ -483,7 +517,12 @@ const Class = () => {
                               <div className="start-date-box">
                                 <Space>
                                   <PlayCircleOutlined className="start-date-icon" />
-                                  <Text type="secondary" style={{ fontWeight: 500 }}>Starts:</Text>
+                                  <Text
+                                    type="secondary"
+                                    style={{ fontWeight: 500 }}
+                                  >
+                                    Starts:
+                                  </Text>
                                   <Text strong className="start-date-value">
                                     {new Date(
                                       group.full_term_start_date,
