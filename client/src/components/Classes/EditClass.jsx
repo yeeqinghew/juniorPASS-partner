@@ -99,28 +99,33 @@ const EditClass = () => {
       // Parse existing outlets and schedule_groups from outlets_info
       let outletsData = [];
       if (parseRes.outlets_info && parseRes.outlets_info.length > 0) {
+        console.log("outlets_info from API:", parseRes.outlets_info);
         outletsData = parseRes.outlets_info.map((outlet) => ({
           outlet_id: outlet.outlet_id,
-          schedules: (outlet.schedule_groups || []).map((group) => ({
+          schedules: (outlet.schedule_groups || []).map((group) => {
+            console.log("Schedule group is_progressive:", group.is_progressive, typeof group.is_progressive);
             // Map schedule_group to schedule form structure
-            time_slots: (group.time_slots || []).map((slot) => ({
-              day: slot.day,
-              timeslot: [slot.start_time, slot.end_time],
-            })),
-            frequency: group.frequency,
-            slots: group.slots,
-            package_types: group.package_types,
-            is_progressive: group.is_progressive,
-            full_term_start_date: group.full_term_start_date
-              ? dayjs(group.full_term_start_date)
-              : null,
-            full_term_class_count: group.full_term_class_count,
-            short_term_class_count: group.short_term_class_count,
-            price_payg: group.price_payg,
-            price_fullterm: group.price_fullterm,
-            price_shortterm: group.price_shortterm,
-          })),
+            return {
+              time_slots: (group.time_slots || []).map((slot) => ({
+                day: slot.day,
+                timeslot: [slot.start_time, slot.end_time],
+              })),
+              frequency: group.frequency,
+              slots: group.slots,
+              package_types: group.package_types,
+              is_progressive: Boolean(group.is_progressive),
+              full_term_start_date: group.full_term_start_date
+                ? dayjs(group.full_term_start_date)
+                : null,
+              full_term_class_count: group.full_term_class_count,
+              short_term_class_count: group.short_term_class_count,
+              price_payg: group.price_payg,
+              price_fullterm: group.price_fullterm,
+              price_shortterm: group.price_shortterm,
+            };
+          }),
         }));
+        console.log("Mapped outletsData:", outletsData);
       }
 
       // Set form values
