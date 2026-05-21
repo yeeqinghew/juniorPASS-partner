@@ -1,10 +1,8 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import Spinner from "../utils/Spinner";
 import toast from "react-hot-toast";
 
-const AuthenticatedRoute = ({ isAuthenticated, loading, user, ...props }) => {
-  const location = useLocation();
-
+const AuthenticatedRoute = ({ isAuthenticated, loading, ...props }) => {
   // Show loading spinner while authentication status is being determined
   if (loading) {
     return <Spinner />;
@@ -14,12 +12,6 @@ const AuthenticatedRoute = ({ isAuthenticated, loading, user, ...props }) => {
   if (!isAuthenticated) {
     toast.error("You have not logged in");
     return <Navigate to="/login" />;
-  }
-
-  // Force password change if required (block all routes except change-password)
-  if (user?.requires_password_change && location.pathname !== "/change-password") {
-    toast.error("Please change your password before continuing");
-    return <Navigate to="/change-password" replace />;
   }
 
   // Render the child routes if the user is authenticated

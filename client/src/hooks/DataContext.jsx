@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { fetchWithAuth, API_ENDPOINTS } from "../utils/api";
+import getBaseURL from "../utils/config";
 
 const DataContext = createContext();
 
@@ -9,21 +9,22 @@ const DataProvider = ({ children }) => {
   const [ageGroups, setAgeGroups] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const baseURL = getBaseURL();
 
   const getCategories = async () => {
-    const response = await fetchWithAuth(API_ENDPOINTS.GET_ALL_CATEGORIES);
+    const response = await fetch(`${baseURL}/misc/getAllCategories`);
     const data = await response.json();
     setCategories(data);
   };
 
   const getPackageTypes = async () => {
-    const response = await fetchWithAuth(API_ENDPOINTS.GET_ALL_PACKAGES);
+    const response = await fetch(`${baseURL}/misc/getAllPackages`);
     const data = await response.json();
     setPackageTypes(data);
   };
 
   const getAgeGroups = async () => {
-    const response = await fetchWithAuth(API_ENDPOINTS.GET_ALL_AGE_GROUPS);
+    const response = await fetch(`${baseURL}/misc/getAllAgeGroups`);
     const data = await response.json();
     setAgeGroups(data);
   };
@@ -33,7 +34,7 @@ const DataProvider = ({ children }) => {
     Promise.all([getCategories(), getPackageTypes(), getAgeGroups()]).finally(
       () => setLoading(false)
     );
-  }, []);
+  }, [baseURL]);
 
   return (
     <DataContext.Provider

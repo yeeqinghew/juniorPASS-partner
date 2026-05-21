@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { fetchWithAuth, API_ENDPOINTS } from "../utils/api";
+import getBaseURL from "../utils/config";
 
 const useAuth = () => {
+  const baseURL = getBaseURL();
   const [user, setUser] = useState();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -14,7 +15,12 @@ const useAuth = () => {
 
   const getPartnerInfo = async () => {
     try {
-      const response = await fetchWithAuth(API_ENDPOINTS.GET_PARTNER);
+      const response = await fetch(`${baseURL}/partners/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const parseRes = await response.json();
       setUser({ ...parseRes, token: token });
     } catch (error) {
@@ -24,7 +30,12 @@ const useAuth = () => {
 
   const isAuth = async () => {
     try {
-      const response = await fetchWithAuth(API_ENDPOINTS.VERIFY_AUTH);
+      const response = await fetch(`${baseURL}/auth/is-verify`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const parseRes = await response.json();
       if (response.status === 200 && parseRes === true) {

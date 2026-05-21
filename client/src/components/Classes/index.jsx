@@ -12,13 +12,14 @@ import ActiveClasses from "./ActiveClasses";
 import InactiveClasses from "./InactiveClasses";
 import AllClasses from "./AllClasses";
 import UserContext from "../UserContext";
-import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
+import getBaseURL from "../../utils/config";
 import "./Classes.css";
 
 const { Title } = Typography;
 
 const PartnerClasses = ({ setAuth }) => {
   const { user } = useContext(UserContext);
+  const baseURL = getBaseURL();
   const navigate = useNavigate();
   const [listing, setListing] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,10 +30,15 @@ const PartnerClasses = ({ setAuth }) => {
   const getAllListings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetchWithAuth(
-        API_ENDPOINTS.GET_PARTNER_LISTINGS(user.partner_id, {
+      const response = await fetch(
+        `${baseURL}/listings/partner/${user.partner_id}`,
+        {
           method: "GET",
-        })
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       const parseRes = await response.json();
       if (response.status === 200) {
@@ -45,7 +51,7 @@ const PartnerClasses = ({ setAuth }) => {
     } finally {
       setLoading(false);
     }
-  }, [setAuth, user?.partner_id]);
+  }, [baseURL, token, setAuth, user?.partner_id]);
 
   useEffect(() => {
     if (!token) return;

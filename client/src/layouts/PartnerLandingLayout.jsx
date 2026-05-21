@@ -40,7 +40,7 @@ const PartnerLayout = () => {
       <div
         style={{
           backgroundColor: "#FCFBF8",
-          minHeight: "100vh",
+          height: "100vh",
         }}
       >
         <Outlet />

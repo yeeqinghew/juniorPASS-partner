@@ -26,17 +26,17 @@ import TextArea from "antd/es/input/TextArea";
 import UserContext from "../UserContext";
 import { useNavigate, useParams } from "react-router-dom";
 import _ from "lodash";
-import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
+import getBaseURL from "../../utils/config";
 import { DataContext } from "../../hooks/DataContext";
-import ScheduleItemWithPackages from "../../utils/ScheduleItemPackages";
+import ScheduleItem from "../../utils/ScheduleItem";
 import dayjs from "dayjs";
-import LoadingOverlay from "../LoadingOverlay";
 import "./ClassEdit.css";
 
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
 const EditClass = () => {
+  const baseURL = getBaseURL();
   const { listing_id } = useParams();
   const [images, setImages] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
@@ -50,14 +50,18 @@ const EditClass = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [listing, setListing] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState("");
 
   // Fetch outlets for the current partner
   const fetchOutlets = async () => {
     try {
-      const response = await fetchWithAuth(
-        API_ENDPOINTS.GET_OUTLETS(user.partner_id),
+      const response = await fetch(
+        `${baseURL}/partners/${user.partner_id}/outlets`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       if (response.ok) {
@@ -75,12 +79,13 @@ const EditClass = () => {
   const fetchClassDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetchWithAuth(
-        API_ENDPOINTS.GET_LISTING(listing_id),
-        {
-          method: "GET",
+      const response = await fetch(`${baseURL}/listings/${listing_id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
       const parseRes = await response.json();
       setListing(parseRes);
 
@@ -91,45 +96,46 @@ const EditClass = () => {
           imgs = JSON.parse(imgs);
         } catch (e) {
           imgs = [];
-          console.error("Error fetching existing images: ", e.message);
         }
       }
       setExistingImages(imgs || []);
 
-      // Parse existing outlets and schedule_groups from outlets_info
+      // Parse existing outlets and schedules from schedule_info
       let outletsData = [];
-      if (parseRes.outlets_info && parseRes.outlets_info.length > 0) {
-        outletsData = parseRes.outlets_info.map((outlet) => ({
-          outlet_id: outlet.outlet_id,
-          schedules: (outlet.schedule_groups || []).map((group) => {
-            // Map schedule_group to schedule form structure
-            return {
-              time_slots: (group.time_slots || []).map((slot) => ({
-                day: slot.day,
-                timeslot: [slot.start_time, slot.end_time],
-              })),
-              frequency: group.frequency,
-              slots: group.slots,
-              package_types: group.package_types,
-              is_progressive: group.is_progressive,
-              full_term_start_date: group.full_term_start_date
-                ? dayjs(group.full_term_start_date)
-                : null,
-              full_term_class_count: group.full_term_class_count,
-              short_term_class_count: group.short_term_class_count,
-              price_payg: group.price_payg,
-              price_fullterm: group.price_fullterm,
-              price_shortterm: group.price_shortterm,
+      if (parseRes.schedule_info && parseRes.schedule_info.length > 0) {
+        // Group schedules by outlet_id
+        const outletMap = {};
+        parseRes.schedule_info.forEach((schedule) => {
+          const outletId = schedule.outlet_id || schedule.listing_outlet_id;
+          if (!outletMap[outletId]) {
+            outletMap[outletId] = {
+              outlet_id: outletId,
+              schedules: [],
             };
-          }),
-        }));
+          }
+          outletMap[outletId].schedules.push({
+            day: schedule.day,
+            timeslot: schedule.timeslot,
+            frequency: schedule.frequency,
+            slots: schedule.slots,
+            credit: schedule.credit,
+          });
+        });
+        outletsData = Object.values(outletMap);
       }
 
       // Set form values
       editClassForm.setFieldsValue({
         title: parseRes.listing_title,
         description: parseRes.description,
+        package_types: parseRes.package_types,
         age_groups: parseRes.age_groups,
+        short_term_start_date: parseRes.short_term_start_date
+          ? dayjs(parseRes.short_term_start_date)
+          : null,
+        long_term_start_date: parseRes.long_term_start_date
+          ? dayjs(parseRes.long_term_start_date)
+          : null,
         outlets: outletsData,
       });
 
@@ -189,66 +195,58 @@ const EditClass = () => {
   const handleEditClass = async (values) => {
     try {
       setSaving(true);
-      setUploadProgress(0);
-      setUploadStatus("Updating class information...");
+
+      // Format dates for backend
+      const shortTermDate = values.short_term_start_date
+        ? values.short_term_start_date.format("YYYY-MM-DD")
+        : null;
+      const longTermDate = values.long_term_start_date
+        ? values.long_term_start_date.format("YYYY-MM-DD")
+        : null;
 
       // 1. Update the listing basic info
-      const updateResponse = await fetchWithAuth(
-        API_ENDPOINTS.UPDATE_LISTING(listing_id),
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            listing_title: values.title,
-            description: values.description,
-            age_groups: values.age_groups,
-          }),
+      const updateResponse = await fetch(`${baseURL}/listings/${listing_id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          title_name: values.title,
+          description: values.description,
+          package_types: values.package_types,
+          age_groups: values.age_groups,
+          short_term_start_date: shortTermDate,
+          long_term_start_date: longTermDate,
+        }),
+      });
 
       if (!updateResponse.ok) {
         const errorData = await updateResponse.json();
         throw new Error(errorData.error || "Failed to update listing");
       }
 
-      setUploadProgress(30);
-      setUploadStatus("Updating schedules...");
-
-      // 2. Update schedule_groups if outlets are provided
+      // 2. Update schedules if outlets are provided
       if (values.outlets && values.outlets.length > 0) {
-        const schedulesResponse = await fetchWithAuth(
-          API_ENDPOINTS.UPDATE_LISTING_SCHEDULES(listing_id),
+        const schedulesResponse = await fetch(
+          `${baseURL}/listings/${listing_id}/schedules`,
           {
             method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({
               outlets: values.outlets.map((outlet) => ({
                 outlet_id: outlet.outlet_id,
-                schedule_groups: (outlet.schedules || [])
-                  .filter((schedule) => {
-                    const timeSlots = schedule.time_slots || [];
-                    if (timeSlots.length === 0) {
-                      console.warn("Schedule has no time_slots:", schedule);
-                      return false;
-                    }
-                    return true;
-                  })
-                  .map((schedule) => ({
-                    time_slots: (schedule.time_slots || [])
-                      .filter((slot) => slot && slot.day && slot.timeslot)
-                      .map((slot) => ({
-                        day: slot.day,
-                        timeslot: slot.timeslot,
-                      })),
+                schedules:
+                  outlet.schedules?.map((schedule) => ({
+                    day: schedule.day,
+                    timeslot: schedule.timeslot,
                     frequency: schedule.frequency,
-                    slots: schedule.slots,
-                    package_types: schedule.package_types,
-                    is_progressive: schedule.is_progressive,
-                    full_term_start_date: schedule.full_term_start_date,
-                    full_term_class_count: schedule.full_term_class_count,
-                    short_term_class_count: schedule.short_term_class_count,
-                    price_payg: schedule.price_payg,
-                    price_fullterm: schedule.price_fullterm,
-                    price_shortterm: schedule.price_shortterm,
-                  })),
+                    slots: schedule.slots || 10,
+                    credit: schedule.credit || 1,
+                  })) || [],
               })),
             }),
           },
@@ -264,99 +262,61 @@ const EditClass = () => {
         }
       }
 
-      // 3. Upload new images to Cloudinary if any
+      // 3. Upload new images if any
       const uploadedImageURLs = Array.isArray(existingImages)
         ? [...existingImages]
         : [];
 
       if (images.length > 0) {
-        setUploadStatus(`Uploading images (0/${images.length})...`);
-        for (let i = 0; i < images.length; i++) {
-          const img = images[i];
-          setUploadStatus(`Uploading image ${i + 1}/${images.length}...`);
-          setUploadProgress(50 + (i / images.length) * 30);
+        for (let img of images) {
           try {
-            // Get Cloudinary signature from backend
-            const response = await fetchWithAuth(
-              API_ENDPOINTS.UPLOAD_LISTING_IMAGE,
-              {
-                method: "POST",
-                body: JSON.stringify({
-                  listingId: listing_id,
-                  partnerId: user.partner_id,
-                }),
-              },
+            const response = await fetch(
+              `${baseURL}/misc/s3url?folder=partners/${user?.partner_id}/${listing_id}`,
             );
-            const sigData = await response.json();
-            if (!response.ok)
-              throw new Error(
-                sigData.message || "Failed to get upload signature",
-              );
+            const { uploadURL } = await response.json();
 
-            // Upload to Cloudinary
-            const formData = new FormData();
-            formData.append("file", img);
-            formData.append("api_key", sigData.apiKey);
-            formData.append("timestamp", sigData.allowedParams.timestamp);
-            formData.append("signature", sigData.signature);
-            formData.append("folder", sigData.allowedParams.folder);
-            formData.append("public_id", sigData.allowedParams.public_id);
-            formData.append("overwrite", sigData.allowedParams.overwrite);
-
-            const uploadRes = await fetch(
-              `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
-              {
-                method: "POST",
-                body: formData,
+            const s3upload = await fetch(uploadURL, {
+              method: "PUT",
+              headers: {
+                "Content-Type": img.type,
               },
-            );
-            const uploadData = await uploadRes.json();
+              body: img,
+            });
 
-            if (uploadRes.ok) {
-              uploadedImageURLs.push(uploadData.secure_url);
-            } else {
-              throw new Error(uploadData.error?.message || "Upload failed");
+            if (s3upload.status === 200) {
+              const imageURL = uploadURL.split("?")[0];
+              uploadedImageURLs.push(imageURL);
             }
           } catch (error) {
             console.warn("Image upload error:", error.message);
-            message.warning(`Failed to upload image: ${error.message}`);
           }
         }
       }
 
       // 4. Update images if changed
-      setUploadProgress(80);
-      setUploadStatus("Finalizing changes...");
-
       if (
         uploadedImageURLs.length !== existingImages.length ||
         images.length > 0
       ) {
-        await fetchWithAuth(API_ENDPOINTS.UPDATE_LISTING(listing_id), {
+        await fetch(`${baseURL}/listings/${listing_id}`, {
           method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             images: uploadedImageURLs,
           }),
         });
       }
 
-      setUploadProgress(100);
-      setUploadStatus("Class updated successfully!");
       toast.success("Class updated successfully!");
-
-      setTimeout(() => {
-        navigate(`/class/${listing_id}`);
-      }, 500);
+      navigate(`/class/${listing_id}`);
     } catch (error) {
       console.error(error.message);
-      setUploadStatus("");
       toast.error(error.message || "Failed to update class");
     } finally {
       setSaving(false);
-      setTimeout(() => {
-        setUploadProgress(0);
-        setUploadStatus("");
-      }, 2000);
     }
   };
 
@@ -371,13 +331,6 @@ const EditClass = () => {
 
   return (
     <div className="class-edit-container">
-      <LoadingOverlay
-        visible={saving}
-        status={uploadStatus || "Saving changes..."}
-        progress={uploadProgress}
-        showProgress={true}
-      />
-
       {/* Header */}
       <div className="welcome-banner">
         <div className="welcome-content">
@@ -441,6 +394,72 @@ const EditClass = () => {
         >
           <Input placeholder="Enter class title" size="large" />
         </Form.Item>
+
+        <Form.Item
+          name="package_types"
+          label="Package Types"
+          rules={[
+            {
+              required: true,
+              message: "Please select the package type",
+            },
+          ]}
+        >
+          <Select
+            placeholder="Select package types"
+            onChange={handleSelectPackage}
+            mode="multiple"
+            size="large"
+          >
+            {packageTypes &&
+              packageTypes.map((packageType) => (
+                <Select.Option
+                  key={packageType.id}
+                  value={packageType.package_type}
+                >
+                  {packageType.name}
+                </Select.Option>
+              ))}
+          </Select>
+        </Form.Item>
+
+        {selectedPackageTypes?.includes("short-term") && (
+          <Form.Item
+            name="short_term_start_date"
+            label="Short-term Start Date"
+            rules={[
+              {
+                required: true,
+                message: "Please select the start date for short-term",
+              },
+            ]}
+          >
+            <DatePicker
+              placeholder="Select short-term start date"
+              size="large"
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+        )}
+
+        {selectedPackageTypes?.includes("long-term") && (
+          <Form.Item
+            name="long_term_start_date"
+            label="Long-term Start Date"
+            rules={[
+              {
+                required: true,
+                message: "Please select the start date for long-term",
+              },
+            ]}
+          >
+            <DatePicker
+              placeholder="Select long-term start date"
+              size="large"
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+        )}
 
         <Form.Item
           name="description"
@@ -547,13 +566,12 @@ const EditClass = () => {
                               align="middle"
                             >
                               <Col span={20}>
-                                <ScheduleItemWithPackages
+                                <ScheduleItem
                                   key={scheduleField.key}
                                   field={scheduleField}
                                   remove={() =>
                                     removeSchedule(scheduleField.name)
                                   }
-                                  form={editClassForm}
                                 />
                               </Col>
                             </Row>
