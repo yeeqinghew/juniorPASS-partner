@@ -1,125 +1,216 @@
-/* JuniorPASS Partner Portal - Design System Variables */
+/* ============================================
+   JUNIORPASS PARTNER PORTAL - CSS VARIABLES
+   Matching main site design system
+   ============================================ */
 
 :root {
-  /* ===== COLORS ===== */
-  
-  /* Primary Colors */
-  --jp-primary: #98BDD2;
-  --jp-primary-dark: #6aa4c3;
-  --jp-primary-light: #b8d9e8;
-  --jp-primary-hover: #7fb5d0;
-  
-  /* Accent Colors */
-  --jp-accent-pink: #f3a5c7;
-  --jp-accent-green: #52c41a;
-  --jp-accent-orange: #fa8c16;
-  --jp-accent-red: #ff4d4f;
-  
-  /* Text Colors */
-  --jp-text-dark: #1a1a2e;
-  --jp-text-primary: #333;
-  --jp-text-muted: #666;
-  --jp-text-light: #8c8c8c;
-  --jp-text-white: #fff;
-  
-  /* Background Colors */
-  --jp-bg-white: #fff;
-  --jp-bg-cream: #FCFBF8;
-  --jp-bg-light-blue: #f8fcff;
-  --jp-bg-gray: #f5f5f5;
-  --jp-bg-dark: #1a1a2e;
-  
-  /* Border Colors */
-  --jp-border-light: #f0f0f0;
-  --jp-border-medium: #d9d9d9;
-  --jp-border-dark: #bfbfbf;
-  
-  /* Status Colors */
-  --jp-status-success: #52c41a;
-  --jp-status-warning: #faad14;
-  --jp-status-error: #ff4d4f;
-  --jp-status-info: #1890ff;
-  
-  /* ===== SHADOWS ===== */
-  --jp-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
-  --jp-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --jp-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --jp-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --jp-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.16);
-  --jp-shadow-primary: 0 4px 12px rgba(152, 189, 210, 0.3);
-  --jp-shadow-primary-hover: 0 6px 16px rgba(152, 189, 210, 0.4);
-  
-  /* ===== BORDER RADIUS ===== */
-  --jp-radius-xs: 4px;
-  --jp-radius-sm: 8px;
-  --jp-radius-md: 12px;
-  --jp-radius-lg: 16px;
-  --jp-radius-xl: 20px;
-  --jp-radius-2xl: 24px;
-  --jp-radius-full: 9999px;
-  
-  /* ===== SPACING ===== */
-  --jp-space-xs: 4px;
-  --jp-space-sm: 8px;
-  --jp-space-md: 12px;
-  --jp-space-lg: 16px;
-  --jp-space-xl: 20px;
-  --jp-space-2xl: 24px;
-  --jp-space-3xl: 32px;
-  --jp-space-4xl: 40px;
-  
-  /* ===== TYPOGRAPHY ===== */
-  --jp-font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  
-  /* Font Sizes */
-  --jp-font-xs: 12px;
-  --jp-font-sm: 13px;
-  --jp-font-base: 14px;
-  --jp-font-md: 15px;
-  --jp-font-lg: 16px;
-  --jp-font-xl: 18px;
-  --jp-font-2xl: 20px;
-  --jp-font-3xl: 24px;
-  --jp-font-4xl: 28px;
-  --jp-font-5xl: 32px;
-  
-  /* Font Weights */
-  --jp-font-normal: 400;
-  --jp-font-medium: 500;
-  --jp-font-semibold: 600;
-  --jp-font-bold: 700;
-  
-  /* Line Heights */
-  --jp-line-tight: 1.2;
-  --jp-line-normal: 1.5;
-  --jp-line-relaxed: 1.75;
-  
-  /* ===== TRANSITIONS ===== */
-  --jp-transition-fast: 0.15s ease;
-  --jp-transition-normal: 0.3s ease;
-  --jp-transition-slow: 0.5s ease;
-  
-  /* ===== Z-INDEX ===== */
-  --jp-z-dropdown: 1000;
-  --jp-z-sticky: 1020;
-  --jp-z-fixed: 1030;
-  --jp-z-modal-backdrop: 1040;
-  --jp-z-modal: 1050;
-  --jp-z-popover: 1060;
-  --jp-z-tooltip: 1070;
-  
-  /* ===== COMPONENT SIZES ===== */
-  --jp-btn-height-sm: 32px;
-  --jp-btn-height-md: 40px;
-  --jp-btn-height-lg: 44px;
-  --jp-btn-height-xl: 48px;
-  
-  --jp-input-height-sm: 32px;
-  --jp-input-height-md: 40px;
-  --jp-input-height-lg: 44px;
-  
-  /* ===== GRADIENTS ===== */
-  --jp-gradient-primary: linear-gradient(135deg, var(--jp-primary), var(--jp-primary-dark));
-  --jp-gradient-primary-reverse: linear-gradient(135deg, var(--jp-primary-dark), var(--jp-primary));
-  --jp-gradient-light: linear-gradient(135deg, #f8fcff 0%, #FCFBF8 100%);
+  /* ===== Brand Colors ===== */
+  --primary-color: #98BDD2;
+  --primary-dark: #6aa4c3;
+  --primary-light: #b8d9e8;
+
+  --secondary-color: #52c41a;
+  --secondary-dark: #389e0d;
+
+  --accent-pink: #f3a5c7;
+  --accent-pink-dark: #e88bb1;
+  --accent-gold: #d4af37;
+  --accent-gold-dark: #b8941f;
+
+  /* ===== Text Colors ===== */
+  --text-primary: #333;
+  --text-secondary: #555;
+  --text-muted: #666;
+  --text-light: #777;
+  --text-disabled: #999;
+  --text-dark: #1a1a2e;
+  --text-white: #fff;
+
+  /* ===== Status Colors ===== */
+  --color-success: #52c41a;
+  --color-success-light: #f6ffed;
+  --color-success-bg: linear-gradient(135deg, #f6ffed 0%, #b7eb8f 100%);
+  --color-error: #ff4d4f;
+  --color-error-light: #fff1f0;
+  --color-error-bg: linear-gradient(135deg, #fff1f0 0%, #ffccc7 100%);
+  --color-warning: #faad14;
+  --color-warning-light: #fffbe6;
+  --color-info: #1890ff;
+  --color-info-light: #e6f7ff;
+  --color-info-bg: linear-gradient(135deg, #e6f7ff 0%, #91d5ff 100%);
+  --color-purple: #722ed1;
+  --color-purple-light: #f9f0ff;
+  --color-purple-bg: linear-gradient(135deg, #f9f0ff 0%, #d3adf7 100%);
+
+  /* ===== Background Colors ===== */
+  --bg-white: #fff;
+  --bg-cream: #FCFBF8;
+  --bg-light-blue: #f8fcff;
+  --bg-light-pink: #fef5f9;
+  --bg-gray: #f5f5f5;
+  --bg-gradient-blue: linear-gradient(135deg, #e8f4f8 0%, #d4e9f2 100%);
+  --bg-gradient-pink: linear-gradient(135deg, #fef5f9 0%, #fdeef5 50%, #fef7fa 100%);
+
+  /* ===== Border & Shadow ===== */
+  --border-light: #f0f0f0;
+  --border-medium: #d9d9d9;
+  --border-dark: #bfbfbf;
+  --border-color: rgba(0, 0, 0, 0.06);
+  --border-color-medium: rgba(0, 0, 0, 0.08);
+
+  --shadow-xs: 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.15);
+  --shadow-2xl: 0 16px 36px rgba(0, 0, 0, 0.18);
+
+  --shadow-primary: 0 4px 12px rgba(152, 189, 210, 0.3);
+  --shadow-primary-hover: 0 8px 20px rgba(152, 189, 210, 0.5);
+  --shadow-pink: 0 6px 20px rgba(243, 165, 199, 0.35);
+  --shadow-pink-hover: 0 10px 28px rgba(243, 165, 199, 0.5);
+
+  /* Layered Shadows for Depth */
+  --shadow-multi-sm: 0 2px 6px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-multi-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05);
+  --shadow-multi-lg: 0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-multi-xl: 0 12px 28px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  --shadow-button-default: 0 6px 16px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+  --shadow-button-hover: 0 12px 28px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.15);
+
+  /* ===== Spacing ===== */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+  --spacing-4xl: 80px;
+
+  /* ===== Border Radius ===== */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ===== Typography ===== */
+  --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 15px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 28px;
+  --font-size-5xl: 32px;
+  --font-size-6xl: 40px;
+  --font-size-7xl: 48px;
+
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.3;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+  --line-height-loose: 1.7;
+
+  --letter-spacing-tight: -0.5px;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.5px;
+
+  /* ===== Transitions ===== */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-medium: 0.4s ease;
+  --transition-slow: 0.5s ease;
+  --transition-cubic: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-spring: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* ===== Animations ===== */
+  --animation-duration-fast: 0.3s;
+  --animation-duration-base: 0.6s;
+  --animation-duration-slow: 1s;
+
+  /* ===== Icon Sizes ===== */
+  --icon-xs: 16px;
+  --icon-sm: 20px;
+  --icon-md: 24px;
+  --icon-lg: 32px;
+  --icon-xl: 40px;
+  --icon-2xl: 48px;
+
+  /* ===== Component Sizes ===== */
+  --button-height-sm: 32px;
+  --button-height-md: 40px;
+  --button-height-lg: 48px;
+  --button-height-xl: 56px;
+
+  --input-height-sm: 32px;
+  --input-height-md: 40px;
+  --input-height-lg: 48px;
+
+  --card-padding-sm: 16px;
+  --card-padding-md: 24px;
+  --card-padding-lg: 32px;
+
+  /* ===== Gradients ===== */
+  --gradient-pink: linear-gradient(135deg, var(--accent-pink), var(--accent-pink-dark));
+  --gradient-blue: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  --gradient-overlay: linear-gradient(
+    135deg,
+    rgba(152, 189, 210, 0.15) 0%,
+    rgba(243, 165, 199, 0.15) 50%,
+    rgba(255, 182, 193, 0.15) 100%
+  );
+  --gradient-shimmer: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+
+  /* ===== Opacity Levels ===== */
+  --opacity-disabled: 0.6;
+  --opacity-hover: 0.8;
+  --opacity-overlay: 0.9;
+
+  /* ===== Backdrop Filters ===== */
+  --backdrop-blur-sm: blur(8px);
+  --backdrop-blur-md: blur(10px);
+  --backdrop-blur-lg: blur(16px);
+
+  /* ===== Z-Index ===== */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* ===== Breakpoints (for reference in JS) ===== */
+  --breakpoint-mobile: 768px;
+  --breakpoint-tablet-portrait: 1024px;
+  --breakpoint-tablet-landscape: 1336px;
+  --breakpoint-desktop: 1336px;
+
+  /* ===== Filter Effects ===== */
+  --filter-brightness-hover: brightness(1.1);
+  --filter-brightness-active: brightness(0.95);
+  --filter-grayscale-light: grayscale(20%);
+  --filter-grayscale-full: grayscale(100%);
 }

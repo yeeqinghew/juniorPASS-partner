@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 
 const parseAddress = (address) => {
-  console.log(address);
   try {
     const parsed = JSON.parse(address);
     return parsed.ADDRESS || address;
@@ -26,7 +25,7 @@ const useFormInitialization = (form, list) => {
     const outlets = list?.schedule_info
       ? list?.schedule_info.reduce((acc, schedule) => {
           const outletIndex = acc.findIndex(
-            (o) => o.outlet_id === schedule.outlet_id
+            (o) => o.outlet_id === schedule.outlet_id,
           );
 
           const scheduleData = {

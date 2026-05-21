@@ -2,227 +2,254 @@ import {
   InboxOutlined,
   PlusCircleOutlined,
   LeftOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
-import {
-  Button,
-  Form,
-  Input,
-  Select,
-  Typography,
-  Upload,
-  Row,
-  Col,
-  Space,
-  DatePicker,
-} from "antd";
+import { Button, Form, Input, Select, Typography, Upload } from "antd";
 import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import TextArea from "antd/es/input/TextArea";
 import UserContext from "../UserContext";
 import { useNavigate } from "react-router-dom";
-import _ from "lodash";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { DataContext } from "../../hooks/DataContext";
-import ScheduleItem from "../../utils/ScheduleItem";
+import ScheduleItemWithPackages from "../../utils/ScheduleItemPackages";
+import LoadingOverlay from "../LoadingOverlay";
 import "./ClassEdit.css";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Transform form values into the payload shape the API expects.
+ * Each schedule (with its time_slots array) becomes one schedule_group.
+ */
+const buildPayload = (values, partnerId) => ({
+  ...values,
+  partner_id: partnerId,
+  images: [],
+  outlets: (values.outlets || []).map((outlet) => ({
+    outlet_id: outlet.outlet_id,
+    schedule_groups: (outlet.schedules || [])
+      .filter((schedule) => {
+        // Filter out schedules with no time slots
+        const timeSlots = schedule.time_slots || [];
+        if (timeSlots.length === 0) {
+          console.warn("Schedule has no time_slots:", schedule);
+          return false;
+        }
+        return true;
+      })
+      .map((schedule) => ({
+        // time_slots stays as array (multiple days for same program)
+        time_slots: (schedule.time_slots || [])
+          .filter((slot) => slot && slot.day && slot.timeslot)
+          .map((slot) => ({
+            day: slot.day,
+            timeslot: slot.timeslot,
+          })),
+        // Package configuration (shared across all time slots)
+        frequency: schedule.frequency,
+        slots: schedule.slots,
+        package_types: schedule.package_types,
+        is_progressive: schedule.is_progressive || false,
+        full_term_start_date: schedule.full_term_start_date,
+        full_term_class_count: schedule.full_term_class_count,
+        short_term_class_count: schedule.short_term_class_count,
+        price_payg: schedule.price_payg,
+        price_fullterm: schedule.price_fullterm,
+        price_shortterm: schedule.price_shortterm,
+      })),
+  })),
+});
+
+// ─── component ───────────────────────────────────────────────────────────────
+
 const CreateClass = () => {
-  const baseURL = getBaseURL();
   const [images, setImages] = useState([]);
-  const { packageTypes, ageGroups } = useContext(DataContext);
+  const { ageGroups } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
-  const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
   const { user } = useContext(UserContext);
-  const token = user && user?.token;
   const navigate = useNavigate();
   const [outlets, setOutlets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState("");
 
-  // Fetch outlets for the current partner
-  const fetchOutlets = async () => {
-    try {
-      const response = await fetch(
-        `${baseURL}/partners/${user.partner_id}/outlets`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setOutlets(data); // Set the outlets state
-      } else {
-        throw new Error("Failed to fetch outlets");
-      }
-    } catch (error) {
-      console.error("Error fetching outlets:", error.message);
-    }
-  };
-
+  // ── fetch this partner's outlet locations ──
   useEffect(() => {
-    if (user?.partner_id) {
-      fetchOutlets(); // Fetch outlets when the user is available and has a partner_id
-    }
+    if (!user?.partner_id) return;
+    const fetchOutlets = async () => {
+      try {
+        const res = await fetchWithAuth(
+          API_ENDPOINTS.GET_OUTLETS(user.partner_id),
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setOutlets(data);
+        } else {
+          throw new Error("Failed to fetch outlets");
+        }
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+    fetchOutlets();
   }, [user?.partner_id]);
 
-  const props = {
+  // ── image upload props ──
+  const uploadProps = {
     name: "image",
     multiple: true,
     maxCount: 5,
-    required: true,
-    showUploadList: {
-      showPreviewIcon: true,
-      showRemoveIcon: true,
-    },
-    beforeUpload(info) {
-      // setImage(info);
-      setImages((prevImages) => [...prevImages, info]);
+    showUploadList: { showPreviewIcon: true, showRemoveIcon: true },
+    beforeUpload(file) {
+      setImages((prev) => [...prev, file]);
       return false;
     },
-    onDrop(info) {
-      console.log("Dropped files", info.dataTransfer.files);
-    },
-    onRemove(info) {
-      // setImage(null);
-      setImages((prevImages) =>
-        prevImages.filter((img) => img.uid !== info.uid),
-      );
-    },
-    progress: {
-      strokeColor: {
-        "0%": "#108ee9",
-        "100%": "#87d068",
-      },
-      size: 3,
-      format: (percent) => percent && `${parseFloat(percent.toFixed(2))}%`,
+    onRemove(file) {
+      setImages((prev) => prev.filter((f) => f.uid !== file.uid));
     },
   };
 
-  const handleSelectAgeGroups = (values) => {
-    createClassForm.setFieldValue("age_groups", values);
-  };
-
-  const handleSelectPackage = (values) => {
-    setSelectedPackageTypes(values);
-    createClassForm.setFieldValue("package_types", values);
-  };
-
+  // ── submit ──
   const handleCreateClass = async (values) => {
+    if (images.length === 0) {
+      toast.error("Please upload at least one image for the class");
+      return;
+    }
+
+    setLoading(true);
+    setUploadProgress(0);
+    setUploadStatus("Creating listing…");
+
+    let listingId = null;
     try {
-      // 1. Create the listing first
-      const createListingResponse = await fetch(`${baseURL}/listings`, {
+      // 1. Create listing
+      const createRes = await fetchWithAuth(API_ENDPOINTS.CREATE_LISTING, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...values,
-          partner_id: user.partner_id,
-          images: [], // temporarily empty, will be updated later
-          short_term_start_date: values.short_term_start_date || null,
-          long_term_start_date: values.long_term_start_date || null,
-        }),
+        body: JSON.stringify(buildPayload(values, user.partner_id)),
       });
+      const createData = await createRes.json();
+      if (createRes.status !== 201) {
+        throw new Error(createData.error || "Failed to create listing");
+      }
+      listingId = createData.data.listing_id;
+      setUploadProgress(20);
 
-      const createListingResult = await createListingResponse.json();
-      if (createListingResponse.status !== 201) {
-        throw new Error(
-          createListingResult.error || "Failed to create listing",
+      // 2. Upload images to Cloudinary
+      const uploadedURLs = [];
+      for (let i = 0; i < images.length; i++) {
+        setUploadStatus(`Uploading image ${i + 1}/${images.length}…`);
+        setUploadProgress(20 + (i / images.length) * 60);
+
+        // Get signature
+        const sigRes = await fetchWithAuth(API_ENDPOINTS.UPLOAD_LISTING_IMAGE, {
+          method: "POST",
+          body: JSON.stringify({ listingId, partnerId: user.partner_id }),
+        });
+        const sigData = await sigRes.json();
+        if (!sigRes.ok)
+          throw new Error(sigData.message || "Failed to get upload signature");
+
+        // Upload
+        const fd = new FormData();
+        fd.append("file", images[i]);
+        fd.append("api_key", sigData.apiKey);
+        fd.append("timestamp", sigData.allowedParams.timestamp);
+        fd.append("signature", sigData.signature);
+        fd.append("folder", sigData.allowedParams.folder);
+        fd.append("public_id", sigData.allowedParams.public_id);
+        fd.append("overwrite", sigData.allowedParams.overwrite);
+
+        const upRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
+          { method: "POST", body: fd },
         );
+        const upData = await upRes.json();
+        if (!upRes.ok)
+          throw new Error(upData.error?.message || "Image upload failed");
+
+        uploadedURLs.push(upData.secure_url);
       }
 
-      const listingId = createListingResult.data.listing_id;
+      setUploadProgress(80);
+      setUploadStatus("Finalising listing…");
 
-      // 2. upload images to S3
-      const uploadedImageURLs = [];
-      for (let img of images) {
-        try {
-          const response = await fetch(
-            `${baseURL}/misc/s3url?folder=partners/${user?.partner_id}/${listingId}`,
-          );
-          const { uploadURL } = await response.json();
-
-          // post the image directly to S3 bucket
-          const s3upload = await fetch(uploadURL, {
-            method: "PUT",
-            headers: {
-              "Content-Type": img.type,
-            },
-            body: img,
-          });
-
-          if (s3upload.status !== 200) {
-            throw new Error("Failed to upload image");
-          }
-
-          const imageURL = uploadURL.split("?")[0];
-          uploadedImageURLs.push(imageURL);
-        } catch (error) {
-          console.error("Image upload failed:", error);
-
-          // 3. (Rollback): delete the listing if any image upload fails
-          await fetch(`${baseURL}/listings/${listingId}`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          throw new Error("Image upload failed. Listing has been rolled back.");
-        }
-      }
-
-      // 4. Update the lsiting with the uploaded image URLs
-      const updateListingResponse = await fetch(
-        `${baseURL}/listings/${listingId}`,
+      // 3. Patch listing with image URLs
+      const patchRes = await fetchWithAuth(
+        API_ENDPOINTS.UPDATE_LISTING(listingId),
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            images: JSON.stringify(uploadedImageURLs),
-          }),
+          body: JSON.stringify({ images: uploadedURLs }),
         },
       );
+      const patchData = await patchRes.json();
 
-      const updateListingResult = await updateListingResponse.json();
-      if (updateListingResponse.status === 200) {
+      if (patchRes.status === 200) {
+        setUploadProgress(100);
+        setUploadStatus("Class created successfully!");
         createClassForm.resetFields();
-        toast.success(
-          updateListingResult.message || "Listing created successfully",
-        );
-        navigate("/classes");
+        toast.success(patchData.message || "Class created successfully");
+        setTimeout(() => navigate("/classes"), 500);
       } else {
-        throw new Error(
-          updateListingResult.error || "Failed to update listing with images",
-        );
+        throw new Error(patchData.error || "Failed to finalise listing");
       }
-    } catch (error) {
-      console.error(error.message);
-      toast.error(
-        error.message || "ERROR in creating class. Please try again later.",
-      );
+    } catch (err) {
+      console.error(err.message);
+      setUploadStatus("");
+
+      // Rollback
+      if (listingId) {
+        try {
+          await fetchWithAuth(API_ENDPOINTS.DELETE_LISTING(listingId), {
+            method: "DELETE",
+          });
+          toast.error(
+            err.message ||
+              "Failed to create class. Changes have been rolled back.",
+          );
+        } catch {
+          toast.error(
+            `Failed to create class. Please manually delete listing ID: ${listingId}`,
+          );
+        }
+      } else {
+        toast.error(err.message || "Error creating class. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setUploadProgress(0);
+        setUploadStatus("");
+      }, 2000);
     }
   };
 
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="class-edit-container">
+      <LoadingOverlay
+        visible={loading}
+        status={uploadStatus}
+        progress={uploadProgress}
+        showProgress
+      />
+
+      {/* Header */}
       <div className="class-edit-header">
-        <Space align="center">
-          <LeftOutlined onClick={() => navigate(-1)} className="back-icon" />
-          <Title level={2} className="class-edit-title">
-            Create New Class
-          </Title>
-        </Space>
+        <button
+          type="button"
+          className="back-btn"
+          onClick={() => navigate(-1)}
+          aria-label="Go back"
+        >
+          <LeftOutlined />
+        </button>
+        <Title level={2} className="class-edit-title">
+          Create New Class
+        </Title>
       </div>
 
       <Form
@@ -232,133 +259,72 @@ const CreateClass = () => {
         onFinish={handleCreateClass}
         layout="vertical"
       >
+        {/* ── Basic info ── */}
         <div className="form-section-header">Basic Information</div>
 
         <Form.Item
           name="title"
           label="Class Title"
-          rules={[
-            {
-              required: true,
-              message: "Please input the class title",
-            },
-          ]}
+          rules={[{ required: true, message: "Please enter a class title" }]}
         >
-          <Input placeholder="Enter class title" size="large" />
-        </Form.Item>
-        <Form.Item
-          name="package_types"
-          label="Package Types"
-          rules={[
-            {
-              required: true,
-              message: "Please select the package type",
-            },
-          ]}
-        >
-          <Select
-            placeholder="Select package types"
-            onChange={handleSelectPackage}
-            mode="multiple"
+          <Input
+            placeholder="e.g. Junior Basketball Fundamentals"
             size="large"
+          />
+        </Form.Item>
+
+        <div className="fields-row-2">
+          <Form.Item
+            name="lesson_type"
+            label="Lesson Type"
+            rules={[{ required: true, message: "Select a lesson type" }]}
           >
-            {packageTypes &&
-              packageTypes.map((packageType) => (
-                <Select.Option
-                  key={packageType.id}
-                  value={packageType.package_type}
-                >
-                  {packageType.name}
+            <Select placeholder="Select type" size="large">
+              <Select.Option value="Workshop">Workshop</Select.Option>
+              <Select.Option value="Classes">Classes</Select.Option>
+              <Select.Option value="Camp">Camp</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="age_groups"
+            label="Age Groups"
+            rules={[
+              { required: true, message: "Select at least one age group" },
+            ]}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Select age groups"
+              size="large"
+            >
+              {ageGroups?.map((age) => (
+                <Select.Option key={age.id} value={age.name}>
+                  {age.max_age !== null
+                    ? `${age.min_age}–${age.max_age} yrs: ${age.name}`
+                    : `${age.name}`}
                 </Select.Option>
               ))}
-          </Select>
-        </Form.Item>
-        {createClassForm
-          .getFieldValue("package_types")
-          ?.includes("short-term") && (
-          <Form.Item
-            name="short_term_start_date"
-            label="Short-term Start Date"
-            rules={[
-              {
-                required: true,
-                message: "Please select the start date for short-term",
-              },
-            ]}
-          >
-            <DatePicker
-              placeholder="Select short-term start date"
-              size="large"
-              className="w-full"
-            />
+            </Select>
           </Form.Item>
-        )}
-        {createClassForm
-          .getFieldValue("package_types")
-          ?.includes("long-term") && (
-          <Form.Item
-            name="long_term_start_date"
-            label="Long-term Start Date"
-            rules={[
-              {
-                required: true,
-                message: "Please select the start date for long-term",
-              },
-            ]}
-          >
-            <DatePicker
-              placeholder="Select long-term start date"
-              size="large"
-              className="w-full"
-            />
-          </Form.Item>
-        )}
+        </div>
+
         <Form.Item
           name="description"
           label="Class Description"
-          rules={[
-            {
-              required: true,
-              message: "Please input a description",
-            },
-          ]}
+          rules={[{ required: true, message: "Please add a description" }]}
         >
           <TextArea
             showCount
             maxLength={5000}
-            placeholder="Describe your class..."
+            placeholder="Describe your class, what children will learn, what to bring…"
             className="textarea-description"
+            autoSize={{ minRows: 4, maxRows: 10 }}
           />
         </Form.Item>
 
-        <Form.Item
-          name="age_groups"
-          label="Age Groups"
-          rules={[
-            {
-              required: true,
-              message: "Please select age groups",
-            },
-          ]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Select age groups"
-            onChange={handleSelectAgeGroups}
-            size="large"
-          >
-            {ageGroups &&
-              ageGroups.map((age) => (
-                <Select.Option key={age.id} value={age.name}>
-                  {age.max_age !== null
-                    ? `${age.min_age} to ${age.max_age} years old: ${age.name}`
-                    : `${age.name} years old`}
-                </Select.Option>
-              ))}
-          </Select>
-        </Form.Item>
-
-        <div className="form-section-header">Outlets & Schedules</div>
+        {/* ── Outlets & Schedules ── */}
+        <div className="form-section-header">Outlets &amp; Schedules</div>
 
         <Form.List name="outlets">
           {(outletFields, { add: addOutlet, remove: removeOutlet }) => (
@@ -367,7 +333,7 @@ const CreateClass = () => {
                 type="dashed"
                 icon={<PlusCircleOutlined />}
                 className="add-outlet-button mb-16"
-                onClick={() => addOutlet({ schedules: [{}] })}
+                onClick={() => addOutlet({ schedules: [{ time_slots: [{}] }] })}
                 block
               >
                 Add Outlet
@@ -375,108 +341,114 @@ const CreateClass = () => {
 
               {outletFields.map((outletField, outletIndex) => (
                 <div key={outletField.key} className="outlet-section">
-                  <div className="outlet-section-title">
-                    Outlet {outletIndex + 1}
-                  </div>
-                  <Col flex="1 0 25%">
-                    <Form.Item
-                      name={[outletField.name, "outlet_id"]}
-                      label="Select Outlet Location"
-                      rules={[
-                        { required: true, message: "Please select an outlet" },
-                      ]}
-                    >
-                      <Select placeholder="Select an outlet" size="large">
-                        {outlets.map((outletOption) => {
-                          const parsedAddress = JSON.parse(
-                            outletOption.address,
-                          ); // Convert string to object
-                          return (
-                            <Select.Option
-                              key={outletOption.outlet_id}
-                              value={outletOption.outlet_id}
-                            >
-                              {parsedAddress.ADDRESS}
-                            </Select.Option>
-                          );
-                        })}
-                      </Select>
-                    </Form.Item>
-
-                    {/* Dynamic Schedules List */}
-                    <Form.List name={[outletField.name, "schedules"]}>
-                      {(
-                        scheduleFields,
-                        { add: addSchedule, remove: removeSchedule },
-                      ) => (
-                        <div className="schedule-section">
-                          {scheduleFields.map((scheduleField) => (
-                            <Row
-                              key={scheduleField.key}
-                              gutter={[16, 8]}
-                              align="middle"
-                            >
-                              <Col span={20}>
-                                <ScheduleItem
-                                  key={scheduleField.key}
-                                  field={scheduleField}
-                                  remove={() =>
-                                    removeSchedule(scheduleField.name)
-                                  }
-                                />
-                              </Col>
-                            </Row>
-                          ))}
-                          <Form.Item>
-                            <Button
-                              type="dashed"
-                              onClick={() => addSchedule()}
-                              icon={<PlusCircleOutlined />}
-                              className="add-schedule-button"
-                              block
-                            >
-                              Add Schedule
-                            </Button>
-                          </Form.Item>
-                        </div>
-                      )}
-                    </Form.List>
-
+                  {/* Outlet header */}
+                  <div className="outlet-section-header">
+                    <div className="outlet-section-title">
+                      <EnvironmentOutlined
+                        style={{ color: "var(--primary-color)" }}
+                      />
+                      Outlet {outletIndex + 1}
+                    </div>
                     <Button
-                      type="dashed"
+                      type="text"
                       danger
+                      size="small"
                       onClick={() => removeOutlet(outletField.name)}
-                      className="remove-outlet-button mt-10"
-                      block
+                      className="remove-outlet-btn"
                     >
-                      Remove Outlet
+                      Remove outlet
                     </Button>
-                  </Col>
+                  </div>
+
+                  {/* Location selector */}
+                  <Form.Item
+                    name={[outletField.name, "outlet_id"]}
+                    label="Location"
+                    rules={[
+                      { required: true, message: "Select an outlet location" },
+                    ]}
+                  >
+                    <Select placeholder="Select a location" size="large">
+                      {outlets.map((o) => {
+                        let addr = o.address;
+                        try {
+                          addr = JSON.parse(o.address).ADDRESS;
+                        } catch {}
+                        return (
+                          <Select.Option key={o.outlet_id} value={o.outlet_id}>
+                            {addr}
+                          </Select.Option>
+                        );
+                      })}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Schedules for this outlet */}
+                  <Form.List name={[outletField.name, "schedules"]}>
+                    {(
+                      scheduleFields,
+                      { add: addSchedule, remove: removeSchedule },
+                    ) => (
+                      <div className="schedule-section">
+                        <Text className="schedule-section-label">
+                          Schedules
+                        </Text>
+                        <Text
+                          type="secondary"
+                          className="schedule-section-hint"
+                        >
+                          Each schedule is one enrollable programme at this
+                          location. A schedule can span multiple days/times
+                          (e.g. Sat + Sun) that children must attend together.
+                        </Text>
+
+                        {scheduleFields.map((scheduleField) => (
+                          <ScheduleItemWithPackages
+                            key={scheduleField.key}
+                            field={scheduleField}
+                            remove={removeSchedule}
+                            form={createClassForm}
+                          />
+                        ))}
+
+                        <Button
+                          type="dashed"
+                          onClick={() => addSchedule({ time_slots: [{}] })}
+                          icon={<PlusCircleOutlined />}
+                          className="add-schedule-button"
+                          block
+                        >
+                          Add Schedule
+                        </Button>
+                      </div>
+                    )}
+                  </Form.List>
                 </div>
               ))}
             </>
           )}
         </Form.List>
 
-        <div className="form-section-header">Class Images</div>
+        {/* ── Images ── */}
+        <div className="form-section-header">
+          Class Images <span className="required-star">*</span>
+        </div>
+        <Text type="secondary" className="image-hint">
+          Upload 1–5 images. First image will be used as the cover.
+        </Text>
 
-        <Dragger {...props} className="upload-dragger mb-24">
+        <Dragger {...uploadProps} className="upload-dragger mb-24">
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
-          <p className="ant-upload-text">Click or drag files to upload</p>
+          <p className="ant-upload-text">Click or drag images here to upload</p>
           <p className="ant-upload-hint">
-            Upload up to 5 images for your class
+            PNG, JPG up to 5 images. First image = cover photo.
           </p>
         </Dragger>
 
-        <Button
-          type="primary"
-          htmlType="submit"
-          className="save-button"
-          loading={false}
-          block
-        >
+        {/* ── Submit ── */}
+        <Button type="primary" htmlType="submit" className="save-button" block>
           Create Class
         </Button>
       </Form>

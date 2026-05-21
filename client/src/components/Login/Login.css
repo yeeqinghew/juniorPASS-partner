@@ -1,34 +1,22 @@
-/* Partner Login Page Styles - Matching JuniorPASS Main Website */
-
-/* CSS Variables for consistency */
-:root {
-  --primary-color: #98BDD2;
-  --primary-dark: #6aa4c3;
-  --primary-light: #b8d9e8;
-  --accent-pink: #f3a5c7;
-  --accent-pink-dark: #e88bb1;
-  --text-dark: #1a1a2e;
-  --text-muted: #666;
-  --text-light: #777;
-  --border-light: #f0f0f0;
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
+/* ============================================
+   PARTNER LOGIN PAGE STYLES
+   Using centralized variables from variables.css
+   ============================================ */
 
 /* Page Container */
 .login-page {
   min-height: 100vh;
-  padding: 48px 24px;
+  padding: var(--spacing-2xl) var(--spacing-lg);
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #f8fcff 0%, #fef5f9 100%);
+  background: var(--bg-gradient-pink);
 }
 
 .login-container {
   width: 100%;
   max-width: 520px;
-  animation: fadeInUp 0.5s ease-out;
+  animation: fadeInUp var(--animation-duration-base) ease-out;
 }
 
 @keyframes fadeInUp {
@@ -44,11 +32,11 @@
 
 /* Card Styling */
 .login-card {
-  background: #fff;
-  border-radius: 24px;
+  background: var(--bg-white);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-md);
-  padding: 40px 32px;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  padding: var(--spacing-xl) var(--spacing-xl);
+  transition: var(--transition-base);
   position: relative;
 }
 
@@ -59,14 +47,14 @@
 /* Header Section */
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .login-logo {
   display: block;
   width: 140px;
   height: auto;
-  margin: 0 auto 20px auto;
+  margin: 0 auto var(--spacing-lg) auto;
 }
 
 .login-icon-wrapper {
@@ -75,26 +63,26 @@
   justify-content: center;
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  border-radius: 50%;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 12px rgba(152, 189, 210, 0.3);
+  background: var(--gradient-blue);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-primary);
 }
 
 .login-icon {
-  font-size: 32px;
-  color: #fff;
+  font-size: var(--icon-lg);
+  color: var(--text-white);
 }
 
 .login-title {
-  margin: 0 0 8px 0 !important;
-  font-size: 28px !important;
-  font-weight: 700 !important;
+  margin: 0 0 var(--spacing-xs) 0 !important;
+  font-size: var(--font-size-4xl) !important;
+  font-weight: var(--font-weight-bold) !important;
   color: var(--text-dark);
 }
 
 .login-subtitle {
-  font-size: 15px;
+  font-size: var(--font-size-md);
   color: var(--text-muted);
   display: block;
 }
@@ -104,42 +92,42 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  background: linear-gradient(135deg, var(--accent-pink), var(--accent-pink-dark));
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(243, 165, 199, 0.3);
+  gap: var(--spacing-xs);
+  background: var(--gradient-pink);
+  color: var(--text-white);
+  padding: var(--spacing-xs) 14px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-pink);
 }
 
 /* Form Styling */
 .partner-login-form {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .partner-login-form .ant-form-item-label > label {
   color: var(--text-dark);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
 }
 
 .form-label {
   color: var(--text-dark);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Input Styling */
 .partner-login-form .ant-input,
 .partner-login-form .ant-input-affix-wrapper {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 2px solid var(--border-light);
-  transition: all 0.3s ease;
-  font-size: 15px;
-  padding: 12px 14px;
+  transition: var(--transition-base);
+  font-size: var(--font-size-md);
+  padding: var(--spacing-sm) 14px;
 }
 
 .partner-login-form .ant-input-affix-wrapper:hover {
@@ -154,7 +142,7 @@
 
 .partner-login-form .ant-input-prefix {
   color: var(--primary-color);
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   margin-right: 10px;
 }
 
@@ -167,12 +155,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .remember-checkbox .ant-checkbox-wrapper {
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: var(--font-size-base);
 }
 
 .remember-checkbox .ant-checkbox-checked .ant-checkbox-inner {
@@ -182,9 +170,9 @@
 
 .forgot-password-link {
   color: var(--primary-color);
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-fast);
 }
 
 .forgot-password-link:hover {
@@ -195,21 +183,21 @@
 /* Submit Button */
 .login-button {
   width: 100%;
-  height: 48px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+  height: var(--button-height-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  background: var(--gradient-blue) !important;
   border: none !important;
-  box-shadow: 0 4px 12px rgba(106, 164, 195, 0.3);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow-primary);
+  transition: var(--transition-base);
 }
 
 .login-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(106, 164, 195, 0.4);
-  filter: brightness(1.05);
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color)) !important;
+  box-shadow: var(--shadow-primary-hover);
+  filter: var(--filter-brightness-hover);
+  background: var(--gradient-blue) !important;
 }
 
 .login-button:active {
@@ -217,27 +205,27 @@
 }
 
 .login-button .anticon {
-  margin-right: 8px;
+  margin-right: var(--spacing-xs);
 }
 
 /* Help Section */
 .login-help {
   text-align: center;
-  padding-top: 20px;
+  padding-top: var(--spacing-lg);
   border-top: 1px solid var(--border-light);
-  margin-top: 24px;
+  margin-top: var(--spacing-lg);
 }
 
 .help-text {
-  font-size: 14px;
+  font-size: var(--font-size-base);
   color: var(--text-light);
 }
 
 .help-link {
   color: var(--primary-color);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   margin-left: 4px;
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
 }
 
 .help-link:hover {
@@ -248,16 +236,16 @@
 /* Back to Main Site Link */
 .back-to-main {
   text-align: center;
-  margin-top: 20px;
+  margin-top: var(--spacing-lg);
 }
 
 .back-to-main-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-xs);
   color: var(--text-muted);
-  font-size: 14px;
-  transition: all 0.2s ease;
+  font-size: var(--font-size-base);
+  transition: var(--transition-fast);
 }
 
 .back-to-main-link:hover {
@@ -279,7 +267,11 @@
   opacity: 0.8;
 }
 
-/* Responsive Design */
+/* ============================================
+   RESPONSIVE DESIGN - 4 BREAKPOINTS
+   ============================================ */
+
+/* MOBILE (< 768px) */
 @media screen and (max-width: 767.9px) {
   .login-page {
     padding: 0;
@@ -294,23 +286,23 @@
   }
 
   .login-card {
-    padding: 40px 16px;
+    padding: var(--spacing-xl) var(--spacing-md);
     border-radius: 0;
     box-shadow: none;
   }
 
   .login-title {
-    font-size: 22px !important;
-    margin: 0 0 8px 0 !important;
+    font-size: var(--font-size-3xl) !important;
+    margin: 0 0 var(--spacing-xs) 0 !important;
   }
 
   .login-subtitle {
-    font-size: 14px;
+    font-size: var(--font-size-base);
   }
 
   .login-logo {
     width: 120px;
-    margin-bottom: 16px;
+    margin-bottom: var(--spacing-md);
   }
 
   .login-icon-wrapper {
@@ -324,58 +316,87 @@
   }
 
   .login-header {
-    margin-bottom: 24px;
+    margin-bottom: var(--spacing-lg);
   }
 
   .partner-login-form .ant-form-item-label > label,
   .form-label {
-    font-size: 14px;
+    font-size: var(--font-size-base);
   }
 
   .partner-login-form .ant-input,
   .partner-login-form .ant-input-affix-wrapper {
-    font-size: 14px;
+    font-size: var(--font-size-base);
     border-radius: 10px;
-    padding: 10px 12px;
+    padding: 10px var(--spacing-sm);
   }
 
   .login-button {
-    font-size: 15px;
+    font-size: var(--font-size-md);
     border-radius: 10px;
   }
 
   .forgot-password-link {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .help-text {
-    font-size: 13px;
+    font-size: var(--font-size-sm);
   }
 
   .form-options {
     flex-direction: column;
-    gap: 12px;
+    gap: var(--spacing-sm);
     align-items: flex-start;
   }
 
   .partner-badge {
     font-size: 11px;
-    padding: 5px 12px;
+    padding: 5px var(--spacing-sm);
   }
 }
 
-@media screen and (min-width: 768px) and (max-width: 1023px) {
+/* TABLET PORTRAIT (768px - 1023.9px) */
+@media screen and (min-width: 768px) and (max-width: 1023.9px) {
+  .login-page {
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
+
   .login-container {
     max-width: 480px;
   }
+
+  .login-card {
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
 }
 
-@media screen and (min-width: 1024px) {
+/* TABLET LANDSCAPE (1024px - 1335.9px) */
+@media screen and (min-width: 1024px) and (max-width: 1335.9px) {
+  .login-page {
+    padding: var(--spacing-2xl) var(--spacing-xl);
+  }
+
+  .login-container {
+    max-width: 520px;
+  }
+
+  .login-card {
+    padding: var(--spacing-2xl) var(--spacing-xl);
+  }
+}
+
+/* DESKTOP (>= 1336px) */
+@media screen and (min-width: 1336px) {
+  .login-page {
+    padding: var(--spacing-2xl);
+  }
+
   .login-container {
     max-width: 540px;
   }
 
   .login-card {
-    padding: 48px 40px;
+    padding: var(--spacing-2xl) var(--spacing-xl);
   }
 }

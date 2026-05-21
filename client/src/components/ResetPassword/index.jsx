@@ -9,14 +9,13 @@ import {
 import { Button, Form, Input, Card, Typography } from "antd";
 import { Link } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import logo from "../../images/logopngResize.png";
 import "./ResetPassword.css";
 
 const { Title, Text } = Typography;
 
 const ResetPassword = () => {
-  const baseURL = getBaseURL();
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
@@ -24,11 +23,8 @@ const ResetPassword = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      const response = await fetch(`${baseURL}/partners/reset-password`, {
+      const response = await fetchWithAuth(API_ENDPOINTS.RESET_PASSWORD, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(values),
       });
 

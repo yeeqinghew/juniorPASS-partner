@@ -2,12 +2,11 @@ import { Card, Carousel, Dropdown, Tag } from "antd";
 import { InboxOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import getBaseURL from "../../utils/config";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import Meta from "antd/es/card/Meta";
 
 const ClassCard = ({ listing, setListing, viewMode = "grid" }) => {
   const navigate = useNavigate();
-  const baseURL = getBaseURL();
 
   const handleClickClass = () => {
     navigate(`/class/${listing?.listing_id}`);
@@ -20,15 +19,12 @@ const ClassCard = ({ listing, setListing, viewMode = "grid" }) => {
     try {
       const newStatus = !listing?.active;
 
-      const response = await fetch(
-        `${baseURL}/listings/${listing.listing_id}/status`,
+      const response = await fetchWithAuth(
+        API_ENDPOINTS.UPDATE_LISTING_STATUS(listing.listing_id),
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ active: newStatus }),
-        },
+        }
       );
 
       if (response.ok) {

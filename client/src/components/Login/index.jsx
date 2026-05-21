@@ -8,32 +8,47 @@ import {
   TeamOutlined,
 } from "@ant-design/icons";
 import { Button, Form, Input, Checkbox, Card, Typography } from "antd";
-import { Link } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
-import getBaseURL from "../../utils/config";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import logo from "../../images/logopngResize.png";
 import "./Login.css";
 
 const { Title, Text } = Typography;
 
 const PartnerLogin = ({ setAuth }) => {
-  const baseURL = getBaseURL();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (values) => {
     setLoading(true);
     try {
-      const response = await fetch(`${baseURL}/partners/login`, {
+      const response = await fetchWithAuth(API_ENDPOINTS.LOGIN, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(values),
       });
 
       const parseRes = await response.json();
       if (parseRes.token) {
         localStorage.setItem("token", parseRes.token);
+
+        // Check for password change requirement
+        if (parseRes.requires_password_change) {
+          setAuth(true);
+          navigate("/change-password", { replace: true });
+          toast.success("Login successful! Please change your password.");
+          return;
+        }
+
+        // Check for profile completion requirement
+        if (parseRes.is_profile_complete === false) {
+          setAuth(true);
+          navigate("/profile", { replace: true });
+          toast.success("Login successful! Please complete your profile.");
+          return;
+        }
+
+        // Normal login - all setup complete
         setAuth(true);
         toast.success("Welcome back! Login successful.");
       } else {
@@ -51,31 +66,6 @@ const PartnerLogin = ({ setAuth }) => {
 
   return (
     <section className="login-page">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: "#363636",
-            color: "#fff",
-            borderRadius: "10px",
-            padding: "16px",
-          },
-          success: {
-            iconTheme: {
-              primary: "#52c41a",
-              secondary: "#fff",
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: "#ff4d4f",
-              secondary: "#fff",
-            },
-          },
-        }}
-      />
-
       <div className="login-container">
         <Card className="login-card" bordered={false}>
           {/* Header Section */}

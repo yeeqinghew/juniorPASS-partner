@@ -14,6 +14,8 @@ import useAuth from "../hooks/useAuth";
 import Class from "../components/Classes/Class";
 import EditClass from "../components/Classes/EditClass";
 import Profile from "../components/Profile";
+import OutletsManagement from "../components/Outlets/OutletsManagement";
+import ForcePasswordChange from "../components/ForcePasswordChange";
 import { DataProvider } from "../hooks/DataContext";
 
 const Routers = () => {
@@ -49,11 +51,23 @@ const Routers = () => {
             }
           />
           <Route path="reset-password" element={<ResetPassword />} />
+          {/* Password Change - Requires authentication but accessible before profile completion */}
+          <Route
+            path="change-password"
+            element={
+              isAuthenticated ? (
+                <ForcePasswordChange setAuth={setAuth} />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            }
+          />
           <Route
             element={
               <AuthenticatedRoute
                 isAuthenticated={isAuthenticated}
                 loading={loading}
+                user={user}
               />
             }
           >
@@ -73,6 +87,7 @@ const Routers = () => {
                 path="classes"
                 element={<PartnerClasses setAuth={setAuth} />}
               />
+              <Route path="outlets" element={<OutletsManagement />} />
               <Route path="class/:listing_id" element={<Class />} />
               <Route path="class/:listing_id/edit" element={<EditClass />} />
               <Route path="create-class" element={<CreateClass />} />

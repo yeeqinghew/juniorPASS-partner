@@ -1,0 +1,92 @@
+/* ============================================
+   LOADING OVERLAY - REUSABLE COMPONENT
+   Using centralized variables from variables.css
+   ============================================ */
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn var(--animation-duration-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.loading-overlay-content {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  background: var(--bg-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  min-width: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.loading-overlay-status {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+  margin-top: var(--spacing-sm);
+}
+
+.loading-overlay-content .ant-spin {
+  margin-bottom: var(--spacing-md);
+}
+
+.loading-overlay-content .ant-progress {
+  margin-top: var(--spacing-sm);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* MOBILE (< 768px) */
+@media screen and (max-width: 767.9px) {
+  .loading-overlay-content {
+    min-width: 280px;
+    max-width: 90%;
+    padding: var(--spacing-xl);
+  }
+
+  .loading-overlay-status {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* TABLET PORTRAIT (768px - 1023.9px) */
+@media screen and (min-width: 768px) and (max-width: 1023.9px) {
+  .loading-overlay-content {
+    min-width: 320px;
+  }
+}
+
+/* DESKTOP (>= 1336px) */
+@media screen and (min-width: 1336px) {
+  .loading-overlay-content {
+    min-width: 400px;
+    padding: var(--spacing-3xl);
+  }
+
+  .loading-overlay-status {
+    font-size: var(--font-size-xl);
+  }
+}
