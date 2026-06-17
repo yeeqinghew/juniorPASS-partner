@@ -8,6 +8,7 @@ import { Button, Form, Input, Select, Typography, Upload } from "antd";
 import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import TextArea from "antd/es/input/TextArea";
+import dayjs from "dayjs";
 import UserContext from "../UserContext";
 import { useNavigate } from "react-router-dom";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
@@ -54,7 +55,11 @@ const buildPayload = (values, partnerId) => ({
         slots: schedule.slots,
         package_types: schedule.package_types,
         is_progressive: schedule.is_progressive || false,
-        full_term_start_date: schedule.full_term_start_date,
+        full_term_start_date: schedule.full_term_start_date
+          ? (dayjs.isDayjs(schedule.full_term_start_date)
+              ? schedule.full_term_start_date.format("YYYY-MM-DD")
+              : schedule.full_term_start_date)
+          : null,
         full_term_class_count: schedule.full_term_class_count,
         short_term_class_count: schedule.short_term_class_count,
         price_payg: schedule.price_payg,
