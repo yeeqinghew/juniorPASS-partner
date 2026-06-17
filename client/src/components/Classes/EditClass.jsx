@@ -241,8 +241,12 @@ const EditClass = () => {
                     frequency: schedule.frequency,
                     slots: schedule.slots,
                     package_types: schedule.package_types,
-                    is_progressive: schedule.is_progressive,
-                    full_term_start_date: schedule.full_term_start_date,
+                    is_progressive: schedule.is_progressive || false,
+                    full_term_start_date: schedule.full_term_start_date
+                      ? (dayjs.isDayjs(schedule.full_term_start_date)
+                          ? schedule.full_term_start_date.format("YYYY-MM-DD")
+                          : schedule.full_term_start_date)
+                      : null,
                     full_term_class_count: schedule.full_term_class_count,
                     short_term_class_count: schedule.short_term_class_count,
                     price_payg: schedule.price_payg,

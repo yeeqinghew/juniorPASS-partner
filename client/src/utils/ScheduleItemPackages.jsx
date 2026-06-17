@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import { useState, useEffect, useContext, useCallback } from "react";
 import toast from "react-hot-toast";
+import dayjs from "dayjs";
 import TimeRangePicker from "./TimeRangePicker";
 import day from "../data/day.json";
 import frequency from "../data/frequency.json";
@@ -449,6 +450,13 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                   label="Start Date"
                   rules={[{ required: true, message: "Required" }]}
                   style={{ marginBottom: 0 }}
+                  getValueProps={(value) => ({
+                    value: value ? dayjs(value) : null,
+                  })}
+                  normalize={(value) => {
+                    if (!value) return null;
+                    return value.format("YYYY-MM-DD");
+                  }}
                 >
                   <DatePicker
                     format="DD/MM/YYYY"
