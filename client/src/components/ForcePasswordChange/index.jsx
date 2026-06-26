@@ -33,7 +33,6 @@ const ForcePasswordChange = ({ setAuth }) => {
       const response = await fetchWithAuth(API_ENDPOINTS.CHANGE_PASSWORD, {
         method: "POST",
         body: JSON.stringify({
-          currentPassword: values.currentPassword,
           newPassword: values.newPassword,
         }),
       });
@@ -41,7 +40,7 @@ const ForcePasswordChange = ({ setAuth }) => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        toast.success("Password changed successfully! Please login again with your new password.");
+        toast.success("Password changed successfully! Please login with your new password.");
         form.resetFields();
 
         // Clear token and log out
@@ -93,7 +92,7 @@ const ForcePasswordChange = ({ setAuth }) => {
           {/* Alert */}
           <Alert
             message="First-Time Login Security"
-            description="You're logging in with a temporary password. After changing your password, you'll be logged out and asked to login again with your new credentials."
+            description="You're logging in with a temporary password. After changing your password, you'll be logged out and need to login again with your new credentials."
             type="warning"
             showIcon
             icon={<LockOutlined />}
@@ -107,20 +106,6 @@ const ForcePasswordChange = ({ setAuth }) => {
             onFinish={handleSubmit}
             autoComplete="off"
           >
-            <Form.Item
-              label="Current (Temporary) Password"
-              name="currentPassword"
-              rules={[
-                { required: true, message: "Please enter your current password" },
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Enter temporary password"
-                size="large"
-              />
-            </Form.Item>
-
             <Form.Item
               label="New Password"
               name="newPassword"
