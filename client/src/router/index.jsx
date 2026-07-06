@@ -16,6 +16,7 @@ import EditClass from "../components/Classes/EditClass";
 import Profile from "../components/Profile";
 import OutletsManagement from "../components/Outlets/OutletsManagement";
 import ForcePasswordChange from "../components/ForcePasswordChange";
+import ClassManagement from "../components/ClassManagement";
 import { DataProvider } from "../hooks/DataContext";
 
 const Routers = () => {
@@ -87,6 +88,7 @@ const Routers = () => {
                 path="classes"
                 element={<PartnerClasses setAuth={setAuth} />}
               />
+              <Route path="class-management" element={<ClassManagement />} />
               <Route path="outlets" element={<OutletsManagement />} />
               <Route path="class/:listing_id" element={<Class />} />
               <Route path="class/:listing_id/edit" element={<EditClass />} />

@@ -118,6 +118,13 @@ export const API_ENDPOINTS = {
   CONFIRM_BOOKING: (bookingId) => `/bookings/${bookingId}/confirm`,
   CANCEL_BOOKING: (bookingId) => `/bookings/${bookingId}/cancel`,
 
+  // Class Occurrences - NEW
+  GET_CLASS_OCCURRENCES: "/class-occurrences/partner",
+  MARK_ATTENDANCE: (occurrenceId) => `/class-occurrences/${occurrenceId}/attendance`,
+  CANCEL_CLASS: (occurrenceId) => `/class-occurrences/${occurrenceId}/cancel`,
+  RESCHEDULE_CLASS: (occurrenceId) => `/class-occurrences/${occurrenceId}/reschedule`,
+  ADD_MAKEUP_CLASS: (occurrenceId) => `/class-occurrences/${occurrenceId}/makeup`,
+
   // Outlets
   GET_OUTLETS: (partnerId) => `/partners/${partnerId}/outlets`,
   CREATE_OUTLET: "/outlets",

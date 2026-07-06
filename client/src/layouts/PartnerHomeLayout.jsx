@@ -7,6 +7,7 @@ import {
   BellOutlined,
   MenuOutlined,
   CloseOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Image, Avatar, Typography, Badge, Drawer, Button } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -101,6 +102,11 @@ const PartnerHomeLayout = ({ setAuth }) => {
             key: "classes",
             icon: <DatabaseOutlined />,
             label: <Link to="/classes">Classes</Link>,
+          },
+          {
+            key: "class-management",
+            icon: <CalendarOutlined />,
+            label: <Link to="/class-management">Class Management</Link>,
           },
         ]}
       />
