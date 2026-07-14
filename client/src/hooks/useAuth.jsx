@@ -10,6 +10,10 @@ const useAuth = () => {
 
   const setAuth = (boolean) => {
     setIsAuthenticated(boolean);
+
+    if (!boolean) {
+      setUser(undefined);
+    }
   };
 
   const getPartnerInfo = async () => {

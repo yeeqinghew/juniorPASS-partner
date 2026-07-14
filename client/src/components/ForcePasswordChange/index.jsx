@@ -47,10 +47,7 @@ const ForcePasswordChange = ({ setAuth }) => {
         localStorage.removeItem("token");
         setAuth(false);
 
-        // Redirect to login after a brief delay
-        setTimeout(() => {
-          navigate("/login", { replace: true });
-        }, 2000);
+        navigate("/login", { replace: true });
       } else {
         toast.error(data.message || "Failed to change password");
       }
