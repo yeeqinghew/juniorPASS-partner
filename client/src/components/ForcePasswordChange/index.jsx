@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  Card,
-  Typography,
-  Alert,
-  Steps,
-} from "antd";
+import { Form, Input, Button, Card, Typography, Alert, Steps } from "antd";
 import {
   LockOutlined,
   CheckCircleOutlined,
@@ -16,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import CryptoJS from "crypto-js";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import "./ForcePasswordChange.css";
 
@@ -30,17 +23,23 @@ const ForcePasswordChange = ({ setAuth }) => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
+      const hashedPassword = CryptoJS.SHA256(values.newPassword).toString(
+        CryptoJS.enc.Hex,
+      );
+
       const response = await fetchWithAuth(API_ENDPOINTS.CHANGE_PASSWORD, {
         method: "POST",
         body: JSON.stringify({
-          newPassword: values.newPassword,
+          newPassword: hashedPassword,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        toast.success("Password changed successfully! Please login with your new password.");
+        toast.success(
+          "Password changed successfully! Please login with your new password.",
+        );
         form.resetFields();
 
         // Clear token and log out
@@ -81,8 +80,8 @@ const ForcePasswordChange = ({ setAuth }) => {
               Change Your Password
             </Title>
             <Paragraph className="subtitle">
-              For security reasons, you must change your temporary password before
-              proceeding.
+              For security reasons, you must change your temporary password
+              before proceeding.
             </Paragraph>
           </div>
 
@@ -111,7 +110,8 @@ const ForcePasswordChange = ({ setAuth }) => {
                 { min: 8, message: "Password must be at least 8 characters" },
                 {
                   pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                  message: "Password must contain uppercase, lowercase, and number",
+                  message:
+                    "Password must contain uppercase, lowercase, and number",
                 },
               ]}
               hasFeedback
@@ -136,7 +136,7 @@ const ForcePasswordChange = ({ setAuth }) => {
                       return Promise.resolve();
                     }
                     return Promise.reject(
-                      new Error("The two passwords do not match")
+                      new Error("The two passwords do not match"),
                     );
                   },
                 }),
