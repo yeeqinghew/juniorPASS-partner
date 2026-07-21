@@ -161,17 +161,28 @@ const Profile = () => {
       <div className="profile-content">
         {/* HEADER */}
         <div className="profile-header">
-          <h2 className="profile-title">Partner Profile</h2>
-          <p className="profile-subtitle">
-            Manage your business information and settings
-          </p>
+          <div>
+            <span className="profile-kicker">Business presence</span>
+            <h2 className="profile-title">Partner Profile</h2>
+            <p className="profile-subtitle">
+              Manage the information families see across Junior Pass.
+            </p>
+          </div>
+          <span className="profile-header-badge">
+            <ShopOutlined /> Public business profile
+          </span>
         </div>
 
-        <Form form={profileForm} layout="vertical" onFinish={handleSubmit}>
+        <Form
+          form={profileForm}
+          layout="vertical"
+          onFinish={handleSubmit}
+          className="profile-form-layout"
+        >
           <Row gutter={[24, 24]}>
             {/* LEFT */}
             <Col xs={24} lg={8}>
-              <Card className="profile-card">
+              <Card className="profile-card profile-identity-card">
                 <div className="ac-avatar-wrap">
                   <Avatar
                     size={88}
@@ -187,6 +198,7 @@ const Profile = () => {
                     onChange={handleFileChange}
                   />
                   <button
+                    type="button"
                     className="ac-camera-btn"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadLoading}
@@ -196,7 +208,8 @@ const Profile = () => {
                   </button>
                 </div>
 
-                <h3 style={{ marginTop: 12 }}>{userProfile.partner_name}</h3>
+                <span className="profile-identity-label">Partner account</span>
+                <h3>{userProfile.partner_name}</h3>
                 <p>{userProfile.email}</p>
               </Card>
             </Col>
@@ -214,12 +227,12 @@ const Profile = () => {
                 }
               >
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} md={12}>
                     <Form.Item name="partner_name" label="Name" required>
                       <Input className="input-with-icon" />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} md={12}>
                     <Form.Item name="email" label="Email">
                       <Input disabled />
                     </Form.Item>
@@ -231,7 +244,7 @@ const Profile = () => {
                 </Form.Item>
 
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} md={12}>
                     <Form.Item name="categories" label="Category" required>
                       <Select className="input-with-icon">
                         <Option value="Music">Music</Option>
@@ -239,7 +252,7 @@ const Profile = () => {
                       </Select>
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} md={12}>
                     <Form.Item name="website" label="Website" required>
                       <Input className="input-with-icon" />
                     </Form.Item>
@@ -258,12 +271,12 @@ const Profile = () => {
                 }
               >
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} md={12}>
                     <Form.Item name="contact_number" label="Phone" required>
                       <Input className="input-with-icon" />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} md={12}>
                     <Form.Item name="address" label="HQ Address" required>
                       <Select
                         showSearch

@@ -1,22 +1,14 @@
-import React, { useContext, useState, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
+import { Button, Calendar, Card, Col, Row, Skeleton, Typography } from "antd";
 import {
-  Calendar,
-  Typography,
-  Row,
-  Col,
-  Card,
-  Button,
-  List,
-  Space,
-} from "antd";
-import {
+  ArrowRightOutlined,
   BookOutlined,
-  TeamOutlined,
-  ShopOutlined,
   CalendarOutlined,
+  EnvironmentOutlined,
+  NotificationOutlined,
   PlusOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
+  ShopOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import UserContext from "../UserContext";
@@ -25,166 +17,218 @@ import "./Dashboard.css";
 
 const { Title, Text, Paragraph } = Typography;
 
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+};
+
 const PartnerHome = () => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   const [stats, setStats] = useState({});
-  const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetchWithAuth(API_ENDPOINTS.DASHBOARD_OVERVIEW);
+        if (response.ok) setStats(await response.json());
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboardData();
   }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-
-      // Dashboard overview stats
-      const response = await fetchWithAuth(API_ENDPOINTS.DASHBOARD_OVERVIEW);
-
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      setLoading(false);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const statsConfig = [
     {
       icon: <BookOutlined />,
-      value: stats.listings,
-      label: "Total Classes",
-      colorClass: "pink",
-    },
-    {
-      icon: <CheckCircleOutlined />,
-      value: stats.activeClasses,
-      label: "Active Classes",
-      colorClass: "blue",
-    },
-    {
-      icon: <ShopOutlined />,
-      value: stats.credit,
-      label: "Total Credits",
-      colorClass: "green",
+      value: stats.listings ?? 0,
+      label: "Published classes",
+      detail: "Across your catalogue",
+      tone: "blue",
     },
     {
       icon: <TeamOutlined />,
-      value: stats.totalStudents,
-      label: "Total Enrollments",
-      colorClass: "orange",
+      value: stats.bookings ?? 0,
+      label: "Total bookings",
+      detail: "All-time enrolments",
+      tone: "pink",
+    },
+    {
+      icon: <ShopOutlined />,
+      value: stats.credit ?? 0,
+      label: "Credit balance",
+      detail: "Available partner credits",
+      tone: "green",
+    },
+    {
+      icon: <NotificationOutlined />,
+      value: stats.unread_notifications ?? 0,
+      label: "Unread updates",
+      detail: "Items needing attention",
+      tone: "amber",
+    },
+  ];
+
+  const quickActions = [
+    {
+      icon: <PlusOutlined />,
+      title: "Create a class",
+      description: "Add a new activity to your catalogue",
+      route: "/create-class",
+    },
+    {
+      icon: <EnvironmentOutlined />,
+      title: "Manage outlets",
+      description: "Keep venue information up to date",
+      route: "/outlets",
+    },
+    {
+      icon: <BookOutlined />,
+      title: "View all classes",
+      description: "Edit schedules, pricing, and availability",
+      route: "/classes",
     },
   ];
 
   return (
     <div className="dashboard-container">
-      {/* Welcome Section */}
-      <div className="welcome-banner">
-        <div className="welcome-content">
-          <Title level={2} className="welcome-title">
-            Welcome back, {user?.partner_name || "Partner"}! 👋
+      <section className="dashboard-hero">
+        <div className="dashboard-hero-copy">
+          <Text className="dashboard-hero-kicker">Partner workspace</Text>
+          <Title level={1} className="dashboard-hero-title">
+            {getGreeting()}, {user?.partner_name || "Partner"}
           </Title>
-          <Paragraph className="welcome-text">
-            Here's what's happening with your classes today
+          <Paragraph className="dashboard-hero-description">
+            Keep an eye on your catalogue, bookings, and locations from one place.
           </Paragraph>
+          <div className="dashboard-hero-actions">
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => navigate("/create-class")}
+              className="dashboard-primary-action"
+            >
+              Create class
+            </Button>
+            <Button
+              size="large"
+              onClick={() => navigate("/classes")}
+              className="dashboard-secondary-action"
+            >
+              Manage classes
+            </Button>
+          </div>
         </div>
-        <div className="welcome-actions">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            className="welcome-btn-primary"
-            onClick={() => navigate("/create-class")}
-          >
-            Create Class
-          </Button>
-        </div>
-      </div>
 
-      {/* Statistics Cards */}
-      <Row gutter={[16, 16]} className="stats-row">
-        {statsConfig.map((stat, index) => (
-          <Col xs={12} sm={12} lg={6} key={index}>
-            <Card className="stat-card" bordered={false}>
-              <div className={`stat-icon-wrapper ${stat.colorClass}`}>
-                {stat.icon}
-              </div>
-              <div className="stat-content">
-                <div className="stat-value">{stat.value}</div>
-                <div className="stat-label">{stat.label}</div>
-              </div>
+        <div className="dashboard-hero-visual" aria-hidden="true">
+          <div className="hero-orbit hero-orbit-one" />
+          <div className="hero-orbit hero-orbit-two" />
+          <div className="hero-visual-card">
+            <span className="hero-visual-icon">
+              <CalendarOutlined />
+            </span>
+            <div>
+              <Text className="hero-visual-label">Today</Text>
+              <Text className="hero-visual-date">
+                {new Intl.DateTimeFormat("en-SG", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }).format(new Date())}
+              </Text>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Row gutter={[16, 16]} className="dashboard-stats-row">
+        {statsConfig.map((stat) => (
+          <Col xs={12} xl={6} key={stat.label}>
+            <Card className="dashboard-stat-card" bordered={false}>
+              {loading ? (
+                <Skeleton active paragraph={{ rows: 1 }} title={{ width: "45%" }} />
+              ) : (
+                <>
+                  <div className={`dashboard-stat-icon ${stat.tone}`}>{stat.icon}</div>
+                  <div className="dashboard-stat-value">{stat.value}</div>
+                  <div className="dashboard-stat-label">{stat.label}</div>
+                  <div className="dashboard-stat-detail">{stat.detail}</div>
+                </>
+              )}
             </Card>
           </Col>
         ))}
       </Row>
 
-      <Row gutter={[16, 16]}>
-        {/* Recent Activity */}
-        <Col xs={24} lg={12}>
+      <Row gutter={[18, 18]} className="dashboard-main-grid">
+        <Col xs={24} xl={14}>
           <Card
+            className="dashboard-panel calendar-panel"
             title={
-              <Space>
-                <ClockCircleOutlined />
-                <span>Recent Activity</span>
-              </Space>
-            }
-            className="recent-card"
-          >
-            {recentActivities.length > 0 ? (
-              <List
-                dataSource={recentActivities}
-                renderItem={(item) => (
-                  <div className="activity-item">
-                    <Space align="start">
-                      <BookOutlined className="activity-icon" />
-                      <div className="flex-1">
-                        <div className="activity-title">{item.title}</div>
-                        <div className="activity-description">
-                          {item.description}
-                        </div>
-                        <div className="activity-time">{item.time}</div>
-                      </div>
-                    </Space>
-                  </div>
-                )}
-              />
-            ) : (
-              <div className="empty-state">
-                <ClockCircleOutlined className="empty-state-icon" />
+              <div className="dashboard-panel-heading">
+                <span className="dashboard-panel-icon"><CalendarOutlined /></span>
                 <div>
-                  <Text strong>No recent activity</Text>
-                  <div className="mt-8">
-                    <Text type="secondary">
-                      Start by creating your first class
-                    </Text>
-                  </div>
+                  <Text className="dashboard-panel-title">Schedule overview</Text>
+                  <Text className="dashboard-panel-subtitle">Plan around upcoming class dates</Text>
                 </div>
               </div>
-            )}
-          </Card>
-        </Col>
-
-        {/* Calendar */}
-        <Col xs={24} lg={12}>
-          <Card
-            title={
-              <Space>
-                <CalendarOutlined />
-                <span>Class Schedule</span>
-              </Space>
             }
-            className="calendar-card"
           >
             <Calendar fullscreen={false} />
           </Card>
+        </Col>
+
+        <Col xs={24} xl={10}>
+          <Card
+            className="dashboard-panel quick-actions-panel"
+            title={
+              <div className="dashboard-panel-heading">
+                <span className="dashboard-panel-icon"><ShopOutlined /></span>
+                <div>
+                  <Text className="dashboard-panel-title">Quick actions</Text>
+                  <Text className="dashboard-panel-subtitle">Common workspace tasks</Text>
+                </div>
+              </div>
+            }
+          >
+            <div className="dashboard-action-list">
+              {quickActions.map((action) => (
+                <button
+                  type="button"
+                  className="dashboard-action-item"
+                  key={action.title}
+                  onClick={() => navigate(action.route)}
+                >
+                  <span className="dashboard-action-icon">{action.icon}</span>
+                  <span className="dashboard-action-copy">
+                    <strong>{action.title}</strong>
+                    <small>{action.description}</small>
+                  </span>
+                  <ArrowRightOutlined className="dashboard-action-arrow" />
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          <div className="dashboard-help-card">
+            <div>
+              <Text className="dashboard-help-kicker">Account</Text>
+              <Title level={4}>Keep your business details current</Title>
+              <Paragraph>
+                Accurate profile and outlet information helps families discover you.
+              </Paragraph>
+            </div>
+            <Button onClick={() => navigate("/profile")}>Review profile</Button>
+          </div>
         </Col>
       </Row>
     </div>

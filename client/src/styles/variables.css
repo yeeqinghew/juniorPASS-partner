@@ -170,18 +170,14 @@
   /* ===== Gradients ===== */
   --gradient-pink: linear-gradient(135deg, var(--accent-pink), var(--accent-pink-dark));
   --gradient-blue: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  --gradient-overlay: linear-gradient(
-    135deg,
-    rgba(152, 189, 210, 0.15) 0%,
-    rgba(243, 165, 199, 0.15) 50%,
-    rgba(255, 182, 193, 0.15) 100%
-  );
-  --gradient-shimmer: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  --gradient-overlay: linear-gradient(135deg,
+      rgba(152, 189, 210, 0.15) 0%,
+      rgba(243, 165, 199, 0.15) 50%,
+      rgba(255, 182, 193, 0.15) 100%);
+  --gradient-shimmer: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
 
   /* ===== Opacity Levels ===== */
   --opacity-disabled: 0.6;

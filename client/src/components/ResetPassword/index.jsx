@@ -75,11 +75,7 @@ const ResetPassword = () => {
         <Card className="reset-card" bordered={false}>
           {/* Header Section */}
           <div className="reset-header">
-            <img
-              src={logo}
-              alt="JuniorPASS Logo"
-              className="reset-logo"
-            />
+            <img src={logo} alt="Junior Pass Logo" className="reset-logo" />
             <div className="reset-icon-wrapper">
               <SafetyOutlined className="reset-icon" />
             </div>

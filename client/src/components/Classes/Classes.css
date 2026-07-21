@@ -9,6 +9,107 @@
   min-height: auto;
 }
 
+/* Workspace layout refresh — colors continue to come from the existing theme. */
+.classes-page-header {
+  min-height: 136px;
+}
+
+.page-kicker {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--primary-dark);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.classes-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-md);
+}
+
+.classes-stats .stat-card {
+  min-height: 112px;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+}
+
+.classes-catalogue-panel {
+  overflow: hidden;
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-xl);
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.classes-catalogue-panel .classes-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  margin: 0;
+  padding: 0 0 var(--spacing-lg);
+  background: transparent;
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: none;
+}
+
+.classes-toolbar > div:first-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.classes-toolbar strong {
+  color: var(--text-dark);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.classes-toolbar span {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.classes-catalogue-panel .classes-search {
+  width: min(360px, 100%);
+  min-height: 42px;
+}
+
+.classes-catalogue-panel .classes-tabs .ant-tabs-nav {
+  margin: 0 0 var(--spacing-lg);
+}
+
+@media (max-width: 767px) {
+  .classes-page-header {
+    min-height: auto;
+  }
+
+  .classes-stats {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .classes-stats .stat-card {
+    min-height: 90px;
+  }
+
+  .classes-catalogue-panel {
+    padding: var(--spacing-md);
+  }
+
+  .classes-catalogue-panel .classes-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .classes-catalogue-panel .classes-search {
+    width: 100%;
+  }
+}
+
 /* Stats Cards */
 .classes-stats {
   display: grid;
@@ -282,5 +383,11 @@
   .classes-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-xl);
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .classes-container .classes-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

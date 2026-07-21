@@ -6,43 +6,51 @@ const PartnerLayout = () => {
     <ConfigProvider
       theme={{
         token: {
-          // Seed Token
           colorPrimary: "#98BDD2",
-          colorPrimaryActive: "#98BDD2",
-
-          // Alias
-          colorBgContainer: "#FCFBF8",
-          fontSize: 14,
-          fontFamily: "Poppins, sans-serif",
+          colorPrimaryActive: "#6aa4c3",
+          colorInfo: "#98BDD2",
+          colorSuccess: "#52c41a",
+          colorWarning: "#faad14",
+          colorText: "#333333",
+          colorTextSecondary: "#666666",
+          colorBorder: "#f0f0f0",
+          colorBgContainer: "#ffffff",
+          colorBgLayout: "#FCFBF8",
+          borderRadius: 10,
+          controlHeight: 40,
+          fontSize: 13,
+          fontFamily:
+            "Poppins, Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         },
         components: {
           Layout: {
-            headerBg: "#FCFBF8",
+            headerBg: "#ffffff",
             bodyBg: "#FCFBF8",
-            headerHeight: 84,
-            lightSiderBg: "#FCFBF8",
-            siderBg: "#FCFBF8",
-            triggerBg: "#98BDD2",
-            lightTriggerBg: "#98BDD2",
+            lightSiderBg: "#ffffff",
+            siderBg: "#ffffff",
           },
           Menu: {
-            horizontalItemSelectedColor: "#98BDD2",
+            itemBorderRadius: 11,
+            itemSelectedBg: "#98BDD2",
+            itemSelectedColor: "#ffffff",
           },
           Tabs: {
-            itemActiveColor: "#98BDD2",
-            itemHoverColor: "#98BDD2",
-            itemSelectedColor: "#98BDD2",
+            itemActiveColor: "#6aa4c3",
+            itemHoverColor: "#6aa4c3",
+            itemSelectedColor: "#6aa4c3",
             inkBarColor: "#98BDD2",
+          },
+          Button: {
+            primaryShadow: "none",
+            borderRadius: 10,
+          },
+          Card: {
+            borderRadiusLG: 17,
           },
         },
       }}
     >
-      <div
-        style={{
-          backgroundColor: "#FCFBF8",
-          minHeight: "100vh",
-        }}
-      >
+      <div className="partner-app-root">
         <Outlet />
       </div>
     </ConfigProvider>

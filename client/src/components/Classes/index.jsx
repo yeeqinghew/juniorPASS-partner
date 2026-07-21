@@ -68,9 +68,9 @@ const PartnerClasses = ({ setAuth }) => {
 
   return (
     <div className="classes-container">
-      {/* Welcome Banner - matching Dashboard style */}
-      <div className="welcome-banner">
+      <div className="welcome-banner classes-page-header">
         <div className="welcome-content">
+          <span className="page-kicker">Class catalogue</span>
           <Title level={2} className="welcome-title">
             My Classes
           </Title>
@@ -121,24 +121,27 @@ const PartnerClasses = ({ setAuth }) => {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="classes-toolbar">
-        <Input
-          placeholder="Search classes by title or description..."
-          prefix={<SearchOutlined />}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="classes-search"
-          allowClear
-        />
-      </div>
+      <section className="classes-catalogue-panel">
+        <div className="classes-toolbar">
+          <div>
+            <strong>Class catalogue</strong>
+            <span>Search and filter your published activities</span>
+          </div>
+          <Input
+            placeholder="Search classes..."
+            prefix={<SearchOutlined />}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="classes-search"
+            allowClear
+          />
+        </div>
 
-      {/* Tabs */}
-      <Tabs
-        defaultActiveKey="1"
-        size="large"
-        className="classes-tabs"
-        items={[
+        <Tabs
+          defaultActiveKey="1"
+          size="large"
+          className="classes-tabs"
+          items={[
           {
             label: `All (${filteredListings.length})`,
             key: "1",
@@ -172,8 +175,9 @@ const PartnerClasses = ({ setAuth }) => {
               />
             ),
           },
-        ]}
-      />
+          ]}
+        />
+      </section>
     </div>
   );
 };

@@ -148,6 +148,16 @@ const OutletForm = ({ outlet, onSuccess, onCancel }) => {
       }
       className="outlet-form"
     >
+      <div className="outlet-form-intro">
+        <span className="outlet-form-intro-icon"><EnvironmentOutlined /></span>
+        <div>
+          <Text strong>{outlet ? "Update this location" : "Set up a new location"}</Text>
+          <Text type="secondary">
+            Add the details families need when they attend a class here.
+          </Text>
+        </div>
+      </div>
+
       <Card className="form-section" bordered={false}>
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           {/* Outlet Name */}
@@ -303,7 +313,7 @@ const OutletForm = ({ outlet, onSuccess, onCancel }) => {
       </Card>
 
       {/* Form Actions */}
-      <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
+      <Form.Item className="outlet-form-actions" style={{ marginBottom: 0, marginTop: 24 }}>
         <Space style={{ width: "100%", justifyContent: "flex-end" }} size="middle">
           <Button size="large" onClick={onCancel} className="cancel-btn">
             Cancel

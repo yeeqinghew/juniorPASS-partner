@@ -1,50 +1,100 @@
-/* JuniorPASS Partner Portal - Main App Styles */
+@import "./styles/variables.css";
+@import "./styles/common.css";
 
-@import './styles/variables.css';
-@import './styles/common.css';
-
-/* Base App Styles */
-.App {
-  text-align: center;
+html {
+  min-width: 320px;
+  background: #FCFBF8;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Global Font */
 body {
-  font-family: var(--jp-font-family);
+  min-width: 320px;
+  min-height: 100vh;
+  color: #333333;
+  background: #FCFBF8;
+  font-family: Poppins, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.partner-app-root {
+  min-height: 100vh;
+  background: #FCFBF8;
+}
+
+/* Shared workspace surfaces */
+.partner-content .welcome-banner,
+.partner-content .profile-header,
+.partner-content .outlets-header {
+  padding: 24px 28px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.partner-content .welcome-title,
+.partner-content .profile-title,
+.partner-content .outlets-title {
+  color: #1a1a2e !important;
+  font-size: 25px !important;
+  font-weight: 720 !important;
+  letter-spacing: -0.025em;
+}
+
+.partner-content .welcome-text,
+.partner-content .profile-subtitle,
+.partner-content .outlets-subtitle {
+  color: #666666 !important;
+  font-size: 12px !important;
+}
+
+.partner-content .ant-card:not(.dashboard-stat-card):not(.dashboard-panel) {
+  border-color: #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.partner-content .ant-input,
+.partner-content .ant-input-affix-wrapper,
+.partner-content .ant-select-selector,
+.partner-content .ant-picker {
+  border-color: #d9d9d9;
+  border-radius: 10px !important;
+  box-shadow: none;
+}
+
+.partner-content .ant-input:hover,
+.partner-content .ant-input-affix-wrapper:hover,
+.partner-content .ant-select-selector:hover,
+.partner-content .ant-picker:hover {
+  border-color: #98BDD2 !important;
+}
+
+.partner-content .ant-btn-primary {
+  background: linear-gradient(135deg, #98BDD2, #6aa4c3);
+  border: 0;
+  box-shadow: 0 4px 12px rgba(152, 189, 210, 0.3);
+}
+
+.partner-content .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #8bb3ca, #5f9bbb) !important;
+}
+
+@media (max-width: 767px) {
+  .partner-content .welcome-banner,
+  .partner-content .profile-header,
+  .partner-content .outlets-header {
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  .partner-content .welcome-title,
+  .partner-content .profile-title,
+  .partner-content .outlets-title {
+    font-size: 21px !important;
+  }
 }

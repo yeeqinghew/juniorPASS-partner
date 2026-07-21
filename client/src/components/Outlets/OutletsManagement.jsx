@@ -5,21 +5,15 @@ import {
   Modal,
   Input,
   Space,
-  Card,
   Tag,
   Empty,
   Spin,
   Image,
-  Tooltip,
-  Popconfirm,
   Select,
   Radio,
-  Row,
-  Col,
 } from "antd";
 import {
   EditOutlined,
-  DeleteOutlined,
   EnvironmentOutlined,
   PlusOutlined,
   ShopOutlined,
@@ -152,124 +146,85 @@ const OutletsManagement = () => {
     const hasImages = images.length > 0;
 
     return (
-      <Card
-        key={outlet.outlet_id}
-        className="outlet-card"
-        hoverable
-        cover={
-          <div className="outlet-card-cover">
-            {hasImages ? (
-              <div className="outlet-image-wrapper">
-                <Image.PreviewGroup>
-                  <Image
-                    src={images[0]}
-                    alt={outlet.outlet_name}
-                    className="outlet-main-image"
-                    preview={{
-                      mask: `View ${images.length} ${
-                        images.length === 1 ? "Photo" : "Photos"
-                      }`,
-                    }}
-                  />
-                  {images.slice(1).map((img, idx) => (
-                    <Image
-                      key={idx}
-                      src={img}
-                      alt={`${outlet.outlet_name} ${idx + 2}`}
-                      style={{ display: "none" }}
-                    />
-                  ))}
-                </Image.PreviewGroup>
-                {images.length > 1 && (
-                  <div className="outlet-image-count">
-                    <ShopOutlined /> {images.length} Photos
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="outlet-placeholder-cover">
-                <ShopOutlined />
-                <Text type="secondary">No Photos</Text>
-              </div>
-            )}
-            <div className="outlet-card-overlay">
-              <Tooltip title="Edit Outlet">
-                <Button
-                  type="primary"
-                  shape="circle"
-                  icon={<EditOutlined />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(outlet);
-                  }}
-                  className="outlet-action-btn edit-btn"
+      <article key={outlet.outlet_id} className="location-card">
+        <div className="location-card-media">
+          {hasImages ? (
+            <Image.PreviewGroup>
+              <Image
+                src={images[0]}
+                alt={outlet.outlet_name}
+                className="location-card-image"
+                preview={{ mask: "View gallery" }}
+              />
+              {images.slice(1).map((img, idx) => (
+                <Image
+                  key={idx}
+                  src={img}
+                  alt={`${outlet.outlet_name} ${idx + 2}`}
+                  style={{ display: "none" }}
                 />
-              </Tooltip>
+              ))}
+            </Image.PreviewGroup>
+          ) : (
+            <div className="location-card-placeholder">
+              <ShopOutlined />
+              <span>Add location photos</span>
             </div>
-          </div>
-        }
-      >
-        <div className="outlet-card-content">
-          <div className="outlet-header">
-            <Title level={4} className="outlet-name">
-              {outlet.outlet_name}
-            </Title>
-            {outlet.description && (
-              <Text
-                type="secondary"
-                className="outlet-description"
-                ellipsis={{ rows: 2 }}
-              >
-                {outlet.description}
-              </Text>
-            )}
-          </div>
-
-          <Space direction="vertical" size={12} style={{ width: "100%" }}>
-            <div className="outlet-info-row">
-              <EnvironmentOutlined className="outlet-icon" />
-              <div className="outlet-info-content">
-                <Text strong className="outlet-info-label">
-                  Location
-                </Text>
-                <Text className="outlet-info-value" ellipsis>
-                  {getAddress(outlet.address)}
-                </Text>
-              </div>
-            </div>
-
-            <div className="outlet-info-row">
-              <Tag color="blue" className="outlet-mrt-tag">
-                {outlet.nearest_mrt} MRT
-              </Tag>
-            </div>
-
-            {outlet.phone_number && (
-              <div className="outlet-info-row">
-                <PhoneOutlined className="outlet-icon" />
-                <Text className="outlet-phone">{outlet.phone_number}</Text>
-              </div>
-            )}
-
-            <div className="outlet-stats">
-              <Tag
-                icon={<ShopOutlined />}
-                color="success"
-                className="outlet-stat-tag"
-              >
-                {outlet.listing_count || 0} Listings
-              </Tag>
-              <Tag
-                icon={<CalendarOutlined />}
-                color="processing"
-                className="outlet-stat-tag"
-              >
-                {outlet.future_bookings_count || 0} Bookings
-              </Tag>
-            </div>
-          </Space>
+          )}
+          <span className="location-photo-count">
+            {images.length} {images.length === 1 ? "photo" : "photos"}
+          </span>
         </div>
-      </Card>
+
+        <div className="location-card-body">
+          <div className="location-card-heading">
+            <div>
+              <Text className="location-card-kicker">JuniorPASS location</Text>
+              <Title level={4} className="location-card-title">
+                {outlet.outlet_name || "Unnamed outlet"}
+              </Title>
+            </div>
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(outlet)}
+              className="location-edit-button"
+            >
+              Edit
+            </Button>
+          </div>
+
+          <Text className="location-card-description" ellipsis={{ rows: 2 }}>
+            {outlet.description || "No outlet description has been added yet."}
+          </Text>
+
+          <div className="location-detail-list">
+            <div className="location-detail-row">
+              <span className="location-detail-icon"><EnvironmentOutlined /></span>
+              <div>
+                <small>Address</small>
+                <strong>{getAddress(outlet.address)}</strong>
+              </div>
+            </div>
+            <div className="location-detail-row">
+              <span className="location-detail-icon"><PhoneOutlined /></span>
+              <div>
+                <small>Contact</small>
+                <strong>{outlet.phone_number || "Not provided"}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="location-card-footer">
+            <Tag className="location-mrt-tag">
+              {outlet.nearest_mrt ? `${outlet.nearest_mrt} MRT` : "MRT not added"}
+            </Tag>
+            <div className="location-metrics">
+              <span><ShopOutlined /> {outlet.listing_count || 0} classes</span>
+              <span><CalendarOutlined /> {outlet.future_bookings_count || 0} bookings</span>
+            </div>
+          </div>
+        </div>
+      </article>
     );
   };
 
@@ -290,114 +245,124 @@ const OutletsManagement = () => {
         <div className="outlets-header">
           <div className="outlets-header-content">
             <div className="outlets-title-section">
-              <ShopOutlined className="outlets-header-icon" />
               <div>
+                <Text className="outlets-kicker">Location management</Text>
                 <Title level={2} className="outlets-title">
-                  My Outlets
+                  Outlets
                 </Title>
                 <Text className="outlets-subtitle">
-                  Manage your physical locations where classes are held
+                  Keep venue details accurate for families and class schedules.
                 </Text>
               </div>
             </div>
-            <Button
-              type="primary"
-              size="large"
-              icon={<PlusOutlined />}
-              onClick={handleCreate}
-              className="add-outlet-btn"
-            >
-              Add Outlet
-            </Button>
+            <div className="outlets-header-actions">
+              <Text className="outlets-count">
+                {outlets.length} {outlets.length === 1 ? "location" : "locations"}
+              </Text>
+              <Button
+                type="primary"
+                size="large"
+                icon={<PlusOutlined />}
+                onClick={handleCreate}
+                className="add-outlet-btn"
+              >
+                Add outlet
+              </Button>
+            </div>
           </div>
         </div>
 
-        <Card className="outlets-controls-card">
-          <div className="outlets-controls">
-            <Search
-              placeholder="Search outlets by name, MRT, or description..."
-              allowClear
-              size="large"
-              prefix={<SearchOutlined />}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="outlet-search"
-              style={{ maxWidth: 400 }}
-            />
+        <section className="outlets-directory">
+          <div className="outlets-directory-header">
+            <div className="outlets-directory-heading">
+              <Text className="outlets-directory-title">Your locations</Text>
+              <Text className="outlets-directory-subtitle">
+                {filteredOutlets.length} {filteredOutlets.length === 1 ? "outlet" : "outlets"} shown
+              </Text>
+            </div>
+            <div className="outlets-directory-controls">
+              <Search
+                placeholder="Search name, MRT, or description"
+                allowClear
+                prefix={<SearchOutlined />}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="outlet-search"
+              />
 
-            <div className="outlets-controls-right">
               <Select
                 value={sortBy}
                 onChange={setSortBy}
-                size="large"
                 className="outlet-sort"
-                style={{ width: 160 }}
+                aria-label="Sort outlets"
               >
-                <Select.Option value="newest">Newest First</Select.Option>
-                <Select.Option value="name">By Name</Select.Option>
-                <Select.Option value="listings">Most Listings</Select.Option>
+                <Select.Option value="newest">Newest first</Select.Option>
+                <Select.Option value="name">Name</Select.Option>
+                <Select.Option value="listings">Most classes</Select.Option>
               </Select>
 
               <Radio.Group
                 value={viewMode}
                 onChange={(e) => setViewMode(e.target.value)}
                 buttonStyle="solid"
-                size="large"
+                className="outlet-view-toggle"
               >
-                <Radio.Button value="grid">
-                  <AppstoreOutlined /> Grid
+                <Radio.Button value="grid" aria-label="Grid view">
+                  <AppstoreOutlined />
                 </Radio.Button>
-                <Radio.Button value="list">
-                  <UnorderedListOutlined /> List
+                <Radio.Button value="list" aria-label="List view">
+                  <UnorderedListOutlined />
                 </Radio.Button>
               </Radio.Group>
             </div>
           </div>
-        </Card>
 
-        {filteredOutlets.length === 0 ? (
-          <Card className="outlets-empty-card">
-            <Empty
-              image={
-                <ShopOutlined
-                  style={{ fontSize: 80, color: "var(--primary-color)" }}
+          <div className="outlets-directory-content">
+            {filteredOutlets.length === 0 ? (
+              <div className="outlets-empty-state">
+                <Empty
+                  image={
+                    <ShopOutlined
+                      style={{ fontSize: 64, color: "var(--primary-color)" }}
+                    />
+                  }
+                  description={
+                    searchTerm ? (
+                      <Space direction="vertical">
+                        <Text>No outlets match your search</Text>
+                        <Button onClick={() => setSearchTerm("")}>
+                          Clear search
+                        </Button>
+                      </Space>
+                    ) : (
+                      <Space direction="vertical">
+                        <Text>No outlets yet</Text>
+                        <Text type="secondary">
+                          Add your first location to start scheduling classes.
+                        </Text>
+                        <Button
+                          type="primary"
+                          icon={<PlusOutlined />}
+                          onClick={handleCreate}
+                        >
+                          Add your first outlet
+                        </Button>
+                      </Space>
+                    )
+                  }
                 />
-              }
-              description={
-                searchTerm ? (
-                  <Space direction="vertical">
-                    <Text>No outlets match your search</Text>
-                    <Button onClick={() => setSearchTerm("")}>
-                      Clear Search
-                    </Button>
-                  </Space>
-                ) : (
-                  <Space direction="vertical">
-                    <Text>No outlets yet</Text>
-                    <Text type="secondary">
-                      Add your first location to get started!
-                    </Text>
-                    <Button
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      onClick={handleCreate}
-                    >
-                      Add Your First Outlet
-                    </Button>
-                  </Space>
-                )
-              }
-            />
-          </Card>
-        ) : (
-          <div
-            className={`outlets-grid ${
-              viewMode === "list" ? "outlets-list" : ""
-            }`}
-          >
-            {filteredOutlets.map((outlet) => renderOutletCard(outlet))}
+              </div>
+            ) : (
+              <div
+                className={`outlets-grid ${
+                  viewMode === "list" ? "outlets-list" : ""
+                }`}
+              >
+                {filteredOutlets.map((outlet) => renderOutletCard(outlet))}
+              </div>
+            )}
           </div>
-        )}
+        </section>
 
         <Modal
           title={
@@ -409,7 +374,7 @@ const OutletsManagement = () => {
           open={isModalOpen}
           onCancel={handleModalClose}
           footer={null}
-          width={720}
+          width={880}
           destroyOnClose
           className="outlet-modal"
         >

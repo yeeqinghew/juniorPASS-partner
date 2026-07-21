@@ -1,14 +1,26 @@
 import { useContext, useEffect, useState } from "react";
 import {
-  DatabaseOutlined,
-  HomeOutlined,
-  LogoutOutlined,
-  UserOutlined,
+  AppstoreOutlined,
   BellOutlined,
-  MenuOutlined,
+  BookOutlined,
   CloseOutlined,
+  EnvironmentOutlined,
+  LogoutOutlined,
+  MenuOutlined,
+  QuestionCircleOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, Image, Avatar, Typography, Badge, Drawer, Button } from "antd";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Drawer,
+  Image,
+  Layout,
+  Menu,
+  Tooltip,
+  Typography,
+} from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import UserContext from "../components/UserContext";
@@ -16,170 +28,211 @@ import logo from "../images/logopngResize.png";
 import "./PartnerLayout.css";
 
 const { Header, Sider, Content } = Layout;
-const { Text } = Typography;
+const { Text, Title } = Typography;
+
+const getRouteMeta = (pathname) => {
+  if (pathname.startsWith("/profile")) {
+    return { key: "profile", title: "Profile", eyebrow: "Settings" };
+  }
+  if (pathname.startsWith("/outlets")) {
+    return { key: "outlets", title: "Outlets", eyebrow: "Locations" };
+  }
+  if (
+    pathname.startsWith("/classes") ||
+    pathname.startsWith("/class/") ||
+    pathname.startsWith("/create-class")
+  ) {
+    return { key: "classes", title: "Classes", eyebrow: "Catalogue" };
+  }
+  return { key: "home", title: "Dashboard", eyebrow: "Overview" };
+};
 
 const PartnerHomeLayout = ({ setAuth }) => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [current, setCurrent] = useState(
-    location.pathname === "/" || location.pathname === ""
-      ? "home"
-      : location.pathname.split("/").pop(),
-  );
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  const handleSelectSideMenu = (e) => {
-    setCurrent(e);
-    if (isMobile) {
-      setDrawerVisible(false);
-    }
-  };
+  const routeMeta = getRouteMeta(location.pathname);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    if (location) {
-      if (current !== location.pathname) {
-        setCurrent(location.pathname);
-      }
-    }
-  }, [location, current]);
+  const handleLogout = () => {
+    localStorage.clear();
+    setAuth(false);
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
+
+  const navigationItems = [
+    {
+      key: "home",
+      icon: <AppstoreOutlined />,
+      label: <Link to="/home">Dashboard</Link>,
+    },
+    {
+      key: "profile",
+      icon: <UserOutlined />,
+      label: <Link to="/profile">Profile</Link>,
+    },
+    {
+      key: "outlets",
+      icon: <EnvironmentOutlined />,
+      label: <Link to="/outlets">Outlets</Link>,
+    },
+    {
+      key: "classes",
+      icon: <BookOutlined />,
+      label: <Link to="/classes">Classes</Link>,
+    },
+  ];
 
   const renderSidebarContent = () => (
-    <>
-      <div className="sidebar-logo-container">
+    <div className="sidebar-inner">
+      <div className="sidebar-brand">
         <Image
           src={logo}
           preview={false}
-          width={120}
+          width={104}
           className="sidebar-logo"
         />
+        <div className="sidebar-brand-copy">
+          <Text className="sidebar-brand-title">Partner</Text>
+          <Text className="sidebar-brand-subtitle">Workspace</Text>
+        </div>
       </div>
 
-      <div className="sidebar-avatar-container">
+      <div className="sidebar-account">
         <Avatar
-          size={80}
+          size={48}
           src={user?.picture}
           icon={<UserOutlined />}
           className="sidebar-avatar"
         />
-        <Text className="sidebar-user-name">
-          {user?.partner_name || "Partner"}
-        </Text>
-        <Text className="sidebar-user-email">{user?.email || ""}</Text>
+        <div className="sidebar-account-copy">
+          <Text className="sidebar-user-name">
+            {user?.partner_name || "Partner account"}
+          </Text>
+          <Text
+            className="sidebar-user-email"
+            ellipsis={{ tooltip: user?.email }}
+          >
+            {user?.email || "Complete your profile"}
+          </Text>
+        </div>
       </div>
 
+      <Text className="sidebar-section-label">Workspace</Text>
       <Menu
         mode="inline"
-        selectedKeys={[current]}
-        onClick={handleSelectSideMenu}
-        items={[
-          {
-            key: "home",
-            icon: <HomeOutlined />,
-            label: <Link to="/home">Dashboard</Link>,
-          },
-          {
-            key: "profile",
-            icon: <UserOutlined />,
-            label: <Link to="/profile">Profile</Link>,
-          },
-          {
-            key: "outlets",
-            icon: <DatabaseOutlined />,
-            label: <Link to="/outlets">Outlets</Link>,
-          },
-          {
-            key: "classes",
-            icon: <DatabaseOutlined />,
-            label: <Link to="/classes">Classes</Link>,
-          },
-        ]}
+        selectedKeys={[routeMeta.key]}
+        onClick={() => setDrawerVisible(false)}
+        items={navigationItems}
+        className="sidebar-navigation"
       />
 
-      <div className="sidebar-footer">
-        <Text className="sidebar-footer-text">© 2025 juniorPASS</Text>
+      <div className="sidebar-spacer" />
+
+      <div className="sidebar-support">
+        <span className="sidebar-support-icon">
+          <QuestionCircleOutlined />
+        </span>
+        <div>
+          <Text className="sidebar-support-title">Need a hand?</Text>
+          <a href="mailto:admin@juniorpass.sg">Contact JuniorPASS</a>
+        </div>
       </div>
-    </>
+
+      <Text className="sidebar-footer-text">
+        © {new Date().getFullYear()} JuniorPASS
+      </Text>
+    </div>
   );
 
   return (
     <Layout className="partner-layout">
-      <Header className="partner-header">
-        {isMobile && (
-          <Button
-            type="text"
-            icon={<MenuOutlined />}
-            onClick={() => setDrawerVisible(true)}
-            className="mobile-menu-button"
-          />
-        )}
-        <div style={{ flex: 1 }} />
-        <Menu mode="horizontal" className="header-menu" selectable={false}>
-          <Menu.Item
-            key="notification"
-            onClick={() => {
-              toast("Notifications feature coming soon!", {
-                icon: "🔔",
-              });
-            }}
-          >
-            <Badge count={0} showZero={false}>
-              <BellOutlined className="notification-icon" />
-            </Badge>
-          </Menu.Item>
-          <Menu.Item key="logout">
-            <LogoutOutlined
-              className="logout-button"
-              onClick={() => {
-                localStorage.clear();
-                setAuth(false);
-                toast.success("Logged out successfully");
-                navigate("/login");
-              }}
-            />
-          </Menu.Item>
-        </Menu>
-      </Header>
-
-      <Layout>
-        {/* Desktop Sidebar */}
-        {!isMobile && (
-          <Sider className="partner-sidebar" width={240}>
-            {renderSidebarContent()}
-          </Sider>
-        )}
-
-        {/* Mobile Drawer */}
-        <Drawer
-          placement="left"
-          onClose={() => setDrawerVisible(false)}
-          open={drawerVisible}
-          className="mobile-sidebar-drawer"
-          width={280}
-          styles={{
-            body: { padding: 0 },
-            header: { display: 'none' },
-          }}
-        >
-          <div className="mobile-drawer-close">
-            <Button
-              type="text"
-              icon={<CloseOutlined />}
-              onClick={() => setDrawerVisible(false)}
-              className="drawer-close-button"
-            />
-          </div>
+      {!isMobile && (
+        <Sider className="partner-sidebar" width={272}>
           {renderSidebarContent()}
-        </Drawer>
+        </Sider>
+      )}
+
+      <Drawer
+        placement="left"
+        onClose={() => setDrawerVisible(false)}
+        open={drawerVisible}
+        className="mobile-sidebar-drawer"
+        width={292}
+        styles={{ body: { padding: 0 }, header: { display: "none" } }}
+      >
+        <Button
+          type="text"
+          icon={<CloseOutlined />}
+          onClick={() => setDrawerVisible(false)}
+          className="drawer-close-button"
+          aria-label="Close navigation"
+        />
+        {renderSidebarContent()}
+      </Drawer>
+
+      <Layout className="partner-main-layout">
+        <Header className="partner-header">
+          <div className="topbar-left">
+            {isMobile && (
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={() => setDrawerVisible(true)}
+                className="mobile-menu-button"
+                aria-label="Open navigation"
+              />
+            )}
+            <div className="topbar-page-context">
+              <Text className="topbar-eyebrow">{routeMeta.eyebrow}</Text>
+              <Title level={4} className="topbar-title">
+                {routeMeta.title}
+              </Title>
+            </div>
+          </div>
+
+          <div className="topbar-actions">
+            <Tooltip title="Notifications coming soon">
+              <Badge count={0} size="small">
+                <Button
+                  type="text"
+                  icon={<BellOutlined />}
+                  className="topbar-icon-button"
+                  onClick={() => toast("Notifications are coming soon")}
+                  aria-label="Notifications"
+                />
+              </Badge>
+            </Tooltip>
+
+            <div className="topbar-account">
+              <Avatar size={36} src={user?.picture} icon={<UserOutlined />} />
+              <div className="topbar-account-copy">
+                <Text className="topbar-account-name">
+                  {user?.partner_name || "Partner"}
+                </Text>
+                <Text className="topbar-account-role">Partner account</Text>
+              </div>
+            </div>
+
+            <Tooltip title="Log out">
+              <Button
+                type="text"
+                icon={<LogoutOutlined />}
+                className="topbar-icon-button logout-button"
+                onClick={handleLogout}
+                aria-label="Log out"
+              />
+            </Tooltip>
+          </div>
+        </Header>
 
         <Content className="partner-content">
           <Outlet />

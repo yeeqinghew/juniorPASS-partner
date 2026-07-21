@@ -259,3 +259,85 @@
 .outlet-form {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* Modal form layout refresh. Colors remain sourced from the existing theme. */
+.outlet-form-intro {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--bg-light-blue);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+}
+
+.outlet-form-intro-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--primary-dark);
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+}
+
+.outlet-form-intro > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.outlet-form-intro .ant-typography:first-child {
+  color: var(--text-dark);
+  font-size: var(--font-size-md);
+}
+
+.outlet-form-intro .ant-typography:last-child {
+  margin-top: 2px;
+  font-size: var(--font-size-xs);
+}
+
+.outlet-form .form-section {
+  margin: 0;
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+.outlet-form .form-section .ant-card-body {
+  padding: var(--spacing-xl);
+}
+
+.outlet-form .form-section-divider {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-lg) 0 var(--spacing-sm);
+  border-top: 1px solid var(--border-light);
+}
+
+.outlet-form .outlet-form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  padding: var(--spacing-md) 0 0;
+  background: var(--bg-white);
+}
+
+.outlet-form .cancel-btn,
+.outlet-form .submit-btn {
+  height: 44px;
+  border-radius: var(--radius-md);
+}
+
+@media screen and (max-width: 768px) {
+  .outlet-form .form-section .ant-card-body {
+    padding: var(--spacing-md);
+  }
+
+  .outlet-form-actions .ant-space {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+  }
+}

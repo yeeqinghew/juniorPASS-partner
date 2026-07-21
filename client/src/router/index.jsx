@@ -23,19 +23,6 @@ const Routers = () => {
 
   return (
     <UserContext.Provider value={{ user }}>
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css"
-          rel="stylesheet"
-          type="text/css"
-        ></link>
-        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1594.0.min.js"></script>
-      </head>
-
       <Toaster />
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />

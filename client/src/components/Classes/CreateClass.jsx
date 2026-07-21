@@ -252,9 +252,15 @@ const CreateClass = () => {
         >
           <LeftOutlined />
         </button>
-        <Title level={2} className="class-edit-title">
-          Create New Class
-        </Title>
+        <div className="class-edit-heading-copy">
+          <Text className="class-edit-kicker">Class catalogue</Text>
+          <Title level={2} className="class-edit-title">
+            Create New Class
+          </Title>
+          <Text className="class-edit-subtitle">
+            Add the class details, locations, schedules, and gallery.
+          </Text>
+        </div>
       </div>
 
       <Form
@@ -265,7 +271,14 @@ const CreateClass = () => {
         layout="vertical"
       >
         {/* ── Basic info ── */}
-        <div className="form-section-header">Basic Information</div>
+        <section className="class-form-card">
+        <div className="form-section-header">
+          <span className="form-section-number">1</span>
+          <span>
+            <strong>Basic Information</strong>
+            <small>Tell families what this class is about.</small>
+          </span>
+        </div>
 
         <Form.Item
           name="title"
@@ -329,7 +342,15 @@ const CreateClass = () => {
         </Form.Item>
 
         {/* ── Outlets & Schedules ── */}
-        <div className="form-section-header">Outlets &amp; Schedules</div>
+        </section>
+        <section className="class-form-card">
+        <div className="form-section-header">
+          <span className="form-section-number">2</span>
+          <span>
+            <strong>Outlets &amp; Schedules</strong>
+            <small>Choose where and when families can attend.</small>
+          </span>
+        </div>
 
         <Form.List name="outlets">
           {(outletFields, { add: addOutlet, remove: removeOutlet }) => (
@@ -378,7 +399,9 @@ const CreateClass = () => {
                         let addr = o.address;
                         try {
                           addr = JSON.parse(o.address).ADDRESS;
-                        } catch {}
+                        } catch {
+                          addr = o.address;
+                        }
                         return (
                           <Select.Option key={o.outlet_id} value={o.outlet_id}>
                             {addr}
@@ -435,8 +458,14 @@ const CreateClass = () => {
         </Form.List>
 
         {/* ── Images ── */}
+        </section>
+        <section className="class-form-card">
         <div className="form-section-header">
-          Class Images <span className="required-star">*</span>
+          <span className="form-section-number">3</span>
+          <span>
+            <strong>Class Images <span className="required-star">*</span></strong>
+            <small>Show families what they can expect.</small>
+          </span>
         </div>
         <Text type="secondary" className="image-hint">
           Upload 1–5 images. First image will be used as the cover.
@@ -453,9 +482,15 @@ const CreateClass = () => {
         </Dragger>
 
         {/* ── Submit ── */}
-        <Button type="primary" htmlType="submit" className="save-button" block>
-          Create Class
-        </Button>
+        </section>
+        <div className="class-form-actions">
+          <Button size="large" onClick={() => navigate(-1)}>
+            Cancel
+          </Button>
+          <Button type="primary" htmlType="submit" className="save-button">
+            Create Class
+          </Button>
+        </div>
       </Form>
     </div>
   );
