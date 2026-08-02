@@ -34,6 +34,7 @@ import {
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
+import { formatChildAge } from "../../utils/age.js";
 import UserContext from "../UserContext";
 import "./ClassEdit.css";
 import "./ClassDetails.css";
@@ -115,7 +116,7 @@ const Class = () => {
           student.email || "N/A",
           student.phone || "N/A",
           student.child_name || "N/A",
-          student.child_age || "N/A",
+          formatChildAge(student),
           student.schedule_day || "N/A",
           student.booking_date
             ? new Date(student.booking_date).toLocaleDateString()
@@ -621,7 +622,7 @@ const Class = () => {
         <div>
           <div>{text || "N/A"}</div>
           <Text type="secondary" className="text-small">
-            Age: {record.child_age || "N/A"}
+            Age: {formatChildAge(record)}
           </Text>
         </div>
       ),
