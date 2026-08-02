@@ -291,41 +291,27 @@ const CreateClass = () => {
           />
         </Form.Item>
 
-        <div className="fields-row-2">
-          <Form.Item
-            name="lesson_type"
-            label="Lesson Type"
-            rules={[{ required: true, message: "Select a lesson type" }]}
+        <Form.Item
+          name="age_groups"
+          label="Age Groups"
+          rules={[
+            { required: true, message: "Select at least one age group" },
+          ]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Select age groups"
+            size="large"
           >
-            <Select placeholder="Select type" size="large">
-              <Select.Option value="Workshop">Workshop</Select.Option>
-              <Select.Option value="Classes">Classes</Select.Option>
-              <Select.Option value="Camp">Camp</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="age_groups"
-            label="Age Groups"
-            rules={[
-              { required: true, message: "Select at least one age group" },
-            ]}
-          >
-            <Select
-              mode="multiple"
-              placeholder="Select age groups"
-              size="large"
-            >
-              {ageGroups?.map((age) => (
-                <Select.Option key={age.id} value={age.name}>
-                  {age.max_age !== null
-                    ? `${age.min_age}–${age.max_age} yrs: ${age.name}`
-                    : `${age.name}`}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </div>
+            {ageGroups?.map((age) => (
+              <Select.Option key={age.id} value={age.name}>
+                {age.max_age !== null
+                  ? `${age.min_age}–${age.max_age} yrs: ${age.name}`
+                  : `${age.name}`}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
         <Form.Item
           name="description"
