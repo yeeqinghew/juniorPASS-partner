@@ -89,8 +89,6 @@ const calcShortTermPrice = (ltTotal, ltClasses, stClasses) => {
   return Math.ceil(perClass * 1.15 * stClasses * 100) / 100;
 };
 
-const toCents = (dollars) => (dollars ? Math.ceil(dollars) : 0); // $1 = 1 credit
-
 // ─── sub-component: single time slot row ─────────────────────────────────────
 
 const TimeSlotRow = ({ slotIndex, scheduleField, remove, form, isOnly }) => (
@@ -165,14 +163,10 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
   );
   const [ltTotal, setLtTotal] = useState(null); // full-term total price
   const [ltClasses, setLtClasses] = useState(null);
-  const [paygPrice, setPaygPrice] = useState(null);
 
   // Derived values
   const stClasses = ltClasses ? Math.ceil(ltClasses * 0.25) : null;
   const stPrice = calcShortTermPrice(ltTotal, ltClasses, stClasses);
-  const stCredits = toCents(stPrice);
-  const ltCredits = toCents(ltTotal);
-  const paygCredits = toCents(paygPrice);
 
   // Sync form field for short-term calculated values
   useEffect(() => {
@@ -189,7 +183,6 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
         setLtTotal(currentSchedule.price_fullterm);
       if (currentSchedule.full_term_class_count)
         setLtClasses(currentSchedule.full_term_class_count);
-      if (currentSchedule.price_payg) setPaygPrice(currentSchedule.price_payg);
     }
   }, [field.name, form]);
 
@@ -545,10 +538,8 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
 
               {ltTotal && ltClasses && (
                 <div className="price-derived">
-                  <Tag color="green">{ltCredits} credits total</Tag>
                   <Text type="secondary" style={{ fontSize: 12 }}>
-                    ≈ ${(ltTotal / ltClasses).toFixed(2)} per class ·{" "}
-                    {Math.ceil(ltTotal / ltClasses)} credit/class
+                    ≈ ${(ltTotal / ltClasses).toFixed(2)} per class
                   </Text>
                 </div>
               )}
@@ -588,7 +579,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                         ${stPrice.toFixed(2)}
                       </Text>
                       <Text type="secondary" style={{ fontSize: 11 }}>
-                        {stCredits} credits · 15% markup
+                        15% markup on the full-term per-class price
                       </Text>
                     </div>
                   </div>
@@ -644,19 +635,10 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                     precision={2}
                     size="large"
                     style={{ width: "100%" }}
-                    onChange={(v) => setPaygPrice(v)}
                   />
                 </Form.Item>
               </div>
 
-              {paygCredits > 0 && (
-                <div className="price-derived">
-                  <Tag color="blue">
-                    {paygCredits} credit{paygCredits !== 1 ? "s" : ""} per
-                    session
-                  </Tag>
-                </div>
-              )}
             </div>
           </>
         )}

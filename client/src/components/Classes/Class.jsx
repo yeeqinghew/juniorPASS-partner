@@ -182,52 +182,42 @@ const Class = () => {
   // Overview Tab Content
   const OverviewTab = () => (
     <div className="overview-tab">
-      {/* Stats Row */}
-      <Row gutter={[16, 16]} className="mb-24">
-        <Col xs={12} md={6}>
-          <Card className="stat-gradient-purple">
+      {/* Compact summary */}
+      <Card className="class-summary-card mb-24">
+        <Row gutter={[0, 16]}>
+          <Col xs={12} md={6} className="summary-item">
             <Statistic
               title={<span className="stat-card-title">Total Bookings</span>}
               value={registeredStudents.length}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: "white" }}
+              valueStyle={{ color: "var(--text-dark)" }}
             />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card className="stat-gradient-pink">
+          </Col>
+          <Col xs={12} md={6} className="summary-item">
             <Statistic
               title={<span className="stat-card-title">Programs</span>}
               value={getTotalScheduleCount()}
               prefix={<CalendarOutlined />}
-              valueStyle={{ color: "white" }}
+              valueStyle={{ color: "var(--text-dark)" }}
             />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card
-            className={
-              listing?.active ? "stat-gradient-blue" : "stat-gradient-gray"
-            }
-          >
+          </Col>
+          <Col xs={12} md={6} className="summary-item">
             <Statistic
               title={<span className="stat-card-title">Status</span>}
               value={listing?.active ? "Active" : "Inactive"}
-              valueStyle={{ color: "white", fontSize: 20 }}
+              valueStyle={{ color: "var(--text-dark)", fontSize: 20 }}
             />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card className="stat-gradient-yellow">
+          </Col>
+          <Col xs={12} md={6} className="summary-item summary-item-last">
             <Statistic
               title={<span className="stat-card-title">Rating</span>}
               value={listing?.rating || 0}
               suffix={<span style={{ fontSize: 16 }}>/ 5</span>}
-              valueStyle={{ color: "white" }}
+              valueStyle={{ color: "var(--text-dark)" }}
             />
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </Card>
 
       {/* Class Info */}
       <Card className="class-info-card">
