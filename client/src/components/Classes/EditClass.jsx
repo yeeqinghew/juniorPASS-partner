@@ -107,9 +107,9 @@ const EditClass = () => {
               time_slots: (group.time_slots || []).map((slot) => ({
                 day: slot.day,
                 timeslot: [slot.start_time, slot.end_time],
+                slots: slot.slots ?? 10,
               })),
               frequency: group.frequency,
-              slots: group.slots,
               package_types: group.package_types,
               is_progressive: group.is_progressive,
               full_term_start_date: group.full_term_start_date
@@ -237,9 +237,9 @@ const EditClass = () => {
                       .map((slot) => ({
                         day: slot.day,
                         timeslot: slot.timeslot,
+                        slots: slot.slots,
                       })),
                     frequency: schedule.frequency,
-                    slots: schedule.slots,
                     package_types: schedule.package_types,
                     is_progressive: schedule.is_progressive || false,
                     full_term_start_date: schedule.full_term_start_date
@@ -501,7 +501,9 @@ const EditClass = () => {
                 icon={<PlusCircleOutlined />}
                 className="add-outlet-button"
                 style={{ marginBottom: "16px" }}
-                onClick={() => addOutlet({ schedules: [{}] })}
+                onClick={() =>
+                  addOutlet({ schedules: [{ time_slots: [{ slots: 10 }] }] })
+                }
                 block
               >
                 Add Outlet
@@ -565,7 +567,9 @@ const EditClass = () => {
                           <Form.Item>
                             <Button
                               type="dashed"
-                              onClick={() => addSchedule()}
+                              onClick={() =>
+                                addSchedule({ time_slots: [{ slots: 10 }] })
+                              }
                               icon={<PlusCircleOutlined />}
                               className="add-schedule-button"
                               block

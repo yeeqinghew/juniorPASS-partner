@@ -389,12 +389,6 @@ const Class = () => {
                                   >
                                     {group.frequency || "Weekly"}
                                   </Tag>
-                                  <Tag
-                                    icon={<TeamOutlined />}
-                                    className="info-tag"
-                                  >
-                                    {group.slots || 10} slots
-                                  </Tag>
                                 </Space>
                               </div>
                             </div>
@@ -425,6 +419,12 @@ const Class = () => {
                                         slot.end_time,
                                       )}
                                     </Text>
+                                    <Tag
+                                      icon={<TeamOutlined />}
+                                      className="info-tag"
+                                    >
+                                      {slot.slots || 10} capacity
+                                    </Tag>
                                   </div>
                                 ))}
                               </Space>

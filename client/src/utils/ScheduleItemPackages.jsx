@@ -68,7 +68,6 @@ const PACKAGE_OPTIONS = [
 const VALID_COMBOS = [
   ["full-term"],
   ["full-term", "short-term"],
-  ["full-term", "short-term", "trial"],
   ["pay-as-you-go"],
   ["pay-as-you-go", "trial"],
 ];
@@ -117,6 +116,23 @@ const TimeSlotRow = ({ slotIndex, scheduleField, remove, form, isOnly }) => (
         style={{ marginBottom: 0, flex: "1 1 180px" }}
       >
         <TimeRangePicker />
+      </Form.Item>
+
+      <Form.Item
+        name={[slotIndex, "slots"]}
+        rules={[
+          { required: true, message: "Enter capacity" },
+          { type: "number", min: 1, max: 100, message: "1–100" },
+        ]}
+        style={{ marginBottom: 0, flex: "0 1 130px" }}
+      >
+        <InputNumber
+          placeholder="Capacity"
+          min={1}
+          max={100}
+          size="large"
+          style={{ width: "100%" }}
+        />
       </Form.Item>
     </div>
 
@@ -177,6 +193,19 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
     }
   }, [field.name, form]);
 
+  // Persist the auto-calculated values in the hidden fields submitted by the
+  // create/edit forms.
+  useEffect(() => {
+    form.setFieldValue(
+      ["outlets", field.name, "schedules", field.name, "short_term_class_count"],
+      stClasses,
+    );
+    form.setFieldValue(
+      ["outlets", field.name, "schedules", field.name, "price_shortterm"],
+      stPrice,
+    );
+  }, [field.name, form, stClasses, stPrice]);
+
   const handleProgressiveChange = useCallback(
     (checked) => {
       if (checked) {
@@ -213,6 +242,24 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
     },
     [field.name, form],
   );
+
+  useEffect(() => {
+    if (typeof isProgressive !== "boolean") return;
+
+    const allowedTypes = isProgressive
+      ? ["full-term", "short-term"]
+      : ["pay-as-you-go", "trial"];
+    const filtered = packageTypes.filter((type) =>
+      allowedTypes.includes(type),
+    );
+
+    if (filtered.length !== packageTypes.length) {
+      form.setFieldValue(
+        ["outlets", field.name, "schedules", field.name, "package_types"],
+        filtered,
+      );
+    }
+  }, [field.name, form, isProgressive, packageTypes]);
 
   const comboValid = isValidCombo(packageTypes);
   const hasFullTerm = packageTypes.includes("full-term");
@@ -270,7 +317,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                   type="dashed"
                   size="small"
                   icon={<PlusOutlined />}
-                  onClick={() => addSlot()}
+                  onClick={() => addSlot({ slots: 10 })}
                   className="add-slot-btn"
                 >
                   Add another day / time
@@ -282,9 +329,9 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
 
         <Divider className="card-divider" />
 
-        {/* ── Frequency & Slots ── */}
+        {/* ── Frequency ── */}
         <div className="section-block">
-          <div className="fields-row-2">
+          <div>
             <Form.Item
               name={[field.name, "frequency"]}
               label="Frequency"
@@ -298,23 +345,6 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
               />
             </Form.Item>
 
-            <Form.Item
-              name={[field.name, "slots"]}
-              label="Capacity"
-              rules={[
-                { required: true, message: "Required" },
-                { type: "number", min: 1, max: 100, message: "1–100" },
-              ]}
-              style={{ marginBottom: 0 }}
-            >
-              <InputNumber
-                placeholder="Max students"
-                min={1}
-                max={100}
-                size="large"
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
           </div>
         </div>
 
@@ -345,7 +375,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
               <div style={{ marginTop: -2 }}>
                 <Space>
                   <Text strong>Progressive Classes</Text>
-                  <Tooltip title="Each lesson builds on the previous — prevents mid-cycle joins and disables trial/PAYG/short-term.">
+                  <Tooltip title="Each lesson builds on the previous — prevents mid-cycle joins and allows full-term/short-term packages only.">
                     <InfoCircleOutlined className="info-icon" />
                   </Tooltip>
                 </Space>
@@ -384,9 +414,9 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                     value={pkg.package_type}
                     label={pkg.name}
                     disabled={
-                      isProgressive &&
-                      (pkg.package_type === "pay-as-you-go" ||
-                        pkg.package_type === "trial")
+                      isProgressive
+                        ? ["pay-as-you-go", "trial"].includes(pkg.package_type)
+                        : ["full-term", "short-term"].includes(pkg.package_type)
                     }
                   >
                     <div className="pkg-option">
@@ -398,11 +428,13 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                         </span>
                       )}
 
-                      {isProgressive &&
-                        (pkg.package_type === "pay-as-you-go" ||
-                          pkg.package_type === "trial") && (
+                      {(isProgressive
+                        ? ["pay-as-you-go", "trial"].includes(pkg.package_type)
+                        : ["full-term", "short-term"].includes(
+                            pkg.package_type,
+                          )) && (
                           <span className="pkg-option-blocked">
-                            Not available for progressive
+                            Not available for this class type
                           </span>
                         )}
                     </div>
@@ -417,7 +449,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
               message={
                 comboValid
                   ? "Valid package combination ✓"
-                  : "Invalid combination. Valid options: Full-term only, Full-term + Short-term, Full-term + Short-term + Trial, Pay-as-you-go, Pay-as-you-go + Trial"
+                  : "Invalid combination. Progressive classes use Full-term or Full-term + Short-term. Non-progressive classes use Pay-as-you-go or Pay-as-you-go + Trial."
               }
               type={comboValid ? "success" : "warning"}
               showIcon
@@ -557,18 +589,6 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                       </Text>
                       <Text type="secondary" style={{ fontSize: 11 }}>
                         {stCredits} credits · 15% markup
-                      </Text>
-                    </div>
-                    <div className="auto-calc-divider" />
-                    <div className="auto-calc-item">
-                      <Text type="secondary" className="auto-calc-label">
-                        Per Class
-                      </Text>
-                      <Text strong className="auto-calc-value">
-                        ${(stPrice / stClasses).toFixed(2)}
-                      </Text>
-                      <Text type="secondary" style={{ fontSize: 11 }}>
-                        vs ${(ltTotal / ltClasses).toFixed(2)} LT
                       </Text>
                     </div>
                   </div>

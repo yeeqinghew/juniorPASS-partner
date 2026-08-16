@@ -49,10 +49,10 @@ const buildPayload = (values, partnerId) => ({
           .map((slot) => ({
             day: slot.day,
             timeslot: slot.timeslot,
+            slots: slot.slots,
           })),
         // Package configuration (shared across all time slots)
         frequency: schedule.frequency,
-        slots: schedule.slots,
         package_types: schedule.package_types,
         is_progressive: schedule.is_progressive || false,
         full_term_start_date: schedule.full_term_start_date
@@ -345,7 +345,9 @@ const CreateClass = () => {
                 type="dashed"
                 icon={<PlusCircleOutlined />}
                 className="add-outlet-button mb-16"
-                onClick={() => addOutlet({ schedules: [{ time_slots: [{}] }] })}
+                onClick={() =>
+                  addOutlet({ schedules: [{ time_slots: [{ slots: 10 }] }] })
+                }
                 block
               >
                 Add Outlet
@@ -427,7 +429,9 @@ const CreateClass = () => {
 
                         <Button
                           type="dashed"
-                          onClick={() => addSchedule({ time_slots: [{}] })}
+                          onClick={() =>
+                            addSchedule({ time_slots: [{ slots: 10 }] })
+                          }
                           icon={<PlusCircleOutlined />}
                           className="add-schedule-button"
                           block
