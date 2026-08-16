@@ -104,6 +104,7 @@ const EditClass = () => {
           schedules: (outlet.schedule_groups || []).map((group) => {
             // Map schedule_group to schedule form structure
             return {
+              schedule_group_id: group.schedule_group_id,
               time_slots: (group.time_slots || []).map((slot) => ({
                 day: slot.day,
                 timeslot: [slot.start_time, slot.end_time],
@@ -232,6 +233,7 @@ const EditClass = () => {
                     return true;
                   })
                   .map((schedule) => ({
+                    schedule_group_id: schedule.schedule_group_id,
                     time_slots: (schedule.time_slots || [])
                       .filter((slot) => slot && slot.day && slot.timeslot)
                       .map((slot) => ({
