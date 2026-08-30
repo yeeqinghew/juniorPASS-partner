@@ -79,16 +79,16 @@ const PartnerHome = () => {
 
   const quickActions = [
     {
-      icon: <PlusOutlined />,
-      title: "Create a class",
-      description: "Add a new activity to your catalogue",
-      route: "/create-class",
-    },
-    {
       icon: <EnvironmentOutlined />,
       title: "Manage outlets",
-      description: "Keep venue information up to date",
+      description: "Step 1: Add a venue before creating a class",
       route: "/outlets",
+    },
+    {
+      icon: <PlusOutlined />,
+      title: "Create a class",
+      description: "Step 2: Create a listing under your outlet",
+      route: "/create-class",
     },
     {
       icon: <BookOutlined />,
@@ -107,24 +107,26 @@ const PartnerHome = () => {
             {getGreeting()}, {user?.partner_name || "Partner"}
           </Title>
           <Paragraph className="dashboard-hero-description">
-            Keep an eye on your catalogue, bookings, and locations from one place.
+            Start by adding an outlet, then create a class listing and assign it
+            to that location.
           </Paragraph>
           <div className="dashboard-hero-actions">
             <Button
               type="primary"
               size="large"
-              icon={<PlusOutlined />}
-              onClick={() => navigate("/create-class")}
+              icon={<EnvironmentOutlined />}
+              onClick={() => navigate("/outlets")}
               className="dashboard-primary-action"
             >
-              Create class
+              Manage outlets
             </Button>
             <Button
               size="large"
-              onClick={() => navigate("/classes")}
+              icon={<PlusOutlined />}
+              onClick={() => navigate("/create-class")}
               className="dashboard-secondary-action"
             >
-              Manage classes
+              Create class
             </Button>
           </div>
         </div>
@@ -148,6 +150,28 @@ const PartnerHome = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="dashboard-setup-guide" aria-label="Getting started">
+        <div className="dashboard-setup-heading">
+          <Text className="dashboard-setup-kicker">Getting started</Text>
+          <Text strong>Set up your first class in two steps</Text>
+        </div>
+        <button type="button" onClick={() => navigate("/outlets")}> 
+          <span className="dashboard-setup-number">1</span>
+          <span>
+            <strong>Create an outlet</strong>
+            <small>Add the venue where your classes will be held.</small>
+          </span>
+        </button>
+        <ArrowRightOutlined className="dashboard-setup-arrow" />
+        <button type="button" onClick={() => navigate("/create-class")}> 
+          <span className="dashboard-setup-number">2</span>
+          <span>
+            <strong>Create a class</strong>
+            <small>Build the listing and select the outlet.</small>
+          </span>
+        </button>
       </section>
 
       <Row gutter={[16, 16]} className="dashboard-stats-row">
