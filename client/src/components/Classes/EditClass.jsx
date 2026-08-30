@@ -44,7 +44,6 @@ const EditClass = () => {
   const [editClassForm] = Form.useForm();
   const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
   const { user } = useContext(UserContext);
-  const token = user && user?.token;
   const navigate = useNavigate();
   const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -150,10 +149,13 @@ const EditClass = () => {
   }, [user?.partner_id]);
 
   useEffect(() => {
-    if (token) {
-      fetchClassDetails();
+    if (!listing_id) {
+      setLoading(false);
+      return;
     }
-  }, [listing_id, token]);
+
+    fetchClassDetails();
+  }, [listing_id]);
 
   const props = {
     name: "image",

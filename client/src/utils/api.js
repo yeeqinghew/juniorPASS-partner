@@ -64,7 +64,7 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
   try {
     const response = await fetch(url, config);
 
-    // Handle 401 Unauthorized - token expired or invalid
+    // Handle 401 Unauthorized - session cookie is missing or expired
     if (response.status === 401) {
       console.warn("Partner session is missing or expired");
     }

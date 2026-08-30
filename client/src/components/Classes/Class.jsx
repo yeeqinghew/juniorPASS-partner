@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   InboxOutlined,
   LeftOutlined,
@@ -35,7 +35,6 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { formatChildAge } from "../../utils/age.js";
-import UserContext from "../UserContext";
 import "./ClassEdit.css";
 import "./ClassDetails.css";
 
@@ -43,8 +42,6 @@ const { Title, Text, Paragraph } = Typography;
 
 const Class = () => {
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
-  const token = user && user?.token;
   const { listing_id } = useParams();
   const [listing, setListing] = useState();
   const [registeredStudents, setRegisteredStudents] = useState([]);
