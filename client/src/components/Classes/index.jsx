@@ -24,15 +24,14 @@ const PartnerClasses = ({ setAuth }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const token = user && user?.token;
-
   const getAllListings = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetchWithAuth(
-        API_ENDPOINTS.GET_PARTNER_LISTINGS(user.partner_id, {
+        API_ENDPOINTS.GET_PARTNER_LISTINGS(user.partner_id),
+        {
           method: "GET",
-        })
+        },
       );
       const parseRes = await response.json();
       if (response.status === 200) {
@@ -48,9 +47,12 @@ const PartnerClasses = ({ setAuth }) => {
   }, [setAuth, user?.partner_id]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!user?.partner_id) {
+      setLoading(false);
+      return;
+    }
     getAllListings();
-  }, [token, getAllListings]);
+  }, [user?.partner_id, getAllListings]);
 
   const handleCreateClass = () => {
     navigate("/create-class");
