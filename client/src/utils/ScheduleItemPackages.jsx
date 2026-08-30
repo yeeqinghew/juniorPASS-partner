@@ -310,7 +310,7 @@ const ScheduleItemWithPackages = ({ field, remove, form }) => {
                   type="dashed"
                   size="small"
                   icon={<PlusOutlined />}
-                  onClick={() => addSlot({ slots: 10 })}
+                  onClick={() => addSlot()}
                   className="add-slot-btn"
                 >
                   Add another day / time

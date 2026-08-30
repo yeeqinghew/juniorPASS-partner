@@ -107,7 +107,7 @@ const EditClass = () => {
               time_slots: (group.time_slots || []).map((slot) => ({
                 day: slot.day,
                 timeslot: [slot.start_time, slot.end_time],
-                slots: slot.slots ?? 10,
+                slots: slot.slots ?? undefined,
               })),
               frequency: group.frequency,
               package_types: group.package_types,
@@ -506,7 +506,7 @@ const EditClass = () => {
                 className="add-outlet-button"
                 style={{ marginBottom: "16px" }}
                 onClick={() =>
-                  addOutlet({ schedules: [{ time_slots: [{ slots: 10 }] }] })
+                  addOutlet({ schedules: [{ time_slots: [{}] }] })
                 }
                 block
               >
@@ -572,7 +572,7 @@ const EditClass = () => {
                             <Button
                               type="dashed"
                               onClick={() =>
-                                addSchedule({ time_slots: [{ slots: 10 }] })
+                                addSchedule({ time_slots: [{}] })
                               }
                               icon={<PlusCircleOutlined />}
                               className="add-schedule-button"

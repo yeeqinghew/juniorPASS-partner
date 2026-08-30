@@ -410,7 +410,7 @@ const Class = () => {
                                       icon={<TeamOutlined />}
                                       className="info-tag"
                                     >
-                                      {slot.slots || 10} capacity
+                                      {slot.slots ?? "Not set"} capacity
                                     </Tag>
                                   </div>
                                 ))}

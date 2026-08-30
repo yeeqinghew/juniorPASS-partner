@@ -346,7 +346,7 @@ const CreateClass = () => {
                 icon={<PlusCircleOutlined />}
                 className="add-outlet-button mb-16"
                 onClick={() =>
-                  addOutlet({ schedules: [{ time_slots: [{ slots: 10 }] }] })
+                  addOutlet({ schedules: [{ time_slots: [{}] }] })
                 }
                 block
               >
@@ -430,7 +430,7 @@ const CreateClass = () => {
                         <Button
                           type="dashed"
                           onClick={() =>
-                            addSchedule({ time_slots: [{ slots: 10 }] })
+                            addSchedule({ time_slots: [{}] })
                           }
                           icon={<PlusCircleOutlined />}
                           className="add-schedule-button"
