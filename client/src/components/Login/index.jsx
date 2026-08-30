@@ -29,9 +29,7 @@ const PartnerLogin = ({ setAuth }) => {
       });
 
       const parseRes = await response.json();
-      if (parseRes.token) {
-        localStorage.setItem("token", parseRes.token);
-
+      if (response.ok && parseRes.authenticated) {
         // Check for password change requirement
         if (parseRes.requires_password_change) {
           setAuth(true);

@@ -40,8 +40,6 @@ const Profile = () => {
   const { user } = useContext(UserContext);
   const { addressData, handleAddressSearch } = useAddressSearch();
 
-  const token = localStorage.getItem("token");
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profileForm] = Form.useForm();
@@ -51,7 +49,7 @@ const Profile = () => {
 
   useEffect(() => {
     async function retrieveUser() {
-      if (!user || !user.partner_id || !token) return;
+      if (!user || !user.partner_id) return;
 
       setLoading(true);
 
@@ -70,7 +68,7 @@ const Profile = () => {
     }
 
     retrieveUser();
-  }, []);
+  }, [profileForm, user]);
 
   const handleSubmit = async (values) => {
     setSaving(true);

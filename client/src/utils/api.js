@@ -2,6 +2,8 @@
  * API Configuration for JuniorPASS Partner Portal
  * Centralized API management with authentication
  */
+import { AUTH_ROLES } from "../constants/auth";
+
 
 /**
  * Get the API base URL based on environment
@@ -24,8 +26,8 @@ const getBaseURL = () => {
 };
 
 /**
- * Authenticated fetch wrapper for partner portal
- * Automatically adds Authorization header with JWT token
+ * Authenticated fetch wrapper for the Partner portal.
+ * The browser sends the role-scoped HttpOnly session cookie automatically.
  *
  * @param {string} endpoint - API endpoint (e.g., "/partners/login")
  * @param {Object} options - Fetch options
@@ -33,7 +35,6 @@ const getBaseURL = () => {
  */
 export const fetchWithAuth = async (endpoint, options = {}) => {
   const baseURL = getBaseURL();
-  const token = localStorage.getItem("token");
 
   // Build full URL
   const url = endpoint.startsWith('http') ? endpoint : `${baseURL}${endpoint}`;
@@ -41,16 +42,13 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
   // Default headers
   const defaultHeaders = {
     "Content-Type": "application/json",
+    "X-Auth-Role": AUTH_ROLES.PARTNER,
   };
-
-  // Add Authorization header if token exists
-  if (token) {
-    defaultHeaders.Authorization = `Bearer ${token}`;
-  }
 
   // Merge headers
   const config = {
     ...options,
+    credentials: "include",
     headers: {
       ...defaultHeaders,
       ...options.headers,
@@ -62,9 +60,7 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
 
     // Handle 401 Unauthorized - token expired or invalid
     if (response.status === 401) {
-      console.warn("Partner session expired - redirecting to login");
-      localStorage.removeItem("token");
-      window.location.href = '/login';
+      console.warn("Partner session is missing or expired");
     }
 
     return response;
@@ -81,7 +77,8 @@ export const fetchWithAuth = async (endpoint, options = {}) => {
 export const API_ENDPOINTS = {
   // Partner Auth
   LOGIN: "/partners/login",
-  VERIFY_AUTH: "/auth/is-verify",
+  VERIFY_AUTH: "/partners/is-verify",
+  LOGOUT: "/partners/logout",
   CHANGE_PASSWORD: "/partners/change-password",
   COMPLETE_PROFILE: "/partners/complete-profile",
   RESET_PASSWORD: "/partners/reset-password",

@@ -26,6 +26,7 @@ import toast from "react-hot-toast";
 import UserContext from "../components/UserContext";
 import logo from "../images/logopngResize.png";
 import "./PartnerLayout.css";
+import { fetchWithAuth, API_ENDPOINTS } from "../utils/api";
 
 const { Header, Sider, Content } = Layout;
 const { Text, Title } = Typography;
@@ -61,8 +62,12 @@ const PartnerHomeLayout = ({ setAuth }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
+  const handleLogout = async () => {
+    try {
+      await fetchWithAuth(API_ENDPOINTS.LOGOUT, { method: "POST" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     setAuth(false);
     toast.success("Logged out successfully");
     navigate("/login");

@@ -42,8 +42,6 @@ const ForcePasswordChange = ({ setAuth }) => {
         );
         form.resetFields();
 
-        // Clear token and log out
-        localStorage.removeItem("token");
         setAuth(false);
 
         navigate("/login", { replace: true });
@@ -186,8 +184,8 @@ const ForcePasswordChange = ({ setAuth }) => {
           {/* Security Note */}
           <div className="security-note">
             <Text type="secondary">
-              <SafetyOutlined /> Your password is encrypted and secure. We never
-              store passwords in plain text.
+              <SafetyOutlined /> Your password is protected and never stored in
+              plain text.
             </Text>
           </div>
         </Card>
