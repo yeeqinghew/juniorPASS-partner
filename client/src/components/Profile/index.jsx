@@ -81,12 +81,15 @@ const Profile = () => {
         },
       );
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || errorData.message || "Update failed");
+      }
 
-      message.success("Profile updated!");
+      toast.success("Profile changes saved successfully");
       setUserProfile((prev) => ({ ...prev, ...values }));
-    } catch {
-      message.error("Update failed");
+    } catch (error) {
+      toast.error(error.message || "Failed to save profile changes");
     } finally {
       setSaving(false);
     }
