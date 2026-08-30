@@ -7,9 +7,15 @@ import { AUTH_ROLES } from "../constants/auth";
 
 /**
  * Get the API base URL based on environment
- * Priority: VITE_API_URL > hostname:port > fallback
+ * Priority: staging same-origin proxy > VITE_API_URL > local fallback
  */
 const getBaseURL = () => {
+  // Use a same-origin API only on the staging partner hostname. The Vercel
+  // routing rule for that host proxies these calls to the Railway backend.
+  if (window.location.hostname === "staging.partner.juniorpass.sg") {
+    return window.location.origin;
+  }
+
   // 1. Use explicit API URL if provided (for production/staging)
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
