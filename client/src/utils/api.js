@@ -140,7 +140,7 @@ export const API_ENDPOINTS = {
   MARK_ALL_NOTIFICATIONS_READ: "/notifications/partner/mark-all-read",
 
   // Miscellaneous
-  GET_ALL_CATEGORIES: "/misc/getAllCategories",
+  GET_ALL_CATEGORIES: "/categories",
   GET_ALL_AGE_GROUPS: "/misc/getAllAgeGroups",
   GET_ALL_PACKAGES: "/misc/getAllPackages",
 };

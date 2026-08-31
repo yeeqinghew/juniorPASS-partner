@@ -73,7 +73,7 @@ const buildPayload = (values, partnerId) => ({
 
 const CreateClass = () => {
   const [images, setImages] = useState([]);
-  const { ageGroups } = useContext(DataContext);
+  const { ageGroups, categories } = useContext(DataContext);
   const [createClassForm] = Form.useForm();
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -288,6 +288,24 @@ const CreateClass = () => {
           <Input
             placeholder="e.g. Junior Basketball Fundamentals"
             size="large"
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="category_ids"
+          label="Categories"
+          rules={[
+            { required: true, message: "Select at least one category" },
+          ]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Select categories"
+            size="large"
+            options={categories.map((category) => ({
+              value: category.id,
+              label: category.name,
+            }))}
           />
         </Form.Item>
 

@@ -40,7 +40,7 @@ const EditClass = () => {
   const { listing_id } = useParams();
   const [images, setImages] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
-  const { packageTypes, ageGroups } = useContext(DataContext);
+  const { packageTypes, ageGroups, categories } = useContext(DataContext);
   const [editClassForm] = Form.useForm();
   const [selectedPackageTypes, setSelectedPackageTypes] = useState([]);
   const { user } = useContext(UserContext);
@@ -129,6 +129,7 @@ const EditClass = () => {
       editClassForm.setFieldsValue({
         title: parseRes.listing_title,
         description: parseRes.description,
+        category_ids: parseRes.category_ids || [],
         age_groups: parseRes.age_groups,
         outlets: outletsData,
       });
@@ -203,6 +204,7 @@ const EditClass = () => {
           body: JSON.stringify({
             listing_title: values.title,
             description: values.description,
+            category_ids: values.category_ids,
             age_groups: values.age_groups,
           }),
         },
@@ -465,6 +467,27 @@ const EditClass = () => {
             maxLength={5000}
             placeholder="Describe your class..."
             style={{ height: 120, resize: "none" }}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="category_ids"
+          label="Categories"
+          rules={[
+            {
+              required: true,
+              message: "Please select at least one category",
+            },
+          ]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Select categories"
+            size="large"
+            options={categories.map((category) => ({
+              value: category.id,
+              label: category.name,
+            }))}
           />
         </Form.Item>
 

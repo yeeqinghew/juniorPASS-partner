@@ -32,12 +32,13 @@ import _ from "lodash";
 import "./Profile.css";
 import LoadingContainer from "../../utils/LoadingContainer";
 import toast from "react-hot-toast";
+import { DataContext } from "../../hooks/DataContext";
 
-const { Option } = Select;
 const { TextArea } = Input;
 
 const Profile = () => {
   const { user } = useContext(UserContext);
+  const { categories } = useContext(DataContext);
   const { addressData, handleAddressSearch } = useAddressSearch();
 
   const [loading, setLoading] = useState(true);
@@ -246,10 +247,25 @@ const Profile = () => {
 
                 <Row gutter={16}>
                   <Col xs={24} md={12}>
-                    <Form.Item name="categories" label="Category" required>
-                      <Select className="input-with-icon">
-                        <Option value="Music">Music</Option>
-                        <Option value="Sports">Sports</Option>
+                    <Form.Item
+                      name="category_ids"
+                      label="Categories"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Select at least one category",
+                        },
+                      ]}
+                    >
+                      <Select
+                        mode="multiple"
+                        className="input-with-icon"
+                        placeholder="Select business categories"
+                        options={categories.map((category) => ({
+                          value: category.id,
+                          label: category.name,
+                        }))}
+                      >
                       </Select>
                     </Form.Item>
                   </Col>
