@@ -6,6 +6,7 @@ import {
   BookOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import ActiveClasses from "./ActiveClasses";
@@ -67,6 +68,10 @@ const PartnerClasses = ({ setAuth }) => {
 
   const activeCount = listing.filter((l) => l.active).length;
   const inactiveCount = listing.filter((l) => !l.active).length;
+  const signupCount = listing.reduce(
+    (total, item) => total + Number(item.signup_count || 0),
+    0,
+  );
 
   return (
     <div className="classes-container">
@@ -119,6 +124,15 @@ const PartnerClasses = ({ setAuth }) => {
           <div className="stat-content">
             <div className="stat-value">{inactiveCount}</div>
             <div className="stat-label">Inactive Classes</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon signups">
+            <TeamOutlined />
+          </div>
+          <div className="stat-content">
+            <div className="stat-value">{signupCount}</div>
+            <div className="stat-label">Total Sign-ups</div>
           </div>
         </div>
       </div>

@@ -1,162 +1,220 @@
-import { Card, Carousel, Dropdown, Tag } from "antd";
-import { InboxOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { useState } from "react";
+import { Button, Card, Carousel, Dropdown, Modal, Tag } from "antd";
+import {
+  CheckCircleOutlined,
+  EditOutlined,
+  EnvironmentOutlined,
+  EyeOutlined,
+  InboxOutlined,
+  MoreOutlined,
+  ScheduleOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
-import Meta from "antd/es/card/Meta";
 
-const ClassCard = ({ listing, setListing, viewMode = "grid" }) => {
+const ClassCard = ({ listing, setListing }) => {
   const navigate = useNavigate();
+  const [modal, modalContextHolder] = Modal.useModal();
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const signupCount = Number(listing.signup_count || 0);
+  const canSetInactive = listing.active && signupCount === 0;
+  const outlets = Array.isArray(listing.outlets_info)
+    ? listing.outlets_info
+    : [];
+  const scheduleCount = outlets.reduce(
+    (total, outlet) => total + (outlet.schedule_groups?.length || 0),
+    0,
+  );
 
-  const handleClickClass = () => {
-    navigate(`/class/${listing?.listing_id}`);
-  };
-
-  const handleArchive = async (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    try {
-      const newStatus = !listing?.active;
-
-      const response = await fetchWithAuth(
-        API_ENDPOINTS.UPDATE_LISTING_STATUS(listing.listing_id),
-        {
-          method: "PATCH",
-          body: JSON.stringify({ active: newStatus }),
-        }
-      );
-
-      if (response.ok) {
-        // Update listing state locally
-        setListing((prevListings) =>
-          prevListings.map((item) =>
-            item.listing_id === listing.listing_id
-              ? { ...item, active: newStatus }
-              : item,
-          ),
-        );
-
-        toast.success(
-          newStatus
-            ? "Class activated successfully!"
-            : "Class archived successfully!",
-        );
-      } else {
-        toast.error("Failed to update class status");
-      }
-    } catch (error) {
-      console.error("Error updating listing status:", error);
-      toast.error("An error occurred. Please try again later.");
-    }
-  };
-
-  // Right-click context menu items
-  const contextMenuItems = [
-    {
-      key: "view",
-      label: "View Details",
-      onClick: handleClickClass,
-    },
-    {
-      type: "divider",
-    },
-    {
-      key: "archive",
-      label: listing.active ? "Archive Class" : "Activate Class",
-      icon: listing.active ? <InboxOutlined /> : <CheckCircleOutlined />,
-      onClick: handleArchive,
-      danger: listing.active,
-    },
-  ];
-
-  // Parse images
   const getImages = () => {
     let images = listing?.images;
     if (typeof images === "string") {
       try {
         images = JSON.parse(images);
-      } catch (e) {
+      } catch {
         images = [];
       }
     }
-    if (!Array.isArray(images)) {
-      images = [];
-    }
-    return images;
+    return Array.isArray(images) ? images : [];
   };
+
+  const updateListingStatus = async () => {
+    try {
+      setStatusUpdating(true);
+      const newStatus = !listing.active;
+      const response = await fetchWithAuth(
+        API_ENDPOINTS.UPDATE_LISTING_STATUS(listing.listing_id),
+        {
+          method: "PATCH",
+          body: JSON.stringify({ active: newStatus }),
+        },
+      );
+      const responseData = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          responseData.error || "Failed to update listing status",
+        );
+      }
+
+      setListing((current) =>
+        current.map((item) =>
+          item.listing_id === listing.listing_id
+            ? { ...item, active: newStatus }
+            : item,
+        ),
+      );
+      toast.success(
+        newStatus ? "Listing activated" : "Listing set to inactive",
+      );
+    } catch (error) {
+      toast.error(error.message || "Failed to update listing status");
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
+  const confirmInactive = () => {
+    modal.confirm({
+      title: "Set this listing to inactive?",
+      content:
+        "Parents will no longer see or book it. You can activate it again later.",
+      okText: "Set inactive",
+      okButtonProps: { danger: true },
+      cancelText: "Cancel",
+      centered: true,
+      onOk: updateListingStatus,
+    });
+  };
+
+  const handleMoreAction = ({ key, domEvent }) => {
+    domEvent?.stopPropagation?.();
+
+    if (key === "inactive") {
+      confirmInactive();
+    } else if (key === "activate") {
+      updateListingStatus();
+    }
+  };
+
+  const moreItems = listing.active
+    ? canSetInactive
+      ? [
+          {
+            key: "inactive",
+            label: "Set inactive",
+            icon: <InboxOutlined />,
+            danger: true,
+          },
+        ]
+      : [
+          {
+            key: "inactive-unavailable",
+            label: "Cannot inactivate — has sign-ups",
+            icon: <TeamOutlined />,
+            disabled: true,
+          },
+        ]
+    : [
+        {
+          key: "activate",
+          label: "Activate listing",
+          icon: <CheckCircleOutlined />,
+        },
+      ];
 
   const images = getImages();
 
   return (
-    <Dropdown menu={{ items: contextMenuItems }} trigger={["contextMenu"]}>
+    <>
+      {modalContextHolder}
       <Card
-        hoverable
-        className="class-card"
-        onClick={handleClickClass}
-        cover={
-          <div style={{ position: "relative" }}>
-            <div
-              className={`class-status-badge ${
-                listing.active ? "class-status-active" : "class-status-inactive"
-              }`}
-            >
-              {listing.active ? "● Active" : "● Inactive"}
-            </div>
-            <Carousel autoplay autoplaySpeed={3000}>
-              {images.length > 0 ? (
-                images.map((imgUrl, index) => (
-                  <div key={index}>
-                    <img
-                      alt={`${listing.listing_title}-${index}`}
-                      src={imgUrl}
-                      style={{
-                        width: "100%",
-                        height: "200px",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-                ))
-              ) : (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "200px",
-                    background:
-                      "linear-gradient(135deg, #f8fcff 0%, #FCFBF8 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#bfbfbf",
-                    flexDirection: "column",
-                    gap: 8,
-                  }}
-                >
-                  <InboxOutlined style={{ fontSize: 32 }} />
-                  <span>No Image</span>
-                </div>
-              )}
-            </Carousel>
+      className="class-card"
+      cover={
+        <div className="class-card-media">
+          <div
+            className={`class-status-badge ${
+              listing.active ? "class-status-active" : "class-status-inactive"
+            }`}
+          >
+            {listing.active ? "Active" : "Inactive"}
           </div>
-        }
-      >
-        <Meta
-          title={listing.listing_title}
-          description={
-            listing.description
-              ? listing.description.substring(0, 80) +
-                (listing.description.length > 80 ? "..." : "")
-              : "No description available"
-          }
-        />
-        <div className="class-info-tags">
-          {listing.schedule_info?.length > 0 && (
-            <Tag color="blue">{listing.schedule_info.length} Schedule(s)</Tag>
+          {images.length > 0 ? (
+            <Carousel autoplay autoplaySpeed={3000}>
+              {images.map((imageUrl, index) => (
+                <div key={imageUrl || index}>
+                  <img
+                    className="class-card-image"
+                    alt={`${listing.listing_title} ${index + 1}`}
+                    src={imageUrl}
+                  />
+                </div>
+              ))}
+            </Carousel>
+          ) : (
+            <div className="class-card-image-placeholder">
+              <InboxOutlined />
+              <span>No image</span>
+            </div>
           )}
         </div>
+      }
+    >
+      <div className="class-card-content">
+        <div className="class-card-heading">
+          <h3>{listing.listing_title}</h3>
+          <p>{listing.description || "No description available"}</p>
+        </div>
+
+        <div className="class-card-metrics">
+          <span>
+            <TeamOutlined /> {signupCount} sign-up{signupCount === 1 ? "" : "s"}
+          </span>
+          <span>
+            <EnvironmentOutlined /> {outlets.length} outlet{outlets.length === 1 ? "" : "s"}
+          </span>
+          <span>
+            <ScheduleOutlined /> {scheduleCount} schedule{scheduleCount === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <div className="class-info-tags">
+          {(listing.categories || []).slice(0, 3).map((category) => (
+            <Tag key={category}>{category}</Tag>
+          ))}
+        </div>
+
+        <div className="class-card-actions">
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/class/${listing.listing_id}`)}
+          >
+            View details
+          </Button>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => navigate(`/class/${listing.listing_id}/edit`)}
+          >
+            Edit
+          </Button>
+          <Dropdown
+            menu={{ items: moreItems, onClick: handleMoreAction }}
+            trigger={["click"]}
+          >
+            <Button
+              icon={<MoreOutlined />}
+              loading={statusUpdating}
+              disabled={statusUpdating}
+              aria-label="More listing actions"
+            />
+          </Dropdown>
+        </div>
+      </div>
       </Card>
-    </Dropdown>
+    </>
   );
 };
 

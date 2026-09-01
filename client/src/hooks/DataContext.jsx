@@ -8,12 +8,28 @@ const DataProvider = ({ children }) => {
   const [packageTypes, setPackageTypes] = useState([]);
   const [ageGroups, setAgeGroups] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState("");
 
 
   const getCategories = async () => {
-    const response = await fetchWithAuth(API_ENDPOINTS.GET_ALL_CATEGORIES);
-    const data = await response.json();
-    setCategories(data);
+    try {
+      setCategoriesError("");
+      const response = await fetchWithAuth(API_ENDPOINTS.GET_ALL_CATEGORIES);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to load categories");
+      }
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid category response");
+      }
+      setCategories(data);
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+      setCategories([]);
+      setCategoriesError(
+        "Categories could not be loaded. Refresh the page or contact support.",
+      );
+    }
   };
 
   const getPackageTypes = async () => {
@@ -39,6 +55,7 @@ const DataProvider = ({ children }) => {
     <DataContext.Provider
       value={{
         categories,
+        categoriesError,
         packageTypes,
         ageGroups,
         loading,

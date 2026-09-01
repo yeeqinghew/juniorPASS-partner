@@ -2,6 +2,139 @@
    CLASS DETAILS PAGE - USING THEME COLORS
    ============================================ */
 
+.class-detail-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.class-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.class-detail-heading {
+  min-width: 0;
+}
+
+.class-detail-context {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.class-detail-back {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  color: var(--text-secondary);
+}
+
+.class-detail-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.class-detail-status.is-active {
+  color: var(--color-success);
+  background: var(--color-success-light);
+}
+
+.class-detail-status.is-inactive {
+  color: var(--text-muted);
+  background: var(--bg-cream);
+}
+
+.class-detail-title.ant-typography {
+  overflow: hidden;
+  margin: 0 0 var(--spacing-xs);
+  color: var(--text-dark);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  text-overflow: ellipsis;
+}
+
+.class-detail-subtitle {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.class-detail-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.class-detail-actions .ant-btn {
+  min-height: 42px;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.class-detail-tabs {
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.detail-stack {
+  width: 100%;
+}
+
+.rating-suffix {
+  font-size: var(--font-size-lg);
+}
+
+.detail-class-title.ant-typography {
+  margin: 0 0 12px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.detail-divider {
+  margin: 12px 0;
+}
+
+.detail-created-date {
+  font-size: var(--font-size-md);
+}
+
+.programs-title.ant-typography {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.program-card .ant-card-body {
+  padding: var(--spacing-lg);
+}
+
+.program-frequency {
+  margin-top: var(--spacing-sm);
+}
+
+.start-date-label {
+  font-weight: var(--font-weight-medium);
+}
+
 /* Overview Tab */
 .overview-tab {
   padding: 0;
@@ -393,6 +526,29 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .class-detail-header {
+    align-items: stretch;
+    flex-direction: column;
+    padding: var(--spacing-lg);
+  }
+
+  .class-detail-title.ant-typography {
+    font-size: var(--font-size-3xl);
+  }
+
+  .class-detail-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+  }
+
+  .class-detail-actions .ant-btn {
+    width: 100%;
+  }
+
+  .class-detail-tabs {
+    padding: 0 var(--spacing-md) var(--spacing-md);
+  }
+
   .program-card {
     margin-bottom: var(--spacing-md);
   }

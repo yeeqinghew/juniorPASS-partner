@@ -13,6 +13,8 @@ import {
   DollarOutlined,
   SyncOutlined,
   PlayCircleOutlined,
+  CheckCircleOutlined,
+  MoreOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -31,22 +33,27 @@ import {
   Badge,
   Divider,
   message,
+  Dropdown,
+  Modal,
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchWithAuth, API_ENDPOINTS } from "../../utils/api";
 import { formatChildAge } from "../../utils/age.js";
+import toast from "react-hot-toast";
 import "./ClassEdit.css";
 import "./ClassDetails.css";
 
 const { Title, Text, Paragraph } = Typography;
 
 const Class = () => {
+  const [modal, modalContextHolder] = Modal.useModal();
   const navigate = useNavigate();
   const { listing_id } = useParams();
   const [listing, setListing] = useState();
   const [registeredStudents, setRegisteredStudents] = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   // Fetch registered students for this class
   const fetchRegisteredStudents = async () => {
@@ -142,6 +149,73 @@ const Class = () => {
     navigate(`/class/${listing_id}/edit`);
   };
 
+  const signupCount = Math.max(
+    Number(listing?.signup_count || 0),
+    registeredStudents.length,
+  );
+  const canSetInactive = listing?.active && signupCount === 0;
+
+  const updateListingStatus = async () => {
+    try {
+      setStatusUpdating(true);
+      const newStatus = !listing.active;
+      const response = await fetchWithAuth(
+        API_ENDPOINTS.UPDATE_LISTING_STATUS(listing_id),
+        {
+          method: "PATCH",
+          body: JSON.stringify({ active: newStatus }),
+        },
+      );
+      const responseData = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          responseData.error || "Failed to update listing status",
+        );
+      }
+
+      setListing((current) => ({ ...current, active: newStatus }));
+      toast.success(
+        newStatus ? "Listing activated" : "Listing set to inactive",
+      );
+    } catch (error) {
+      toast.error(error.message || "Failed to update listing status");
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
+  const confirmInactive = () => {
+    modal.confirm({
+      title: "Set this listing to inactive?",
+      content:
+        "Parents will no longer see or book it. You can activate it again later.",
+      okText: "Set inactive",
+      okButtonProps: { danger: true },
+      cancelText: "Cancel",
+      centered: true,
+      onOk: updateListingStatus,
+    });
+  };
+
+  const statusMenuItems = canSetInactive
+    ? [
+        {
+          key: "inactive",
+          label: "Set inactive",
+          icon: <InboxOutlined />,
+          danger: true,
+        },
+      ]
+    : [
+        {
+          key: "inactive-unavailable",
+          label: "Cannot inactivate — has sign-ups",
+          icon: <TeamOutlined />,
+          disabled: true,
+        },
+      ];
+
   // Parse images
   const getImages = () => {
     let images = listing?.images;
@@ -176,6 +250,20 @@ const Class = () => {
     return `${startTime} - ${endTime}`;
   };
 
+  const formatOutletAddress = (address) => {
+    if (!address) return "Unknown location";
+    if (typeof address === "object") {
+      return address.ADDRESS || address.address || "Unknown location";
+    }
+
+    try {
+      const parsedAddress = JSON.parse(address);
+      return parsedAddress.ADDRESS || parsedAddress.address || address;
+    } catch {
+      return address;
+    }
+  };
+
   // Overview Tab Content
   const OverviewTab = () => (
     <div className="overview-tab">
@@ -187,7 +275,6 @@ const Class = () => {
               title={<span className="stat-card-title">Total Bookings</span>}
               value={registeredStudents.length}
               prefix={<TeamOutlined />}
-              valueStyle={{ color: "var(--text-dark)" }}
             />
           </Col>
           <Col xs={12} md={6} className="summary-item">
@@ -195,22 +282,19 @@ const Class = () => {
               title={<span className="stat-card-title">Programs</span>}
               value={getTotalScheduleCount()}
               prefix={<CalendarOutlined />}
-              valueStyle={{ color: "var(--text-dark)" }}
             />
           </Col>
           <Col xs={12} md={6} className="summary-item">
             <Statistic
               title={<span className="stat-card-title">Status</span>}
               value={listing?.active ? "Active" : "Inactive"}
-              valueStyle={{ color: "var(--text-dark)", fontSize: 20 }}
             />
           </Col>
           <Col xs={12} md={6} className="summary-item summary-item-last">
             <Statistic
               title={<span className="stat-card-title">Rating</span>}
               value={listing?.rating || 0}
-              suffix={<span style={{ fontSize: 16 }}>/ 5</span>}
-              valueStyle={{ color: "var(--text-dark)" }}
+              suffix={<span className="rating-suffix">/ 5</span>}
             />
           </Col>
         </Row>
@@ -220,9 +304,9 @@ const Class = () => {
       <Card className="class-info-card">
         <Row gutter={[32, 32]}>
           <Col xs={24} lg={16}>
-            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            <Space direction="vertical" size="large" className="detail-stack">
               <div>
-                <Title level={2} style={{ marginBottom: 12, fontWeight: 600 }}>
+                <Title level={2} className="detail-class-title">
                   {listing?.listing_title}
                 </Title>
                 <Paragraph className="class-description">
@@ -230,7 +314,7 @@ const Class = () => {
                 </Paragraph>
               </div>
 
-              <Divider style={{ margin: "12px 0" }} />
+              <Divider className="detail-divider" />
 
               <Row gutter={[24, 20]}>
                 <Col span={12}>
@@ -259,7 +343,7 @@ const Class = () => {
                     <Text type="secondary" className="section-label">
                       Created
                     </Text>
-                    <Text strong style={{ fontSize: 15 }}>
+                    <Text strong className="detail-created-date">
                       {listing?.created_at
                         ? new Date(listing.created_at).toLocaleDateString(
                             "en-SG",
@@ -304,14 +388,14 @@ const Class = () => {
         <div className="programs-header">
           <Space align="center" size={12}>
             <EnvironmentOutlined className="programs-icon" />
-            <Title level={3} style={{ margin: 0, fontWeight: 600 }}>
+            <Title level={3} className="programs-title">
               Programs & Schedules
             </Title>
           </Space>
         </div>
 
         {getOutletsInfo().length > 0 ? (
-          <Space direction="vertical" size={32} style={{ width: "100%" }}>
+          <Space direction="vertical" size={32} className="detail-stack">
             {getOutletsInfo().map((outlet, outletIndex) => (
               <div key={outletIndex}>
                 {/* Outlet Header */}
@@ -319,8 +403,7 @@ const Class = () => {
                   <Space align="center">
                     <EnvironmentOutlined className="outlet-icon" />
                     <Text strong className="outlet-name">
-                      {JSON.parse(outlet.outlet_address).ADDRESS ||
-                        "Unknown Location"}
+                      {formatOutletAddress(outlet.outlet_address)}
                     </Text>
                     {outlet.nearest_mrt && (
                       <Tag className="outlet-mrt-tag">
@@ -338,12 +421,11 @@ const Class = () => {
                         <Card
                           className="program-card"
                           hoverable
-                          bodyStyle={{ padding: 24 }}
                         >
                           <Space
                             direction="vertical"
                             size={20}
-                            style={{ width: "100%" }}
+                            className="detail-stack"
                           >
                             {/* Header Tags */}
                             <div>
@@ -368,7 +450,7 @@ const Class = () => {
                                   </Tag>
                                 )}
                               </Space>
-                              <div style={{ marginTop: 12 }}>
+                              <div className="program-frequency">
                                 <Space size={12}>
                                   <Tag
                                     icon={<SyncOutlined />}
@@ -388,7 +470,7 @@ const Class = () => {
                               <Space
                                 direction="vertical"
                                 size={8}
-                                style={{ width: "100%" }}
+                                className="detail-stack"
                               >
                                 {group.time_slots?.map((slot, slotIndex) => (
                                   <div
@@ -428,7 +510,7 @@ const Class = () => {
                                 <Space
                                   direction="vertical"
                                   size={8}
-                                  style={{ width: "100%" }}
+                                  className="detail-stack"
                                 >
                                   {group.price_payg && (
                                     <div className="pricing-item pricing-item-payg">
@@ -507,7 +589,7 @@ const Class = () => {
                                   <PlayCircleOutlined className="start-date-icon" />
                                   <Text
                                     type="secondary"
-                                    style={{ fontWeight: 500 }}
+                                    className="start-date-label"
                                   >
                                     Starts:
                                   </Text>
@@ -773,35 +855,38 @@ const Class = () => {
 
   return (
     <div className="class-detail-container">
-      {/* Header */}
-      <div className="welcome-banner">
-        <div className="welcome-content">
-          <Space align="center" className="mb-8">
+      {modalContextHolder}
+      <header className="class-detail-header">
+        <div className="class-detail-heading">
+          <div className="class-detail-context">
             <Button
               type="text"
               icon={<LeftOutlined />}
               onClick={() => navigate("/classes")}
-              className="p-0"
+              className="class-detail-back"
+              aria-label="Back to classes"
             />
-            <Badge status={listing?.active ? "success" : "default"} />
-            <Tag color={listing?.active ? "green" : "default"}>
+            <span
+              className={`class-detail-status ${
+                listing?.active ? "is-active" : "is-inactive"
+              }`}
+            >
+              <Badge status={listing?.active ? "success" : "default"} />
               {listing?.active ? "Active" : "Inactive"}
-            </Tag>
-          </Space>
-          <Title level={2} className="welcome-title mb-0">
+            </span>
+          </div>
+          <Title level={1} className="class-detail-title">
             {listing?.listing_title || "Class Details"}
           </Title>
-          <Text className="welcome-text">
-            Manage class information, view registered students, and track
-            performance
+          <Text className="class-detail-subtitle">
+            Review listing information, schedules, and registered students.
           </Text>
         </div>
-        <div className="welcome-actions">
+        <div className="class-detail-actions">
           <Button
             icon={<DownloadOutlined />}
             onClick={exportToCSV}
             disabled={registeredStudents.length === 0}
-            className="welcome-btn-secondary"
           >
             Export Students
           </Button>
@@ -809,12 +894,38 @@ const Class = () => {
             type="primary"
             icon={<EditOutlined />}
             onClick={handleEditClass}
-            className="welcome-btn-primary"
           >
             Edit Class
           </Button>
+          {listing?.active ? (
+            <Dropdown
+              menu={{
+                items: statusMenuItems,
+                onClick: ({ key }) => {
+                  if (key === "inactive") confirmInactive();
+                },
+              }}
+              trigger={["click"]}
+            >
+              <Button
+                icon={<MoreOutlined />}
+                loading={statusUpdating}
+                disabled={statusUpdating}
+                aria-label="More listing actions"
+              />
+            </Dropdown>
+          ) : (
+            <Button
+              icon={<CheckCircleOutlined />}
+              onClick={updateListingStatus}
+              loading={statusUpdating}
+              disabled={statusUpdating}
+            >
+              Activate listing
+            </Button>
+          )}
         </div>
-      </div>
+      </header>
 
       {/* Tabs */}
       <Tabs

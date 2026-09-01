@@ -28,6 +28,9 @@ const { Dragger } = Upload;
  */
 const buildPayload = (values, partnerId) => ({
   ...values,
+  category_ids: (values.category_ids || []).filter(
+    (categoryId) => categoryId !== undefined && categoryId !== null,
+  ),
   partner_id: partnerId,
   images: [],
   outlets: (values.outlets || []).map((outlet) => ({
@@ -73,7 +76,8 @@ const buildPayload = (values, partnerId) => ({
 
 const CreateClass = () => {
   const [images, setImages] = useState([]);
-  const { ageGroups, categories } = useContext(DataContext);
+  const { ageGroups, categories, categoriesError, loading: dataLoading } =
+    useContext(DataContext);
   const [createClassForm] = Form.useForm();
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
@@ -120,8 +124,40 @@ const CreateClass = () => {
 
   // ── submit ──
   const handleCreateClass = async (values) => {
+    if (!Array.isArray(values.category_ids) || values.category_ids.length === 0) {
+      toast.error("Please select at least one category for the class");
+      createClassForm.scrollToField("category_ids", { block: "center" });
+      return;
+    }
+
     if (images.length === 0) {
       toast.error("Please upload at least one image for the class");
+      return;
+    }
+
+    const listingPayload = buildPayload(values, user.partner_id);
+    const hasIncompleteProgramme = listingPayload.outlets.some(
+      (outlet) =>
+        !outlet.outlet_id ||
+        outlet.schedule_groups.length === 0 ||
+        outlet.schedule_groups.some(
+          (schedule) =>
+            schedule.time_slots.length === 0 ||
+            schedule.time_slots.some(
+              (slot) =>
+                !slot.day ||
+                !Array.isArray(slot.timeslot) ||
+                slot.timeslot.length !== 2 ||
+                !Number.isInteger(slot.slots) ||
+                slot.slots < 1,
+            ),
+        ),
+    );
+
+    if (listingPayload.outlets.length === 0 || hasIncompleteProgramme) {
+      toast.error(
+        "Each outlet needs at least one complete schedule with a day, time, and capacity.",
+      );
       return;
     }
 
@@ -134,7 +170,7 @@ const CreateClass = () => {
       // 1. Create listing
       const createRes = await fetchWithAuth(API_ENDPOINTS.CREATE_LISTING, {
         method: "POST",
-        body: JSON.stringify(buildPayload(values, user.partner_id)),
+        body: JSON.stringify(listingPayload),
       });
       const createData = await createRes.json();
       if (createRes.status !== 201) {
@@ -294,14 +330,26 @@ const CreateClass = () => {
         <Form.Item
           name="category_ids"
           label="Categories"
+          extra={
+            categoriesError ||
+            "Choose at least one category so families can find this class."
+          }
+          validateStatus={categoriesError ? "error" : undefined}
           rules={[
             { required: true, message: "Select at least one category" },
           ]}
         >
           <Select
             mode="multiple"
-            placeholder="Select categories"
+            placeholder={
+              dataLoading ? "Loading categories…" : "Select categories"
+            }
             size="large"
+            loading={dataLoading}
+            disabled={dataLoading || Boolean(categoriesError)}
+            notFoundContent={
+              dataLoading ? "Loading categories…" : "No categories available"
+            }
             options={categories.map((category) => ({
               value: category.id,
               label: category.name,
@@ -495,7 +543,13 @@ const CreateClass = () => {
           <Button size="large" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit" className="save-button">
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="save-button"
+            loading={loading}
+            disabled={loading}
+          >
             Create Class
           </Button>
         </div>
